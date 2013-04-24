@@ -1,0 +1,16 @@
+calculate_q_values <-
+function(CA, Gamma)
+#**********************************************************************
+#	Calculate Q values    				                              *
+#**********************************************************************
+{
+	m = length(CA$PValues.matrix)					#m is the total number of p-values
+	ln_m = log(m)									#log m
+	ln_m_Plus_Gamma = ln_m + Gamma					
+	SortedVector = sort(CA$PValues.matrix,index.return = TRUE)	#Sort the entire PValues matrix into a vector
+	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
+	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
+	QValuesArranged<- QValues[ SortedVector$ix ]			#Arrange QValues in the order of the PValues Vector
+	CA$Q.matrix<-matrix(QValuesArranged, nrow= nrow(CA$PValues.matrix), byrow=TRUE)
+	return(CA)
+}
