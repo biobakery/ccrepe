@@ -4,7 +4,7 @@ function(
 #*  	NC_Score - Start, invoke the function, return  Output values                 *
 #*************************************************************************************
     frmOne=NA,							#First input 
-	frmTwo=NA,						#Second input 
+	frmTwo=NA,						    #Second input 
 	adBins = NA,
 	min.abundance = 0.0001,
 	min.samples = 0.1
@@ -15,7 +15,6 @@ function(
 			adBins,
 			min.abundance,
 			min.samples)
- 
 #*************************************************************************************
 #*  	NC_Score                                                                     *
 #*************************************************************************************
@@ -42,18 +41,23 @@ function(
         }
       }
 
+	  
       cesum_adj <- cesum * adj
       ijsum <- (cosum - cesum_adj)
       CA$Output$NCScore.matrix[i,j] <- ijsum				#Post the result
       CA$Output$NCScore.matrix[j,i] <- ijsum				#Post the result in the symmetrical side
       
+	  if (is.null(rownames(data)))							#Check if row name is null
+		  {rownames(data)[1:nrow(data)] <- paste("Row", 1:nrow(data), sep="")}
+		          	   
+		  
       output.result <-data.frame(list(
 		i=i,
 		j=j,		
 		Bug1=rownames(data)[i],
 		Bug2=rownames(data)[j],
 		IJSum = ijsum))
- 
+
       CA$Output$NCScoreDetail <- rbind(CA$Output$NCScoreDetail,output.result)	#Build an output row to post the results	
                
     }
@@ -64,8 +68,5 @@ function(
   if  (RenormalizationFactor == 0) 										#So that we dont get NaNs
 		{RenormalizationFactor =  1} 
   CA$Output$NCScore.matrix <-   CA$Output$NCScore.matrix / RenormalizationFactor  #Renormalize the matrix
-  if (CA$YEntered == TRUE) {										#Vector Calculation
-		CA$Output$NCScore.matrix = CA$Output$NCScore.matrix[1,2]	#The response is a Number
-		}
   return(CA$Output$NCScore.matrix)
 	}

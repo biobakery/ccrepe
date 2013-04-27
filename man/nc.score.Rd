@@ -35,6 +35,10 @@ nc.score(frmOne = NA, frmTwo = NA, adBins = NA, min.abundance = 1e-04, min.sampl
 \author{
  Craig Bielski<craig.bielski@gmail.com>
 }
- 
+\examples{
+	mydata1<-matrix(rlnorm(10*5,1,1),nrow=10)
+	nc.score_result <-nc.score (frmOne=mydata1)
+}
+
 
 
