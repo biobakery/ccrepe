@@ -23,6 +23,7 @@ function(
   CA$Output$NCScore.matrix <-matrix(nrow=nrow(data),ncol=nrow(data))	#Define output NCScore matrix
   mode(data) <- "numeric"
   n <- length(unique(c(data)))
+
   adj <- ((1.5)*n*(n-1)/(n^2-n+1))
   for(i in 1:(nrow(data))) {
     for(j in (i):nrow(data)) {
@@ -67,6 +68,10 @@ function(
   RenormalizationFactor <-  choose(NS, 2) - (NS %% NB) * choose((floor(NS/NB) + 1), 2) - (NB - NS %% NB) * choose(floor(NS/NB), 2)
   if  (RenormalizationFactor == 0) 										#So that we dont get NaNs
 		{RenormalizationFactor =  1} 
+
   CA$Output$NCScore.matrix <-   CA$Output$NCScore.matrix / RenormalizationFactor  #Renormalize the matrix
+  if (CA$YEntered == TRUE) {										#Vector Calculation
+		return (CA$Output$NCScore.matrix[1,2])						#The response is a Number
+		}
   return(CA$Output$NCScore.matrix)
 	}
