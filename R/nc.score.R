@@ -22,6 +22,7 @@ function(
   CA$Output$NCScoreDetail <- data.frame()		#Define Output List as an empty dataframe				
   CA$Output$NCScore.matrix <-matrix(nrow=nrow(data),ncol=nrow(data))	#Define output NCScore matrix
   mode(data) <- "numeric"
+ 
   n <-  CA$adBins								#n is the number of bins
 
   adj <- ((1.5)*n*(n-1)/(n^2-n+1))
