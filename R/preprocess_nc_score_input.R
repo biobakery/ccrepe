@@ -9,8 +9,6 @@ function(
 			min.abundance,
 			min.samples)
 {
-
-
 	if (ncol(x) == 1 & is.null(ncol(y)))					#If user entered x= vector and did not enter y
 		{
 		stop('Selected nc.score(frmOne=X) - X has to contain more than one row for meaningful results') 
@@ -54,7 +52,7 @@ function(
 		if (suppressWarnings(!is.na(as.numeric(adBins))))	#check if the User entered a numeric number of bins
 			{	CA$adBins = adBins	}					#Valid Input from the User - Use it		
 			else
-			{	cat('\nInvalid number of bins entered - Using default =SQRT(nrow(data)) : ',CA$adBins,'\n')}
+			{	cat('\nInvalid number of bins entered - Using default =nrow(data)) : ',CA$adBins,'\n')}
 
 		
 	if (!suppressWarnings(!is.na(as.numeric(CA$min.abundance))))	#check if the User entered a valid threshold1
@@ -62,9 +60,6 @@ function(
 	if (!suppressWarnings(!is.na(as.numeric(CA$min.samples))))	#check if the User entered a valid threshold1
 		{CA$min.samples = 0.1}				#If it is not valid - force default
 
-
-	if (CA$adBins < 4)						#4 is the minimum number of bins
-			{CA$adBins = 4}
  
 	CA$data1_trimmed_cat <- discretize(CA$data1_trimmed,nbins=CA$adBins)	#Quantize relative abundance  data to ordinal categorical values 
 	rownames(CA$data1_trimmed_cat) <- rownames(CA$data1_trimmed) #Discretize dropped them....			

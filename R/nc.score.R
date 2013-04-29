@@ -22,7 +22,7 @@ function(
   CA$Output$NCScoreDetail <- data.frame()		#Define Output List as an empty dataframe				
   CA$Output$NCScore.matrix <-matrix(nrow=nrow(data),ncol=nrow(data))	#Define output NCScore matrix
   mode(data) <- "numeric"
-  n <- length(unique(c(data)))
+  n <-  CA$adBins								#n is the number of bins
 
   adj <- ((1.5)*n*(n-1)/(n^2-n+1))
   for(i in 1:(nrow(data))) {
@@ -63,8 +63,9 @@ function(
                
     }
   }
+ 
   NS	<- ncol(data)													#Number of Samples
-  NB 	<-   length(unique(c(data)))									#Number of bins
+  NB 	<-   CA$adBins													#Number of bins
   RenormalizationFactor <-  choose(NS, 2) - (NS %% NB) * choose((floor(NS/NB) + 1), 2) - (NB - NS %% NB) * choose(floor(NS/NB), 2)
   if  (RenormalizationFactor == 0) 										#So that we dont get NaNs
 		{RenormalizationFactor =  1} 
