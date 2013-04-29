@@ -47,7 +47,7 @@ function(
 
 	CA$data1_trimmed <- qc_filter(CA$data1.clean, CA)		#Trim the data
 	
-	CA$adBins <- sqrt(ncol(CA$data1.clean)) 		#Set the default number of bins
+	CA$adBins <- floor(sqrt(ncol(CA$data1.clean))) 		#Set the default number of bins
 	if (!is.na(adBins))								#If User entered number of Bins
 		if (suppressWarnings(!is.na(as.numeric(adBins))))	#check if the User entered a numeric number of bins
 			{	CA$adBins = adBins	}					#Valid Input from the User - Use it		
