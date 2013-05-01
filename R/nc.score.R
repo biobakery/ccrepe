@@ -3,15 +3,15 @@ function(
 #*************************************************************************************
 #*  	NC_Score - Start, invoke the function, return  Output values                 *
 #*************************************************************************************
-    frmOne=NA,							#First input 
-	frmTwo=NA,						    #Second input 
+    data1=NA,							#First input 
+	data2=NA,						    #Second input 
 	adBins = NA,
 	min.abundance = 0.0001,
 	min.samples = 0.1
 		)
 	{
-	CA <- preprocess_nc_score_input(frmOne,             #Preprocess input and build the common area
-			frmTwo,
+	CA <- preprocess_nc_score_input(data1,             #Preprocess input and build the common area
+			data2,
 			adBins,
 			min.abundance,
 			min.samples)
@@ -22,9 +22,7 @@ function(
   CA$Output$NCScoreDetail <- data.frame()		#Define Output List as an empty dataframe				
   CA$Output$NCScore.matrix <-matrix(nrow=nrow(data),ncol=nrow(data))	#Define output NCScore matrix
   mode(data) <- "numeric"
- 
-  n <-  CA$adBins								#n is the number of bins
-
+  n <- length(unique(c(data)))
   adj <- ((1.5)*n*(n-1)/(n^2-n+1))
   for(i in 1:(nrow(data))) {
     for(j in (i):nrow(data)) {
@@ -64,16 +62,15 @@ function(
                
     }
   }
- 
   NS	<- ncol(data)													#Number of Samples
-  NB 	<-   CA$adBins													#Number of bins
+  NB 	<-   length(unique(c(data)))									#Number of bins
   RenormalizationFactor <-  choose(NS, 2) - (NS %% NB) * choose((floor(NS/NB) + 1), 2) - (NB - NS %% NB) * choose(floor(NS/NB), 2)
   if  (RenormalizationFactor == 0) 										#So that we dont get NaNs
 		{RenormalizationFactor =  1} 
-
   CA$Output$NCScore.matrix <-   CA$Output$NCScore.matrix / RenormalizationFactor  #Renormalize the matrix
   if (CA$YEntered == TRUE) {										#Vector Calculation
 		return (CA$Output$NCScore.matrix[1,2])						#The response is a Number
 		}
+
   return(CA$Output$NCScore.matrix)
 	}

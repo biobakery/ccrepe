@@ -10,30 +10,38 @@
    rebooting of the data
 }
 \usage{
-ccrepe(frmOne = NA, frmTwo = NA,  method = 'pearson',  min.rows = 20, Iterations = 1000, subset1 = c(0), subset2 = c(0), errthresh = 0.0001, distributions = NA)
+ ccrepe(data1 = NA, 
+ data2 = NA, 
+ method = 'pearson',
+ min.subj = 20,  
+ iterations = 1000,
+ subset.cols.1 = c(0),
+ subset.cols.2 = c(0),
+ errthresh = 0.0001,
+ distributions = NA)
 }
 \arguments{
-  \item{frmOne}{
+  \item{data1}{
    First dataframe containing the relative abundances in cavity1 : Columns are bugs, rows are samples
 }
-  \item{frmTwo}{
+  \item{data2}{
    Second dataframe containing the relative abundances in cavity2: Columns are bugs, rows are samples
 }
  
   \item{method}{
 	Type of correlation: Can be one of three: pearson, spearman or kendall (default: pearson)
 }
-  \item{min.rows}{
-  Minimum rows in "data" frame to proceed (default: 20)
+  \item{min.subj}{
+  Minimum rows (Subjects) in "data" frame to proceed (default: 20)
 }
-  \item{Iterations}{
-  Reboot Iterations (default: 1000)
+  \item{iterations}{
+  Reboot iterations (default: 1000)
 }
-  \item{subset1}{
-  Subset of cols from cavity1 to iterate on (default: c(0)== ALL)
+  \item{subset.cols.1}{
+  Subset of cols(bugs) from cavity1 to iterate on (default: c(0)== ALL)
 }
-  \item{subset2}{
-  Subset of cols from cavity2 to iterate on (default: c(0)== ALL)
+  \item{subset.cols.2}{
+  Subset of cols(bugs) from cavity2 to iterate on (default: c(0)== ALL)
 }
   \item{errthresh}{
 	Threshold error if there is enough data to calculate cor an pval for certain i and k (default: 0.0001)
@@ -45,13 +53,17 @@ ccrepe(frmOne = NA, frmTwo = NA,  method = 'pearson',  min.rows = 20, Iterations
  
 \value{
 
-	Returns a dataframe with five columns:
-	bug1, bug2, cor, p.value, q.value
+	Returns a dataframe containing the calculations results and the parameters used.\cr
+	Parameters shown:\cr
+		min.subj, iterations, errthresh, method, subset.cols.1  (and subset.cols.2 -if applicable)\cr
+		Their descriptions are above\cr
+	The calculation results consist of:\cr
+		PValues.matrix,  Q.matrix and  data.cor that contains:  bug1 bug2 cor   p.value  q.value
 }
 \author{
   Emma Schwager <emma.schwager@gmail.com>
 }
 \examples{
 	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
-	Calculation_Results <- ccrepe (frmOne=mydata,Iterations=5)
+	ccrepe.results <- ccrepe (data1=mydata,iterations=100)
 }

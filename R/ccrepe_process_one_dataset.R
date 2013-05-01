@@ -39,8 +39,11 @@ function(data,N.rand, CA){
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
+	
+ 
 
-	boot.cor = lapply(boot.data,cor.CalcFunction,method=CA$method)
+	boot.cor = lapply(boot.data,cor,method=CA$method)
+
 
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data = lapply(permutation.matrices,permute,data=data)
@@ -51,7 +54,8 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 
-	permutation.cor = lapply(permutation.norm,cor.CalcFunction,method=CA$method)
+	permutation.cor = lapply(permutation.norm,cor,method=CA$method)
+
 	
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
@@ -64,13 +68,36 @@ function(data,N.rand, CA){
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 				permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
-
-				cor = cor.CalcFunction(data[,i],data[,k], CA$method)   # Calculate the  correlation between the bugs
-
-				# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
-				p.value = pnorm(mean(permutation.dist), 
+				
+				
+				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
+				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
+				n.p   = nrow(data)						#Number of rows in data
+				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
+				
+					if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
+					{	
+						p.value=NA
+						cor=NA
+					} else
+					{
+					cor = cor(data[,i],data[,k], method=CA$method)   # Calculate the  correlation between the bugs
+					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
+					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
+					}
+				
+				
+				
+				
+				
+				
+			
+				
+				
+
+				
 				n.c = n.c + 1
 				data.cor[n.c,] = c(i,k,cor,p.value,NA)
 
@@ -100,7 +127,10 @@ function(data,N.rand, CA){
 		lapply(permutation.norm,printDF,CA=CA,DistributionType=" Permutation")
 		}
 	if   (!is.na(CA$outdist))										#If user requested to print the distributions
-		close(CA$outdistFile)										#Close outdist file				
+		{
+		close(CA$outdistFile)										#Close outdist file	
+		CA$outdistFile <- NULL										#And remove it from the common area
+		}
 	time_end = Sys.time()
 	return(CA)							# Return the output matrix
 }

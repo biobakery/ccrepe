@@ -8,7 +8,7 @@ function(X,SelectedSubset,CA)
 		MyDataMatrix<- data.matrix(MyDataFrame, rownames.force = NA)	#Convert into a matrix
 		MyDataMatrix1  = MyDataMatrix[,SelectedSubset]					#Select only the columns the User requested (If he did not: subset1=all columns)
 		mydata <- MyDataMatrix1[rowSums(MyDataMatrix1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
-		if(nrow(mydata) < CA$min.rows) 						#If not enough data, issue messages in files and stop the run 
+		if(nrow(mydata) < CA$min.subj) 						#If not enough data, issue messages in files and stop the run 
 			{
 			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
 			stop(ErrMsg)

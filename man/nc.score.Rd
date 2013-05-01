@@ -8,15 +8,19 @@
   Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data
   }
 \usage{
-nc.score(frmOne = NA, frmTwo = NA, adBins = NA, min.abundance = 1e-04, min.samples = 0.1)
+nc.score(data1 = NA,
+ data2 = NA, 
+ adBins = NA, 
+ min.abundance = 1e-04,
+ min.samples = 0.1)
 }
 \arguments{
-  \item{frmOne}{
+  \item{data1}{
    First data frame to be processed
 }
-  \item{frmTwo}{
+  \item{data2}{
    Vector.  
-   If frmOne is entered then both frmone and frmTwo must be only vectors and the program calculates the score as a number
+   If data1 is entered then both data1 and data2 must be only vectors and the program calculates the score as a number
 }
   \item{adBins}{
  Number of bins to use
@@ -36,9 +40,8 @@ nc.score(frmOne = NA, frmTwo = NA, adBins = NA, min.abundance = 1e-04, min.sampl
  Craig Bielski<craig.bielski@gmail.com>
 }
 \examples{
-	mydata1<-matrix(rlnorm(10*5,1,1),nrow=10)
-	nc.score_result <-nc.score (frmOne=mydata1)
+	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
+	nc.score.results <- nc.score (data1=mydata)
 }
-
 
 
