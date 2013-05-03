@@ -10,8 +10,8 @@
    rebooting of the data
 }
 \usage{
- ccrepe(data1 = NA, 
- data2 = NA, 
+ ccrepe(x = NA, 
+ y = NA, 
  method = 'pearson',
  min.subj = 20,  
  iterations = 1000,
@@ -21,10 +21,10 @@
  distributions = NA)
 }
 \arguments{
-  \item{data1}{
+  \item{x}{
    First dataframe containing the relative abundances in cavity1 : Columns are bugs, rows are samples
 }
-  \item{data2}{
+  \item{y}{
    Second dataframe containing the relative abundances in cavity2: Columns are bugs, rows are samples
 }
  
@@ -65,5 +65,5 @@
 }
 \examples{
 	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
-	ccrepe.results <- ccrepe (data1=mydata,iterations=100)
+	ccrepe.results <- ccrepe (x=mydata,iterations=100)
 }

@@ -3,15 +3,15 @@ function(
 #*************************************************************************************
 #*  	NC_Score - Start, invoke the function, return  Output values                 *
 #*************************************************************************************
-    data1=NA,							#First input 
-	data2=NA,						    #Second input 
+   	x=NA,						#First input 
+	y=NA,						#Second input 
 	adBins = NA,
 	min.abundance = 0.0001,
 	min.samples = 0.1
 		)
 	{
-	CA <- preprocess_nc_score_input(data1,             #Preprocess input and build the common area
-			data2,
+	CA <- preprocess_nc_score_input(x,             #Preprocess input and build the common area
+			y,
 			adBins,
 			min.abundance,
 			min.samples)

@@ -34,7 +34,9 @@ function(CA){
 		cat('\nInvalid correlation method selected : ',CA$method,' - using pearson instead\n')
 		CA$method <- 'pearson'
 		}
-
+  
+	CA$data1 <- na.omit(CA$data1)						#Remove NA's
+  
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
 		CA$outdistFile = file(CA$outdist,open='at')		#Open outdist file

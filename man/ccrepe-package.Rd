@@ -20,14 +20,8 @@ Version: \tab 1.0\cr
 Date: \tab 2013-04-18\cr
 License: \tab MIT\cr
 }
-   An example of how to invoke ccrepe:\cr 
-   mydata<-matrix(rlnorm(21*15,1,1),nrow=21)\cr
-   ccrepe.results <-ccrepe(data1=mydata,iterations = 100)\cr
-   An example of how to invoke nc.score:\cr
-   nc.score.result <-nc.score (data1=mydata)\cr
 }
 \author{
 Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>
-
 Maintainer: Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>, George Weingart<george.weingart@gmail.com>
 }

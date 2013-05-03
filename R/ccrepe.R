@@ -3,8 +3,8 @@ function(
 #*************************************************************************************
 #*  	ccrepe main function                                                         *
 #*************************************************************************************
-	data1=NA,							#Data Frame  1 - For ccrepe and nc.score
-	data2=NA,							#Data Frame  2 - For ccrepe and nc.score 
+	x=NA,								#Data Frame  1 - For ccrepe and nc.score
+	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
 	method = 'pearson',					#Type of correlation - For ccrepe
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
@@ -20,8 +20,8 @@ function(
 	#Build a list called "CA" containing input parameters                 *
 	#**********************************************************************
 	Output <-list()
-	CA <-list(	data1=data1,
-			data2=data2,
+	CA <-list(	data1=x,
+			data2=y,
 			min.subj=min.subj,
 			iterations=iterations,
 			errthresh=errthresh,

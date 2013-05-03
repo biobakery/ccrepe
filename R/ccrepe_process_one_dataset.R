@@ -4,10 +4,11 @@ function(data,N.rand, CA){
 #* 	Function to apply the new method to a dataset                                    *
 #*  As a note, data needs to be a matrix with no missing values                      *
 #*************************************************************************************
+
 	time_start = Sys.time()
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
-	CA$PValues.matrix <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
+	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
 	
 	nsubj = nrow(data)				# Number of subjects
 
@@ -39,9 +40,6 @@ function(data,N.rand, CA){
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
-	
- 
-
 	boot.cor = lapply(boot.data,cor,method=CA$method)
 
 
@@ -63,12 +61,12 @@ function(data,N.rand, CA){
 	for(i in 1:n){
 		if((i+1)<=n){
 			for(k in (i+1):n){
+
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 				permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
-				
 				
 				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
@@ -87,23 +85,10 @@ function(data,N.rand, CA){
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
 					}
-				
-				
-				
-				
-				
-				
-			
-				
-				
-
-				
+				CA$p.values[i,k]=p.value				#Post it in the p-values matrix in order to use it to compute q-values
+				CA$p.values[k,i]=p.value				#Post it in the p-values matrix in order to use it to compute q-values
 				n.c = n.c + 1
 				data.cor[n.c,] = c(i,k,cor,p.value,NA)
-
-				
-				CA$PValues.matrix[i,k]<-p.value				#Post it in the p-values matrix in order to use it to compute q-values
-				CA$PValues.matrix[k,i]<-p.value				#Post it in the p-values matrix in order to use it to compute q-values
 			}
 		}
 	}
@@ -117,7 +102,7 @@ function(data,N.rand, CA){
 		{
 			i = data.cor[indx,1]
 			k = data.cor[indx,2]
-			data.cor[indx,5] = CA$Q.matrix[i,k]
+			data.cor[indx,5] = CA$q.values[i,k]
 		}
 	CA$data.cor <- data.cor								# Post it in the common Area
 
