@@ -10,4 +10,4 @@ Maintainer: Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski
 Description: The package has two functions 
  Function number 1 (ccrepe):    Calculate correlations, p-values and q-values for relative abundances of bugs in one or two body sites using bootstrap and permutation matrices of the data
  Function number 2 (nc.score):  Calculate species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data
-License: MIT 
+License: MIT | file LICENSE
