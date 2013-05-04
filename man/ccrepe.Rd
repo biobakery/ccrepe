@@ -67,3 +67,6 @@
 	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
 	ccrepe.results <- ccrepe (x=mydata,iterations=100)
 }
+\details{
+ The row and column indices of the q- and p-value matrices correspond to the row and column indices of the input dataset(s)
+}

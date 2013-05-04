@@ -24,7 +24,7 @@ function(data,N.rand, CA){
 	permutation.matrices = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 
 	for(i in 1:N.rand){
- 
+   
 		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
 		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
@@ -61,7 +61,6 @@ function(data,N.rand, CA){
 	for(i in 1:n){
 		if((i+1)<=n){
 			for(k in (i+1):n){
-
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
           
@@ -85,8 +84,8 @@ function(data,N.rand, CA){
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
 					}
-				CA$p.values[i,k]=p.value				#Post it in the p-values matrix in order to use it to compute q-values
-				CA$p.values[k,i]=p.value				#Post it in the p-values matrix in order to use it to compute q-values
+					CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
+					CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
 				n.c = n.c + 1
 				data.cor[n.c,] = c(i,k,cor,p.value,NA)
 			}
@@ -116,6 +115,9 @@ function(data,N.rand, CA){
 		close(CA$outdistFile)										#Close outdist file	
 		CA$outdistFile <- NULL										#And remove it from the common area
 		}
+		
+	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
+
 	time_end = Sys.time()
-	return(CA)							# Return the output matrix
+	return(CA)														# Return the output matrix
 }
