@@ -9,6 +9,7 @@ function(data,N.rand, CA){
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
+	CA$cor <-matrix(data=0,nrow=n,ncol=n)	#Build the empty correlation matrix
 	
 	nsubj = nrow(data)				# Number of subjects
 
@@ -86,6 +87,8 @@ function(data,N.rand, CA){
 					}
 				CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
 				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
+				CA$cor[i,k] = cor						#Post it in the cor matrix  
+				CA$cor[k,i] = cor						#Post it in the cor matrix  				
 				n.c = n.c + 1
 				data.cor[n.c,] = c(i,k,cor,p.value,NA)
 			}
