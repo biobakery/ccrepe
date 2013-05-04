@@ -84,8 +84,8 @@ function(data,N.rand, CA){
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
 					}
-					CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
-					CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
+				CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
+				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
 				n.c = n.c + 1
 				data.cor[n.c,] = c(i,k,cor,p.value,NA)
 			}
