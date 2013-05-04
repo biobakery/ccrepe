@@ -119,8 +119,16 @@ function(data,N.rand, CA){
 		CA$outdistFile <- NULL										#And remove it from the common area
 		}
 		
+	#********************************************************************
+	#*  Final Edits before exiting                                      *
+	#********************************************************************
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
-
+	colnames(CA$p.values)<-colnames(CA$data1)						#Set the names of the columns in the p.values matrix
+	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the roes in the p.values matrix
+	colnames(CA$q.values)<-colnames(CA$data1)						#Set the names of the columns in the q.values matrix
+	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the roes in the q.values matrix
+	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
+	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
 	time_end = Sys.time()
 	return(CA)														# Return the output matrix
 }
