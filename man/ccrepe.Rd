@@ -18,6 +18,8 @@
  subset.cols.1 = c(0),
  subset.cols.2 = c(0),
  errthresh = 0.0001,
+ verbose = FALSE,					 
+ iterations.gap = 100,	 
  distributions = NA)
 }
 \arguments{
@@ -46,6 +48,12 @@
   \item{errthresh}{
 	Threshold error if there is enough data to calculate cor an pval for certain i and k (default: 0.0001)
 }
+  \item{verbose}{
+	Indicator whether the User requested verbose Output  (default:FALSE)
+}
+ \item{iterations.gap}{
+	If output is verbose - number of iterations after issue a status message (Default=100 - displayed only if verbose=TRUE)
+}
   \item{distributions}{
 	Output Distribution file  (default:NA)
 }
@@ -66,7 +74,4 @@
 \examples{
 	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
 	ccrepe.results <- ccrepe (x=mydata,iterations=100)
-}
-\details{
- The row and column indices of the q- and p-value matrices correspond to the row and column indices of the input dataset(s)
 }

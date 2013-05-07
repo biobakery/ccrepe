@@ -41,5 +41,12 @@ function(CA){
 		{
 		CA$outdistFile = file(CA$outdist,open='at')		#Open outdist file
 		}
+
+	if ( CA$verbose !=  TRUE  & 	CA$verbose !=  FALSE )	#Verbose Flag has to be either true or false, otherwise - we set it to false
+		{
+		CA$verbose =  FALSE									#False - is the default
+		}
+	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
+		{ CA$iterations.gap = 100}						#If not valid - use 100
 	return(CA)			 				#Return list of decoded input parameters
 }

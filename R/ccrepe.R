@@ -11,6 +11,8 @@ function(
 	subset.cols.1 = c(0),						#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
 	subset.cols.2 = c(0),						#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
+	verbose = FALSE,					#Request for verbose output?
+	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
 	distributions = NA					#Output Distribution file - For ccrepe
 	)
 
@@ -28,6 +30,8 @@ function(
 			method=method,
 			subset.cols.1=subset.cols.1,
 			subset.cols.2=subset.cols.2,
+			verbose=verbose,
+			iterations.gap=iterations.gap,
 			outdist=distributions
 			)
 

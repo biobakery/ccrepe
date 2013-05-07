@@ -25,6 +25,11 @@ function(data,N.rand, CA){
 	permutation.matrices = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 
 	for(i in 1:N.rand){
+		if (CA$verbose == TRUE)		#If output is verbose - print the number of iterations
+			{
+			if (i %% CA$iterations.gap == 0)		#print status
+				{cat('Completed ',i,' iterations','\n')}
+			}
    
 		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
 		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
@@ -72,8 +77,7 @@ function(data,N.rand, CA){
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
 				n.p   = nrow(data)						#Number of rows in data
 				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
-				
-					if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
+				if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
 					{	
 						p.value=NA
 						cor=NA
