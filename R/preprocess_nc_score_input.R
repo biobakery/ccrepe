@@ -21,12 +21,20 @@ function(
 
  
  	if (!suppressWarnings(!is.na(as.numeric(input.min.abundance))))	#check if the User entered a valid threshold1
-		{min.abundance = 0.0001}				#If it is not valid - force default
-	CA$min.abundance = min.abundance
+		{
+		cat('\nInvalid min.abundance entered - using default=0.0001\n')
+		CA$min.abundance = 0.0001
+		 }				#If it is not valid - force default
+	else
+		{CA$min.abundance = input.min.abundance}	#Else - use it
 
 	if (!suppressWarnings(!is.na(as.numeric(input.min.samples))))	#check if the User entered a valid threshold1
-		{min.samples = 0.1}				#If it is not valid - force default
-	CA$min.samples = min.samples							#Post it to common Area
+		{
+		cat('\nInvalid min.samples entered - using default=0.1\n')
+		CA$min.samples = 0.1 				#If it is not valid - force default
+		}
+	else
+		{CA$min.samples = input.min.samples}	#Else - use it
  
  
 

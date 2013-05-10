@@ -40,8 +40,10 @@ nc.score(x = NA,
  Craig Bielski<craig.bielski@gmail.com>
 }
 \examples{
-	mydata<-matrix(rlnorm(21*15,1,1),nrow=21)
-	nc.score.results <- nc.score (x=mydata)
+
+	x1<-matrix(rlnorm(10*9,1,1),nrow=10)
+	y1<-matrix(rlnorm(10*9,1,1),nrow=10)
+	nc.score.result <-nc.score (x=x1,y=y1)
 }
 
 

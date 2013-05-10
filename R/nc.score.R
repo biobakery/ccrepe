@@ -6,14 +6,15 @@ function(
 #*************************************************************************************
    	x=NA,						#First input 
 	y=NA,						#Second input
-	adBins=NA,						#Number of Input Bins
-	min.abundance=NA,				#Minimum Abundance
-	min.samples=NA)				#Minimum Samples
+	adBins=NA,					#Number of Input Bins
+	min.abundance=0.0001,		#Minimum Abundance
+	min.samples=0.1)				#Minimum Samples
 	
 {
 #*************************************************************************************
 #*  	NC_Score                                                                     *
 #*************************************************************************************
+
 	if (is.numeric(x)		    #Is it a vector? 		
 		& length(x) > 1
 		& is.numeric(y) 
