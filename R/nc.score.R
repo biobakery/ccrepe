@@ -45,9 +45,6 @@ function(
 	y <- CA$y										#Get it from common area
     x.discretized <- CA$x.discretized				#Get it from Common Area
 	y.discretized <- CA$y.discretized				#Get it from Common Area
- 
-	cat('\nTo display\n')
-	browser()
 
 	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
 		{

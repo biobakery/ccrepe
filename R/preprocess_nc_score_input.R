@@ -29,19 +29,21 @@ function(
 	CA$min.samples = min.samples							#Post it to common Area
  
  
-  
+
 	#*********************************************************
 	#* Filter and then select only the rows that are common  *
 	#*********************************************************
 	x <-qc_filter(x,CA)										#filter by abundance throsholds
 	x <-na.omit(x)											#remove NAs
+	if (is.null(rownames(x))) {rownames(x)<-seq(1:nrow(x))} #If there are no row names - plug them in
 	x.keys.df <- as.data.frame(unlist(rownames(x)))			#To match
 	colnames(x.keys.df)<-c('the.key')						#Give the column  a name		
 	x.keys.df$included_x <- TRUE							#add flag
 	
 	
 	y <-qc_filter(y,CA)										#filter by abundance throsholds
-	y <-na.omit(y)											#remove NAs										 
+	y <-na.omit(y)											#remove NAs	
+	if (is.null(rownames(y))) {rownames(y)<-seq(1:nrow(y))} #If there are no row names - plug them in
 	y.keys.df <- as.data.frame(unlist(rownames(y)))			#Build data frame of keys to match
 	colnames(y.keys.df)<-c('the.key')						#Give the column  a name		
  	y.keys.df$included_y <- TRUE							#Add flag
