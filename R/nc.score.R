@@ -1,76 +1,73 @@
+#!/usr/bin/env Rscript
 nc.score <-
 function(
 #*************************************************************************************
-#*  	NC_Score - Start, invoke the function, return  Output values                 *
+#*  	nc.score                                                                     *
 #*************************************************************************************
    	x=NA,						#First input 
-	y=NA,						#Second input 
-	adBins = NA,
-	min.abundance = 0.0001,
-	min.samples = 0.1
-		)
-	{
-	CA <- preprocess_nc_score_input(x,             #Preprocess input and build the common area
-			y,
-			adBins,
-			min.abundance,
-			min.samples)
+	y=NA,						#Second input
+	adBins=NA,						#Number of Input Bins
+	min.abundance=NA,				#Minimum Abundance
+	min.samples=NA)				#Minimum Samples
+	
+{
 #*************************************************************************************
 #*  	NC_Score                                                                     *
 #*************************************************************************************
-  data <- CA$data1_trimmed_cat_matrix			#Post the input data to be processed
-  CA$Output$NCScoreDetail <- data.frame()		#Define Output List as an empty dataframe				
-  CA$Output$NCScore.matrix <-matrix(nrow=nrow(data),ncol=nrow(data))	#Define output NCScore matrix
-  mode(data) <- "numeric"
-  n <- length(unique(c(data)))
-  adj <- ((1.5)*n*(n-1)/(n^2-n+1))
-  for(i in 1:(nrow(data))) {
-    for(j in (i):nrow(data)) {
-      ijsum <- 0
-      cosum <- 0
-      cesum <- 0
-      for (m in 1:(ncol(data)-1)) {
-        for (n in (m+1):ncol(data)) {
-          mx <- (c(data[i,m], data[j,m], data[i,n], data[j,n]))
-          if (length(unique(mx)) >= 2) {
-            if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) {
-              cosum <- cosum + 1 }
-            if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) {
-              cesum <- cesum + 1 }  
-          }
-        }
-      }
-
-	  
-      cesum_adj <- cesum * adj
-      ijsum <- (cosum - cesum_adj)
-      CA$Output$NCScore.matrix[i,j] <- ijsum				#Post the result
-      CA$Output$NCScore.matrix[j,i] <- ijsum				#Post the result in the symmetrical side
-      
-	  if (is.null(rownames(data)))							#Check if row name is null
-		  {rownames(data)[1:nrow(data)] <- paste("Row", 1:nrow(data), sep="")}
-		          	   
-		  
-      output.result <-data.frame(list(
-		i=i,
-		j=j,		
-		Bug1=rownames(data)[i],
-		Bug2=rownames(data)[j],
-		IJSum = ijsum))
-
-      CA$Output$NCScoreDetail <- rbind(CA$Output$NCScoreDetail,output.result)	#Build an output row to post the results	
-               
-    }
-  }
-  NS	<- ncol(data)													#Number of Samples
-  NB 	<-   length(unique(c(data)))									#Number of bins
-  RenormalizationFactor <-  choose(NS, 2) - (NS %% NB) * choose((floor(NS/NB) + 1), 2) - (NB - NS %% NB) * choose(floor(NS/NB), 2)
-  if  (RenormalizationFactor == 0) 										#So that we dont get NaNs
-		{RenormalizationFactor =  1} 
-  CA$Output$NCScore.matrix <-   CA$Output$NCScore.matrix / RenormalizationFactor  #Renormalize the matrix
-  if (CA$YEntered == TRUE) {										#Vector Calculation
-		return (CA$Output$NCScore.matrix[1,2])						#The response is a Number
+	if (is.numeric(x)		    #Is it a vector? 		
+		& length(x) > 1
+		& is.numeric(y) 
+		& length(y) > 1 
+		& length(x) == length(y)
+		& class(x) == "numeric"
+	    & class(y) == "numeric"
+		)
+		{
+			x.discretized = as.matrix(discretize(x,nbins = sqrt(length(x))))	#Discretize 
+			y.discretized = as.matrix(discretize(y,nbins = sqrt(length(y))))	#Discretize
+			nc.score.result = nc.score.helper(x.discretized,y.discretized)					#Invoke the function
+			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
+			return(nc.score.result)
 		}
+		
+	#************************************************************************
+	#*        It is a dataframe or a matrix                                 *
+	#************************************************************************
 
-  return(CA$Output$NCScore.matrix)
-	}
+	CA = preprocess_nc_score_input (
+			x, 										#First Input
+			y,										#Second Input
+			adBins,									#Bins
+			min.abundance,							#Minimum Abundance
+			min.samples)							#Minimum Samples
+	
+	x <- CA$x										#Get it from common area
+	y <- CA$y										#Get it from common area
+    x.discretized <- CA$x.discretized				#Get it from Common Area
+	y.discretized <- CA$y.discretized				#Get it from Common Area
+ 
+	cat('\nTo display\n')
+	browser()
+
+	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
+		{
+			x.discretized[,i] = discretize(x[,i],nbins=sqrt(length(x[,i])))[,1]	#Discretize it and post the value in the discretized matrix
+		}
+	for (i in 1:ncol(y))												#Do the same for the second matrix
+		{
+			y.discretized[,i] = discretize(y[,i],nbins=sqrt(length(y[,i])))[,1]	#Post it in the second discretized matrix
+		}
+	nc.score.result <- matrix(nrow=ncol(x.discretized),ncol=ncol(y.discretized))		#Build results area
+	
+	for (i in 1:ncol(x.discretized))									#Loop on the columns of the first matrix
+		{
+			for (j in 1:ncol(y.discretized))							#Loop on the columns of the second matrix
+				{
+					nc.score.result[i,j]<-nc.score.helper(x.discretized[,i],y.discretized[,j])	#Post it in the results area
+				}			
+		}
+ 	nc.score.result <- nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
+								
+	
+return(nc.score.result)
+}
