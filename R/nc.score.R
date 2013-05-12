@@ -64,8 +64,15 @@ function(
 					nc.score.result[i,j]<-nc.score.helper(x.discretized[,i],y.discretized[,j])	#Post it in the results area
 				}			
 		}
- 	nc.score.result <- nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
-								
-	
-return(nc.score.result)
+ 	CA$nc.score.matrix <- nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
+	rownames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the row names
+	colnames(CA$nc.score.matrix)  <- colnames(CA$y)	#Post the row names
+	CA$x.filtered <- CA$x							#Post the output
+	CA$y.filtered <- CA$y							#Post the output
+	CA$x <- NULL									#Not needed
+	CA$y <- NULL									#Not needed
+	CA$x.discretized <- NULL						#Don't need it there
+	CA$y.discretized <- NULL						#Don't need it there
+ 
+return(CA)
 }

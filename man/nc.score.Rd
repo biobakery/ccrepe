@@ -16,11 +16,10 @@ nc.score(x = NA,
 }
 \arguments{
   \item{x}{
-   First data frame to be processed
+   First entity to be processed
 }
   \item{y}{
-   Vector.  
-   If x is entered then both x and t must be only vectors and the program calculates the score as a number
+   Second entity to be processed
 }
   \item{adBins}{
  Number of bins to use
