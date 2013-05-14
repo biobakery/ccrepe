@@ -26,10 +26,10 @@ function(CA){
 		if ( CA$subset.cols.2[1]  == 0)					#If user did not pass any request for the number fo cols in data1 to process
 		CA$subset.cols.2<-c(1:ncol(CA$data2))				# - We will use All the columns	
 		}
-	
-	
+ 
+
 	MethodsTable <- c('spearman','kendall','pearson')
-	if   (CA$method  %in% MethodsTable == FALSE)
+	if   (CA$method.args.method  %in% MethodsTable == FALSE)
 		{
 		cat('\nInvalid correlation method selected : ',CA$method,' - using pearson instead\n')
 		CA$method <- 'pearson'

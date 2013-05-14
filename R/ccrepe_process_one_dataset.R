@@ -44,10 +44,11 @@ function(data,N.rand, CA){
 		permutation.matrices = lappend(permutation.matrices,perm.matrix)     # Add the new matrix to the list
 	}
 
+ 
+	
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
-	boot.cor = lapply(boot.data,cor,method=CA$method)
-
+	boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)
 
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data = lapply(permutation.matrices,permute,data=data)
@@ -58,7 +59,7 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 
-	permutation.cor = lapply(permutation.norm,cor,method=CA$method)
+	permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args.method)
 
 	
 	# Now, actually calculating the correlation p-values within the dataset
@@ -83,7 +84,9 @@ function(data,N.rand, CA){
 						cor=NA
 					} else
 					{
-					cor = cor(data[,i],data[,k], method=CA$method)   # Calculate the  correlation between the bugs
+ 
+					cor = CA$method(data[,i],data[,k], method=CA$method.args.method)   # Calculate the  correlation between the bugs
+
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
