@@ -39,10 +39,9 @@ nc.score(x = NA,
  Craig Bielski<craig.bielski@gmail.com>
 }
 \examples{
-
-	x1<-matrix(rlnorm(10*9,1,1),nrow=10)
-	y1<-matrix(rlnorm(10*9,1,1),nrow=10)
-	nc.score.result <-nc.score (x=x1,y=y1)
+	data1<-matrix(rlnorm(21*5,1,1),nrow=21)
+	data2<-matrix(rlnorm(5*17,1,1),nrow=17)
+	nc.score.results <- ccrepe( x=data1, y=data2, method = nc.score )
 }
 
 
