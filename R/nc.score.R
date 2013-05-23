@@ -6,15 +6,14 @@ function(
 #*************************************************************************************
    	x=NA,						#First input 
 	y=NA,						#Second input
-	adBins=NA,					#Number of Input Bins
+	bins=NA,					#Number of Input Bins
 	min.abundance=0.0001,		#Minimum Abundance
-	min.samples=0.1)				#Minimum Samples
+	min.samples=0.1)			#Minimum Samples
 	
 {
 #*************************************************************************************
 #*  	NC_Score                                                                     *
 #*************************************************************************************
-
 	if (is.numeric(x)		    #Is it a vector? 		
 		& length(x) > 1
 		& is.numeric(y) 
@@ -24,9 +23,12 @@ function(
 	    & class(y) == "numeric"
 		)
 		{
-			x.discretized = as.matrix(discretize(x,nbins = sqrt(length(x))))	#Discretize 
-			y.discretized = as.matrix(discretize(y,nbins = sqrt(length(y))))	#Discretize
-			nc.score.result = nc.score.helper(x.discretized,y.discretized)					#Invoke the function
+			CA <-list()									#Set the common area
+			CA$x <- x									#Post x to common area
+			CA <- process.input.bins(bins, CA)
+			x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
+			y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
+			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)					#Invoke the function
 			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
 			return(nc.score.result)
 		}
@@ -37,42 +39,24 @@ function(
 
 	CA = preprocess_nc_score_input (
 			x, 										#First Input
-			y,										#Second Input
-			adBins,									#Bins
+			bins,									#Bins
 			min.abundance,							#Minimum Abundance
 			min.samples)							#Minimum Samples
 	
-	x <- CA$x										#Get it from common area
-	y <- CA$y										#Get it from common area
+	x <- CA$x										#Get the filtered x from common area
     x.discretized <- CA$x.discretized				#Get it from Common Area
-	y.discretized <- CA$y.discretized				#Get it from Common Area
-
+ 
 	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
 		{
-			x.discretized[,i] = discretize(x[,i],nbins=sqrt(length(x[,i])))[,1]	#Discretize it and post the value in the discretized matrix
+			x.discretized[,i] = discretize(x[,i],nbins=CA$bins)[,1]	#Discretize it and post the value in the discretized matrix
 		}
-	for (i in 1:ncol(y))												#Do the same for the second matrix
-		{
-			y.discretized[,i] = discretize(y[,i],nbins=sqrt(length(y[,i])))[,1]	#Post it in the second discretized matrix
-		}
-	nc.score.result <- matrix(nrow=ncol(x.discretized),ncol=ncol(y.discretized))		#Build results area
-	
-	for (i in 1:ncol(x.discretized))									#Loop on the columns of the first matrix
-		{
-			for (j in 1:ncol(y.discretized))							#Loop on the columns of the second matrix
-				{
-					nc.score.result[i,j]<-nc.score.helper(x.discretized[,i],y.discretized[,j])	#Post it in the results area
-				}			
-		}
- 	CA$nc.score.matrix <- nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
+
+ 	CA$nc.score.matrix <-nc.score.helper(x.discretized,CA)	#Post it in the results area
+ 	CA$nc.score.matrix <- nc.score.renormalize (x.discretized, NA, CA$nc.score.matrix)  #Normalize the results 
 	rownames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the row names
-	colnames(CA$nc.score.matrix)  <- colnames(CA$y)	#Post the row names
-	CA$x.filtered <- CA$x							#Post the output
-	CA$y.filtered <- CA$y							#Post the output
-	CA$x <- NULL									#Not needed
-	CA$y <- NULL									#Not needed
-	CA$x.discretized <- NULL						#Don't need it there
-	CA$y.discretized <- NULL						#Don't need it there
- 
+	colnames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the col names
+	CA$x.discretized <- NULL		#Not needed anymore
+	CA$x <- NULL					#Not Needed anymore
+	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
 return(CA)
 }

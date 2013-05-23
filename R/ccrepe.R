@@ -15,7 +15,7 @@ function(
 	verbose = FALSE,					#Request for verbose output?
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
 	distributions = NA,					#Output Distribution file - For ccrepe
-	adBins=NA,							#Number of Input Bins
+	bins=NA,							#Number of Input Bins
 	min.abundance=0.0001,				#Minimum Abundance
 	min.samples=0.1						#Minimum Samples
 	)					
@@ -49,7 +49,7 @@ function(
 		{
 			CA <- nc.score (x,			#First input 
 				y,						#Second input
-				adBins,					#Number of Input Bins
+				bins,					#Number of Input Bins
 				min.abundance,			#Minimum Abundance
 				min.samples) 	
 			return(CA)
