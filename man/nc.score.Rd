@@ -10,7 +10,7 @@
 \usage{
 nc.score(x = NA,
  y = NA, 
- adBins = NA, 
+ bins = NA, 
  min.abundance = 1e-04,
  min.samples = 0.1)
 }
@@ -21,7 +21,7 @@ nc.score(x = NA,
   \item{y}{
    Second entity to be processed
 }
-  \item{adBins}{
+  \item{bins}{
  Number of bins to use
 }
   \item{min.abundance}{

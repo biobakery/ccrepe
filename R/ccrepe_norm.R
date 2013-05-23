@@ -7,3 +7,5 @@ function(data){
 	data.normalized[is.na(data.normalized )] <- 0 #Replace NA's with Zeros
   	return(data.normalized)
 }
+
+

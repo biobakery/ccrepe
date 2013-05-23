@@ -7,7 +7,10 @@ function(mat1,mat2)
 # exclude the first column, which is the row names                                   *
 #*************************************************************************************
 {
-	mat <- as.matrix(merge(mat1,mat2,by="row.names")[,-1])
+	mat <- as.matrix(merge(mat1,mat2,by="row.names"))
+	rownames(mat) = mat[,1]    # The first column has the row names
+	mat = mat[,-1]             # Remove the first column
 	class(mat) <- "numeric"    # The default output of merge is strings; convert back to numbers
 	return(mat)
 }
+

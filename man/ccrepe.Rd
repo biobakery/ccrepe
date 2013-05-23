@@ -24,7 +24,7 @@
  verbose = FALSE,
  iterations.gap = 100,
  distributions = NA,
- adBins = NA,
+ bins = NA,
  min.abundance = 1e-04,
  min.samples = 0.1)
  
@@ -74,7 +74,7 @@
   \item{distributions}{
 	Output Distribution file  (default:NA)
 }
-  \item{adBins}{
+  \item{bins}{
 	Number of bins to use
 }
  \item{min.abundance}{

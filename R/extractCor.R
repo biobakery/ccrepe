@@ -1,5 +1,5 @@
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,method)
+function(mat1,mat2,startrow,endrow,startcol,endcol,method,...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
