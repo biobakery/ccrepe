@@ -6,7 +6,7 @@ function(
 	x=NA,								#Data Frame  1 - For ccrepe and nc.score
 	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
 	method = cor,						#Default
-	method.args = list(	method = "spearman"),
+	method.args = list(), 	 			#Could be, for example :   list(	method = "spearman")
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
 	subset.cols.1 = c(0),				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
@@ -24,9 +24,17 @@ function(
 	#**********************************************************************
 	# Switching between ccrepe and nc.score                               *
 	#**********************************************************************
- 
+ 	if (identical(method,nc.score) == TRUE)					#If method = nc.score - perform nc.score calculations
+		{
+			CA <- nc.score (x,			#First input 
+				y,						#Second input
+				bins,					#Number of Input Bins
+				min.abundance,			#Minimum Abundance
+				min.samples) 	
+			return(CA)
+		}
 	
-	if (identical(method,cor) == TRUE)					#If cor - perform ccrepe calculations
+	else					#If cor - perform ccrepe calculations
 		{
 			CA <- ccrepe.calculations(
 				x, 							#Data Frame  1 - For ccrepe and nc.score
@@ -45,15 +53,7 @@ function(
 				return(CA)					
 		}
 		
-	if (identical(method,nc.score) == TRUE)					#If method = nc.score - perform nc.score calculations
-		{
-			CA <- nc.score (x,			#First input 
-				y,						#Second input
-				bins,					#Number of Input Bins
-				min.abundance,			#Minimum Abundance
-				min.samples) 	
-			return(CA)
-		}
+
 }
 
 

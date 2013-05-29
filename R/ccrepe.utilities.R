@@ -26,6 +26,9 @@ function(data){
 }
 
 
+
+
+
 ccrepe_process_one_dataset <-
 function(data,N.rand, CA){
 #*************************************************************************************
@@ -73,10 +76,13 @@ function(data,N.rand, CA){
 	}
 
  
-	
+
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
-	boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)
+	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
+		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)}
+		else
+		{boot.cor = lapply(boot.data, CA$method)}
 
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data = lapply(permutation.matrices,permute,data=data)
@@ -87,9 +93,11 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 
-	permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args.method)
-
 	
+	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
+		{permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args.method)}
+		else
+		{permutation.cor = lapply(permutation.norm,CA$method) }
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
@@ -112,9 +120,10 @@ function(data,N.rand, CA){
 						cor=NA
 					} else
 					{
- 
-					cor = CA$method(data[,i],data[,k], method=CA$method.args.method)   # Calculate the  correlation between the bugs
-
+					if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
+						{cor = CA$method(data[,i],data[,k], method=CA$method.args.method)}   # Calculate the  correlation between the bugs
+						else
+						{cor = CA$method(data[,i],data[,k] )}  # Calculate the  correlation between the bugs
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
@@ -167,6 +176,11 @@ function(data,N.rand, CA){
 	time_end = Sys.time()
 	return(CA)														# Return the output matrix
 }
+
+
+
+
+
 ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #*************************************************************************************
 #* 	ccrepe function for two datasets                                                 *
@@ -271,6 +285,11 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	return(data.cor)			# Return the output matrix
 }
 
+
+
+
+
+
 ccrepe.calculations  <-
 #*************************************************************************************
 #*  	ccrepe calculations                                                          *
@@ -362,14 +381,14 @@ function(CA){
 		CA$subset.cols.2<-c(1:ncol(CA$data2))				# - We will use All the columns	
 		}
  
-
+	if (identical(CA$method,cor) == TRUE)					#Check the methods argument only for cor
+	{
 	MethodsTable <- c('spearman','kendall','pearson')
-	if   (CA$method.args.method  %in% MethodsTable == FALSE)
+	if   (is.null(CA$method.args.method) ||   CA$method.args.method  %in% MethodsTable == FALSE)
 		{
-		cat('\nInvalid correlation method selected : ',CA$method,' - using pearson instead\n')
-		CA$method <- 'pearson'
+		CA$method.args.method <- 'spearman'
 		}
-  
+	}
 	CA$data1 <- na.omit(CA$data1)						#Remove NA's
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
