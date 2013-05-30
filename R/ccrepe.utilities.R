@@ -15,6 +15,10 @@ function(CA, Gamma)
 	CA$q.values<-matrix(QValuesArranged, nrow= nrow(CA$p.values), byrow=TRUE)
 	return(CA)
 }
+
+
+
+
 ccrepe_norm <-
 function(data){
 #*************************************************************************************
@@ -125,6 +129,10 @@ function(data,N.rand, CA){
 						else
 						{cor = CA$method(data[,i],data[,k] )}  # Calculate the  correlation between the bugs
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
+					
+					
+						
+					
 					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
@@ -186,6 +194,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #* 	ccrepe function for two datasets                                                 *
 #*************************************************************************************
 {
+
 	# Get number of bugs, subjects for each dataset
 	n1 = ncol(data1.norm)
 	n2 = ncol(data2.norm)
@@ -193,6 +202,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	data = merge_two_matrices(data1.norm,data2.norm)
 	data1 <- data[,1:n1]
 	data2 <- data[,(n1+1):(n1+n2)]
+
+	
+	
 	nsubj = nrow(data)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
@@ -244,17 +256,29 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# The correlation matrices of the permuted and bootstrapped data; see extractCor function for more details
 	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
 	# second element of each, etc.
+ 
+
+		
 	permutation.cor = mapply(extractCor,
-		                   mat1=permutation.norm1,
-		                   mat2=permutation.norm2,
-		                   startrow=1,
-		                   endrow=n1,
-		                   startcol=(n1+1),
-		                   endcol=(n1+n2),
-						   use = "complete.obs",
-		                   method="spearman",
-		                   SIMPLIFY=FALSE)
-	boot.cor = lapply(boot.data,cor,use="complete.obs",method="spearman")
+		            mat1=permutation.norm1,
+		            mat2=permutation.norm2,
+		            startrow=1,
+		            endrow=n1,
+		            startcol=(n1+1),
+		            endcol=(n1+n2), 				 
+					use = "complete.obs",
+		            method="spearman",
+		            SIMPLIFY=FALSE)
+		
+			
+
+	if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
+		{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args.method)}
+		else
+		{boot.cor = lapply(boot.data,CA$method,use="complete.obs")}
+
+	
+
 
 
 	# Now calculating the correlations and p-values between the two datasets
@@ -263,13 +287,22 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		for(k in 1:n2){
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
+			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
 
+			
+			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 
 			n.c = n.c + 1
-			cor.meas[n.c] = cor(data[,i],data[,n1+k],use="complete.obs",method="spearman")   # Calculate the Spearman correlation between the bugs
-
+ 			
+			if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
+				{cor.meas[n.c] = CA$method(data[,i],data[,n1+k],use="complete.obs",method=CA$method.args.method)}
+				else
+				{cor.meas[n.c] = CA$method(data[,i],data[,n1+k],use="complete.obs")}
+		
+			
+			
 			# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 			p.value = pnorm(mean(permutation.dist), 
                                   mean=mean(bootstrap.dist), 
@@ -404,8 +437,12 @@ function(CA){
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 	return(CA)			 				#Return list of decoded input parameters
 }
+
+
+
+
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,method,...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,method, ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -419,6 +456,10 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,method,...)
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
 	return(sub_mat_C)
 }
+
+
+
+
 merge_two_matrices <-
 function(mat1,mat2)
 #*************************************************************************************
@@ -435,6 +476,9 @@ function(mat1,mat2)
 	return(mat)
 }
 
+
+
+
 lappend <-
 function(lst, obj) {
 #*************************************************************************************
@@ -443,6 +487,11 @@ function(lst, obj) {
     lst[[length(lst)+1]] <- obj
     return(lst)
 }
+
+
+
+
+
 permute <-
 function(data,permute.id.matrix){
 #*************************************************************************************
@@ -457,24 +506,34 @@ function(data,permute.id.matrix){
 	}
 	return(permute.data)
 }
+
+
+
+
+
+
 preprocess_data <-
 function(X,SelectedSubset,CA)
 #**********************************************************************
 #	Preprocess input data 				                              *
 #**********************************************************************
-{		
+{	
 		MyDataFrame<-na.omit(X	)									#Post the input data into a working data frame - take only subset requestd by user
-		MyDataMatrix<- data.matrix(MyDataFrame, rownames.force = NA)	#Convert into a matrix
-		MyDataMatrix1  = MyDataMatrix[,SelectedSubset]					#Select only the columns the User requested (If he did not: subset1=all columns)
-		mydata <- MyDataMatrix1[rowSums(MyDataMatrix1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
+		MyDataFrame1  = MyDataFrame[,SelectedSubset]				#Select only the columns the User requested (If he did not: subset1=all columns)
+		mydata <- MyDataFrame1[rowSums(MyDataFrame1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
 		if(nrow(mydata) < CA$min.subj) 						#If not enough data, issue messages in files and stop the run 
 			{
 			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
+		mydata[1] <- NULL   #The first column is subject id - not data
 		ProcessedX = mydata/apply(mydata,1,sum)
 	return(ProcessedX)
 }
+
+
+
+
 printDF <-
 function(Input1, CA, DistributionType)	{
 #*************************************************************************************
@@ -489,6 +548,12 @@ function(Input1, CA, DistributionType)	{
 	cat('\n',file=CA$outdistFile,append=T)		   		#Line feed
 	return (0)
 	}
+	
+	
+	
+	
+	
+	
 resample <-
 function(data,resample.matrix){
 #*************************************************************************************
