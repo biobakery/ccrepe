@@ -40,7 +40,6 @@ function(data,N.rand, CA){
 #*  As a note, data needs to be a matrix with no missing values                      *
 #*************************************************************************************
 
-	time_start = Sys.time()
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
@@ -131,7 +130,7 @@ function(data,N.rand, CA){
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 					
 					
-						
+					 	
 					
 					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
@@ -181,7 +180,6 @@ function(data,N.rand, CA){
 	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the roes in the q.values matrix
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
 	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
-	time_end = Sys.time()
 	return(CA)														# Return the output matrix
 }
 
@@ -283,6 +281,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	# Now calculating the correlations and p-values between the two datasets
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
+	
+	
+	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty PValues matrix
+	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
+	
+	
 	for(i in 1:n1){
 		for(k in 1:n2){
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
@@ -308,14 +312,43 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
                                   mean=mean(bootstrap.dist), 
                                   sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
 
+								  
+
+								  
+			CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
+			CA$cor[i,k] = cor.meas[n.c]				#Post it in the cor matrix  
+							  
 			p.values[n.c] = p.value
 			bug1[n.c] = colnames(data1)[i]
 			bug2[n.c] = colnames(data2)[k]
+			
 
 		}
 	}
-	data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
-	return(data.cor)			# Return the output matrix
+	#####data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
+	####return(data.cor)			# Return the output matrix
+	
+
+	CA$data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
+	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
+	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
+	CA$data1.norm <- NULL  # Not needed anymore
+	CA$data2.norm <- NULL  # Not needed anymore
+	CA$data1  <- NULL  # Not needed anymore
+	CA$data2  <- NULL  # Not needed anymore
+	CA$OneDataset <- NULL #Not needed anymore
+	CA$subset.cols.1 <-NULL #Not needed anymore
+	CA$subset.cols.2 <-NULL #Not needed anymore
+	CA$method.args.method<- NULL #Not needed anymore
+	CA$method <- NULL #Not needed anymore
+	CA$verbose <- NULL #Not needed anymore
+	CA$outdist <- NULL #Not needed
+	CA$min.subj <- NULL #Not needed
+	CA$errthresh <- NULL #Not needed
+	CA$iterations.gap <-NULL #Not needed
+	return(CA)			# Return the output matrix
 }
 
 
