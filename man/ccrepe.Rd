@@ -38,9 +38,10 @@
 }
  
   \item{method}{
-	method can be either cor or nc.score
 	If method=cor   the function invokes ccrepe calculations
 	If method=nc.score the function invokes nc.score calculations
+	If it is another function, provided bu the User, it must have the following characteristics:
+	Needs to be able to take two vectors or one matrix; Does not have to be able to take two matrices
 }
   \item{method.args}{
 	A list of arguments for the cor function.
