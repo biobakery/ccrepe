@@ -81,6 +81,7 @@ function(data,N.rand, CA){
  
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
+
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
 		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)}
@@ -559,7 +560,8 @@ function(X,SelectedSubset,CA)
 			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
-		mydata[1] <- NULL   #The first column is subject id - not data
+		#####if ( colnames(mydata)[1] == "Subject.ID" )
+			##########{mydata[1] <- NULL}   #The first column is subject id - not data
 		ProcessedX = mydata/apply(mydata,1,sum)
 	return(ProcessedX)
 }
@@ -598,5 +600,7 @@ function(data,resample.matrix){
 #*    the same number of rows as data; each row has exactly one                      *
 #*    1 in it                                                                        *
 #*************************************************************************************
-	return(resample.matrix%*%data)
+	data.matrix <-as.matrix(data)
+	######################return(resample.matrix%*%data)
+	return(resample.matrix%*%data.matrix)
 }

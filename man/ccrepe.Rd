@@ -15,7 +15,7 @@
  x = NA,
  y = NA,
  method = cor,
- method.args = list(method = "spearman"),
+ method.args = list(),
  min.subj = 20,
  iterations = 1000,
  subset.cols.1 = c(0),
