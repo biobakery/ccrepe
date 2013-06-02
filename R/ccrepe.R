@@ -1,7 +1,7 @@
 ccrepe <-
 function(
 #*************************************************************************************
-#*  	ccrepe main function                                                         *
+#*  	ccrepe                                                                       *
 #*************************************************************************************
 	x=NA,								#Data Frame  1 - For ccrepe and nc.score
 	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
@@ -14,28 +14,13 @@ function(
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 	verbose = FALSE,					#Request for verbose output?
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
-	distributions = NA,					#Output Distribution file - For ccrepe
-	bins=NA,							#Number of Input Bins
-	min.abundance=0.0001,				#Minimum Abundance
-	min.samples=0.1						#Minimum Samples
+	distributions = NA					#Output Distribution file - For ccrepe
 	)					
 
 {
 	#**********************************************************************
-	# Switching between ccrepe and nc.score                               *
+	# Invoke ccrepe using the method                                      *
 	#**********************************************************************
- 	if (identical(method,nc.score) == TRUE)					#If method = nc.score - perform nc.score calculations
-		{
-			CA <- nc.score (x,			#First input 
-				y,						#Second input
-				bins,					#Number of Input Bins
-				min.abundance,			#Minimum Abundance
-				min.samples) 	
-			return(CA)
-		}
-	
-	else					#If cor - perform ccrepe calculations
-		{
 			CA <- ccrepe.calculations(
 				x, 							#Data Frame  1 - For ccrepe and nc.score
 				y,							#Data Frame  2 - For ccrepe and nc.score 
@@ -51,7 +36,7 @@ function(
 				distributions  				#Output Distribution file - For ccrepe
 				)
 				return(CA)					
-		}
+		
 		
 
 }
