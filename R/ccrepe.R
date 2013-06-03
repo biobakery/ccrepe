@@ -84,19 +84,13 @@ function(
 	if (CA$OneDataset == TRUE)
 		{
 		mydata.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)						#Preprocess the data 
-		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Invoke the new function 
-		CA$data1 <- NULL										#Remove it from the output
-		CA$data2 <- NULL										#Remove it from the output
-		CA$subset.cols.2<-NULL									#Remove it from output
-		CA$outdist <- NULL										#Remove it from output
-		CA$OneDataset <- NULL									#Remove it from output
-		CA$method <- NULL									#Remove it from output
+		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Process one dataset
 		}
 	else
 		{
 		CA$data1.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)					#Preprocess data1 
 		CA$data2.norm = preprocess_data(CA$data2,CA$subset.cols.2,CA)					#Preprocess data2
-		CA = ccrepe_process_two_datasets  (CA$data1.norm ,CA$data2.norm ,CA$iterations, CA)
+		CA = ccrepe_process_two_datasets  (CA$data1.norm ,CA$data2.norm ,CA$iterations, CA) #Process two datasets
 		}
 	return ( CA )
 }

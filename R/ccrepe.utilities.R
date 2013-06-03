@@ -83,6 +83,7 @@ function(data,N.rand, CA){
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
+	
 	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
 		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)}
 		else
@@ -97,6 +98,7 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 
+	
 	
 	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
 		{permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args.method)}
@@ -181,6 +183,8 @@ function(data,N.rand, CA){
 	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the roes in the q.values matrix
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
 	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
+	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+
 	return(CA)														# Return the output matrix
 }
 
@@ -335,20 +339,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
-	CA$data1.norm <- NULL  # Not needed anymore
-	CA$data2.norm <- NULL  # Not needed anymore
-	CA$data1  <- NULL  # Not needed anymore
-	CA$data2  <- NULL  # Not needed anymore
-	CA$OneDataset <- NULL #Not needed anymore
-	CA$subset.cols.1 <-NULL #Not needed anymore
-	CA$subset.cols.2 <-NULL #Not needed anymore
-	CA$method.args.method<- NULL #Not needed anymore
-	CA$method <- NULL #Not needed anymore
-	CA$verbose <- NULL #Not needed anymore
-	CA$outdist <- NULL #Not needed
-	CA$min.subj <- NULL #Not needed
-	CA$errthresh <- NULL #Not needed
-	CA$iterations.gap <-NULL #Not needed
+    CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
 }
 
@@ -560,8 +551,6 @@ function(X,SelectedSubset,CA)
 			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
-		#####if ( colnames(mydata)[1] == "Subject.ID" )
-			##########{mydata[1] <- NULL}   #The first column is subject id - not data
 		ProcessedX = mydata/apply(mydata,1,sum)
 	return(ProcessedX)
 }
@@ -601,6 +590,38 @@ function(data,resample.matrix){
 #*    1 in it                                                                        *
 #*************************************************************************************
 	data.matrix <-as.matrix(data)
-	######################return(resample.matrix%*%data)
 	return(resample.matrix%*%data.matrix)
+}
+
+
+
+
+clean_common_area_after_processing <-
+function(CA){
+#*************************************************************************************
+#* 	Function to clean the Common Area After processing                               *
+#*  Common Area is passed to the User as results                                     *
+#*************************************************************************************
+	CA$data1 <- NULL													
+	CA$data1.norm <- NULL  											
+	CA$data2 <- NULL													
+	CA$data2.norm <- NULL  												
+	CA$method <- NULL													
+	CA$method.args.method<- NULL 										
+	CA$OneDataset <- NULL													
+	CA$outdist <- NULL	
+						 
+	if (!CA$verbose == TRUE)												 
+		{
+		CA$min.subj <- NULL													 
+		CA$iterations <- NULL												 
+		CA$errthresh <- NULL												 
+		CA$method.args.method <- NULL										 		
+		CA$subset.cols.1 <- NULL	
+		CA$subset.cols.2<-NULL			
+		CA$verbose <- NULL													 
+		CA$iterations.gap <- NULL											 			
+		}
+
+	return(CA)
 }
