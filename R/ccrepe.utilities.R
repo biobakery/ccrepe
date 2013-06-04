@@ -197,7 +197,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #* 	ccrepe function for two datasets                                                 *
 #*************************************************************************************
 {
-
+ 
 	# Get number of bugs, subjects for each dataset
 	n1 = ncol(data1.norm)
 	n2 = ncol(data2.norm)
@@ -226,7 +226,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	permutation.matrices1 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 	permutation.matrices2 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 
+
 	for(i in 1:N.rand){
+ 
 
 		# Get the rows of the two possible.rows matrices; these correspond to the rows which will be included in the resampled datasets
 		boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
@@ -245,8 +247,11 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
-	boot.data = lapply(bootstrap.matrices,resample,data=data)
 
+	boot.data = lapply(bootstrap.matrices,resample,data=data)
+ 
+	
+	
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
 	permutation.data2 = lapply(permutation.matrices2,permute,data=data2)
@@ -275,11 +280,24 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		
 			
 
-	if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
-		{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args.method)}
-		else
-		{boot.cor = lapply(boot.data,CA$method,use="complete.obs")}
+	#******************************************************************************** 
+	# For each matrix, check if there is a column that is all zeros 				*
+	# If such matrix is found,  try to reboot it at most 5 times until such matrix  *
+	# is found that does not contail a column with all zeros                        *
+	# The limit of 5 tries is now hard coded and needs to be re-evaluated           *
+	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
+	#********************************************************************************
+	
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
+	
+	
 
+	#if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
+		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args.method)}
+		#else
+		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs")}
+	#cat('\nAfter boot data cor\n')
+	#browser()
 	
 
 
@@ -310,14 +328,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 				else
 				{cor.meas[n.c] = CA$method(data[,i],data[,n1+k],use="complete.obs")}
 		
-			
+			if (var(bootstrap.dist) == 0 || var(bootstrap.dist) == 0)
+				{	cat('\nOne of the variances is zero\n')
+					browser()
+				}
 			
 			# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 			p.value = pnorm(mean(permutation.dist), 
                                   mean=mean(bootstrap.dist), 
                                   sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
-
-								  
+	
 
 								  
 			CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
@@ -330,8 +350,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 		}
 	}
-	#####data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
-	####return(data.cor)			# Return the output matrix
 	
 
 	CA$data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
@@ -389,12 +407,6 @@ function(
 		{
 		mydata.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)						#Preprocess the data 
 		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Invoke the new function 
-		CA$data1 <- NULL										#Remove it from the output
-		CA$data2 <- NULL										#Remove it from the output
-		CA$subset.cols.2<-NULL									#Remove it from output
-		CA$outdist <- NULL										#Remove it from output
-		CA$OneDataset <- NULL									#Remove it from output
-		CA$method <- NULL									#Remove it from output
 		}
 	else
 		{
@@ -447,7 +459,6 @@ function(CA){
 		CA$method.args.method <- 'spearman'
 		}
 	}
-	CA$data1 <- na.omit(CA$data1)						#Remove NA's
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
@@ -476,6 +487,7 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,method, ...)
 # The method refers to the correlation method; this function will need to be generalized  *
 #******************************************************************************************
 {
+	
 	mat <- merge_two_matrices(mat1,mat2)	             # Merge the two matrices
 	mat_C <- cor(mat,method=method)                      # Calculate the correlation for the merged matrix
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -492,6 +504,12 @@ function(mat1,mat2)
 # merge the two matrices by the rows, merging only rows present in both              *
 # (ensures no missing samples)                                                       *
 # exclude the first column, which is the row names                                   *
+# <----------- Important  !!! --------------->                                       *
+#* The matrices are merged by row name (Which defaults to row number)                *
+#* so the assumption is that SAME ROWS pertain to SAME SUBJECTS                      *
+#* Also not that first column is treated as data - not Subject.ID or any other       *
+#* identifier                                                                        *
+# <----------- Important  !!! --------------->                                       *
 #*************************************************************************************
 {
 	mat <- as.matrix(merge(mat1,mat2,by="row.names"))
@@ -624,4 +642,47 @@ function(CA){
 		}
 
 	return(CA)
+}
+
+
+
+method.calculation <-
+function(b,nsubj,data,CA){
+#*************************************************************************************
+#* 	Function to calculate cor  and check that total in cols is not zero              *
+#*************************************************************************************
+
+	check.col.sums <- colSums(b)==0
+	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeors - try to reboot data 5 times
+		{
+		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
+		while(cnt.tries < 5  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebootting the data so no cols are zero
+			{
+			cnt.tries <- cnt.tries+1			#Increase the counter
+			b1 = try.reboot.again (nsubj,data)	#Try to reboot again
+			check.col.sums <- colSums(b1)==0	#Are there columns with all zeros in the new rebooted matrix?
+			if (!length(check.col.sums[check.col.sums==TRUE])) #If there is no column that is all zeros - post the result to continue processing
+				{b <- b1}						#Post the result
+			}
+		if (cnt.tries > 5  && length(check.col.sums[check.col.sums==TRUE]))	#If reboot did not work - Stop the run
+			{
+			ErrMsg = paste('Run Stopped - tried to reboot the data 5 times but always get a column that is all zeros')  #Error 
+			stop(ErrMsg)
+			}
+		}
+	boot.cor = cor(b)						#Apply correlation function 
+	return(boot.cor)				
+	}
+
+try.reboot.again <-
+function(nsubj,data){
+#*************************************************************************************
+#* 	Function to reboot the data matrix agin so that we don't get cols with all 0     *
+#*************************************************************************************
+		possible.rows = diag(rep(1,nsubj))
+		boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
+		# Generate the bootstrap matrices by getting the appropriate rows from the possible bootstrap rows
+		boot.matrix        = possible.rows[boot.rowids,]
+		b1<-resample (data,boot.matrix) 		#b1 is the rebooted matrix that we return
+		return(b1)
 }
