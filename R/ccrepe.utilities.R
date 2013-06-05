@@ -1,12 +1,12 @@
 calculate_q_values <-
-function(CA, Gamma)
+function(CA)
 #**********************************************************************
 #	Calculate Q values    				                              *
 #**********************************************************************
 {
 	m = length(CA$p.values)					#m is the total number of p-values
 	ln_m = log(m)									#log m
-	ln_m_Plus_Gamma = ln_m + Gamma					
+	ln_m_Plus_Gamma = ln_m + CA$Gamma					
 	SortedVector = sort(CA$p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
 	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
 	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
@@ -152,8 +152,7 @@ function(data,N.rand, CA){
 	
 	
 	
-	Gamma = 0.57721566490153286060651209008240243104215933593992  		#I need to find the R version of Gamma!
-	CA <- calculate_q_values(CA, Gamma)					#Calculate the QValues
+	CA <- calculate_q_values(CA)						#Calculate the QValues
 	for (indx in 1:nrow(data.cor))						#post the q-values
 		{
 			i = data.cor[indx,1]
@@ -352,11 +351,27 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	}
 	
 
+	CA <- calculate_q_values(CA)						#Calculate the QValues
+
 	CA$data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
+	
+	for (indx in 1:nrow(CA$data.cor))						#post the q-values
+		{
+			i = CA$data.cor[indx,1]
+			k = CA$data.cor[indx,2]
+			CA$data.cor[indx,5] = CA$q.values[i,k]
+		}
+	colnames(CA$data.cor)[3] <- 'cor'						#Set up the name of the column
+	colnames(CA$data.cor)[5] <- 'q.values'					#Set up the name of the column
+
+
+	
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
+	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
 }
@@ -427,6 +442,8 @@ function(CA){
 #*************************************************************************************
 #*	Decode and validate input parameters                                             *
 #*************************************************************************************
+	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#I need to find the R version of Gamma!
+
 	if (length(CA$data1) == 1)					#If the user did not select at least one input dataframe - Stop the run
 		{
 		if (is.na(CA$data1))
@@ -628,6 +645,7 @@ function(CA){
 	CA$method.args.method<- NULL 										
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
+	CA$Gamma <- NULL 
 						 
 	if (!CA$verbose == TRUE)												 
 		{
@@ -656,7 +674,7 @@ function(b,nsubj,data,CA){
 	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeors - try to reboot data 5 times
 		{
 		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
-		while(cnt.tries < 5  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebootting the data so no cols are zero
+		while(cnt.tries < 5  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebooting the data so no cols are zero
 			{
 			cnt.tries <- cnt.tries+1			#Increase the counter
 			b1 = try.reboot.again (nsubj,data)	#Try to reboot again
