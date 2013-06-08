@@ -39,7 +39,7 @@ function(data,N.rand, CA){
 #* 	Function to apply the new method to a dataset                                    *
 #*  As a note, data needs to be a matrix with no missing values                      *
 #*************************************************************************************
-
+ 
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
@@ -66,6 +66,7 @@ function(data,N.rand, CA){
 			}
    
 		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
+
 		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
 		# Generate the bootstrap matrix by getting the appropriate rows from the possible bootstrap rows
@@ -79,15 +80,12 @@ function(data,N.rand, CA){
 	}
 
  
-
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
-	if (!is.null(CA$method.args))						#If user provided method.args use - otherwise don't
-		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args)}
-		else
-		{boot.cor = lapply(boot.data, CA$method)}
+	boot.cor <- do.call(lapply,c(list(boot.data,CA$method), CA$method.args))  #Invoke the measuring function
+
 
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data = lapply(permutation.matrices,permute,data=data)
@@ -97,13 +95,10 @@ function(data,N.rand, CA){
 	permutation.norm = lapply(permutation.data,ccrepe_norm)
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
-
-	cat('\nBefore the call to build permutation methods\n')
-	browser()
-	if (!is.null(CA$method.args))						#If user provided method.args use - otherwise don't
-		{permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args)}
-		else
-		{permutation.cor = lapply(permutation.norm,CA$method) }
+	
+	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
+	
+	 
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
@@ -126,15 +121,12 @@ function(data,N.rand, CA){
 						cor=NA
 					} else
 					{
-					if (!is.null(CA$method.args))	#If User provided method.args - use it -else - ignore it
-						{cor = CA$method(data[,i],data[,k], method=CA$method.args)}   # Calculate the  correlation between the bugs
-						else
-						{cor = CA$method(data[,i],data[,k] )}  # Calculate the  correlation between the bugs
+
+					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+				 	
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
-					
-					
-					 	
-					
+
 					p.value = pnorm(mean(permutation.dist), 
                                         mean=mean(bootstrap.dist), 
                                         sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
@@ -264,8 +256,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
 	# second element of each, etc.
  
-	cat('\nBefore passing control to mapply\n')
-	browser()
 	
 
 	permutation.cor = mapply(extractCor,
