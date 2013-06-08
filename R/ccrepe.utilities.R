@@ -287,17 +287,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
 	
-	
-
-	#if (!is.null(CA$method.args))	#If User provided method.args - use it -else - ignore it
-		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args)}
-		#else
-		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs")}
-	#cat('\nAfter boot data cor\n')
-	#browser()
-	
-
-
 
 	# Now calculating the correlations and p-values between the two datasets
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
@@ -319,8 +308,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 
 			n.c = n.c + 1
- 			#cat('\nBefore invoking cor again\n')
-			#browser()
+
 			meas.function.parm.list <- list(x=data[,i],y=data[,n1+k])
 			for (name in names(CA$method.args))  					#Add the entries in method.args to the measuring parameter list	
 			{
@@ -329,10 +317,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			
 			cor.meas[n.c] <- do.call(CA$method,meas.function.parm.list)	#Invoke the measuring function
 			
-			if (var(bootstrap.dist) == 0 || var(bootstrap.dist) == 0)
-				{	cat('\nOne of the variances is zero\n')
-					browser()
-				}
 			
 			# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
 			p.value = pnorm(mean(permutation.dist), 
@@ -695,7 +679,15 @@ function(b,nsubj,data,CA){
 			stop(ErrMsg)
 			}
 		}
-	boot.cor = cor(b)						#Apply correlation function 
+	
+	meas.function.parm.list <- list(x=b)				#Initialize do.call parameter list
+	
+	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
+ 		meas.function.parm.list[[name]]<-CA$method.args[[name]]
+		}
+			
+	boot.cor <-do.call(CA$method,meas.function.parm.list)	#Invoke the measuring fnction	
+
 	return(boot.cor)				
 	}
 
