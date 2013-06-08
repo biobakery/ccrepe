@@ -6,7 +6,8 @@ function(
 	x=NA,								#Data Frame  1 - For ccrepe and nc.score
 	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
 	method = cor,						#Default
-	method.args = list(), 	 			#Could be, for example :   list(	method = "spearman")
+	method.args = list(method='spearman',use='complete.obs'
+	), 	#Arguments for the method
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
 	subset.cols.1 = c(0),				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
@@ -24,8 +25,8 @@ function(
 			CA <- ccrepe.calculations(
 				x, 							#Data Frame  1 - For ccrepe and nc.score
 				y,							#Data Frame  2 - For ccrepe and nc.score 
-				method,						#cor 
-				method.args$method,			#correlation method
+				method,						#Method
+				method.args,				#Method argument
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
 				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
@@ -52,7 +53,7 @@ function(
  				x, 							#Data Frame  1 - For ccrepe and nc.score
 				y,							#Data Frame  2 - For ccrepe and nc.score 
 				method,						#Parameters,
-				method.args.method,			#correlation method
+				method.args,				#Method Arguments
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
 				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
@@ -70,7 +71,7 @@ function(
 			iterations=iterations,
 			errthresh=errthresh,
 			method=method,
-			method.args.method=method.args.method,
+			method.args=method.args,
 			subset.cols.1=subset.cols.1,
 			subset.cols.2=subset.cols.2,
 			verbose=verbose,

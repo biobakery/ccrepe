@@ -84,8 +84,8 @@ function(data,N.rand, CA){
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
-	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
-		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args.method)}
+	if (!is.null(CA$method.args))						#If user provided method.args use - otherwise don't
+		{boot.cor = lapply(boot.data, CA$method, method=CA$method.args)}
 		else
 		{boot.cor = lapply(boot.data, CA$method)}
 
@@ -98,10 +98,10 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 
-	
-	
-	if (!is.null(CA$method.args.method))						#If user provided method.args.method use - otherwise don't
-		{permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args.method)}
+	cat('\nBefore the call to build permutation methods\n')
+	browser()
+	if (!is.null(CA$method.args))						#If user provided method.args use - otherwise don't
+		{permutation.cor = lapply(permutation.norm,CA$method, method=CA$method.args)}
 		else
 		{permutation.cor = lapply(permutation.norm,CA$method) }
 	# Now, actually calculating the correlation p-values within the dataset
@@ -126,8 +126,8 @@ function(data,N.rand, CA){
 						cor=NA
 					} else
 					{
-					if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
-						{cor = CA$method(data[,i],data[,k], method=CA$method.args.method)}   # Calculate the  correlation between the bugs
+					if (!is.null(CA$method.args))	#If User provided method.args - use it -else - ignore it
+						{cor = CA$method(data[,i],data[,k], method=CA$method.args)}   # Calculate the  correlation between the bugs
 						else
 						{cor = CA$method(data[,i],data[,k] )}  # Calculate the  correlation between the bugs
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
@@ -265,7 +265,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# second element of each, etc.
  
 
-		
 	permutation.cor = mapply(extractCor,
 		            mat1=permutation.norm1,
 		            mat2=permutation.norm2,
@@ -273,8 +272,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1,
 		            startcol=(n1+1),
 		            endcol=(n1+n2), 				 
-					use = "complete.obs",
-		            method="spearman",
+					MoreArgs = list(my.method=CA$method,method.args=CA$method.args),
 		            SIMPLIFY=FALSE)
 		
 			
@@ -291,8 +289,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	
 
-	#if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
-		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args.method)}
+	#if (!is.null(CA$method.args))	#If User provided method.args - use it -else - ignore it
+		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs",method=CA$method.args)}
 		#else
 		#{boot.cor = lapply(boot.data,CA$method,use="complete.obs")}
 	#cat('\nAfter boot data cor\n')
@@ -321,12 +319,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 
 			n.c = n.c + 1
- 			
-			if (!is.null(CA$method.args.method))	#If User provided method.args.method - use it -else - ignore it
-				{cor.meas[n.c] = CA$method(data[,i],data[,n1+k],use="complete.obs",method=CA$method.args.method)}
-				else
-				{cor.meas[n.c] = CA$method(data[,i],data[,n1+k],use="complete.obs")}
-		
+ 			#cat('\nBefore invoking cor again\n')
+			#browser()
+			meas.function.parm.list <- list(x=data[,i],y=data[,n1+k])
+			for (name in names(CA$method.args))  					#Add the entries in method.args to the measuring parameter list	
+			{
+				meas.function.parm.list[[name]]<-CA$method.args[[name]]
+			}
+			
+			cor.meas[n.c] <- do.call(CA$method,meas.function.parm.list)	#Invoke the measuring function
+			
 			if (var(bootstrap.dist) == 0 || var(bootstrap.dist) == 0)
 				{	cat('\nOne of the variances is zero\n')
 					browser()
@@ -389,7 +391,7 @@ function(
  				x, 							#Data Frame  1 - For ccrepe and nc.score
 				y,							#Data Frame  2 - For ccrepe and nc.score 
 				method,						#Parameters,
-				method.args.method,			#correlation method
+				method.args,				#Areguments for the method
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
 				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
@@ -407,7 +409,7 @@ function(
 			iterations=iterations,
 			errthresh=errthresh,
 			method=method,
-			method.args.method=method.args.method,
+			method.args=method.args,
 			subset.cols.1=subset.cols.1,
 			subset.cols.2=subset.cols.2,
 			verbose=verbose,
@@ -468,14 +470,7 @@ function(CA){
 		CA$subset.cols.2<-c(1:ncol(CA$data2))				# - We will use All the columns	
 		}
  
-	if (identical(CA$method,cor) == TRUE)					#Check the methods argument only for cor
-	{
-	MethodsTable <- c('spearman','kendall','pearson')
-	if   (is.null(CA$method.args.method) ||   CA$method.args.method  %in% MethodsTable == FALSE)
-		{
-		CA$method.args.method <- 'spearman'
-		}
-	}
+	 
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
@@ -488,6 +483,12 @@ function(CA){
 		}
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
+		
+		
+	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
+ 		CA$meas.function.parm.list[[name]]<-CA$method.args[[name]]
+		}	
+		
 	return(CA)			 				#Return list of decoded input parameters
 }
 
@@ -495,18 +496,24 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,method, ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method=cor,method.args=method.args,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
 #     submatrix to obtain the correlation of interest                                     *
 # startrow, endrow, startcol, endcol give the indeces of the submatrix to extract         *
-# The method refers to the correlation method; this function will need to be generalized  *
+# The method and the method parameters are passed via the list
 #******************************************************************************************
 {
+	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+	meas.function.parm.list <- list(x=mat)				#Initialize do.call parameter list
 	
-	mat <- merge_two_matrices(mat1,mat2)	             # Merge the two matrices
-	mat_C <- cor(mat,method=method)                      # Calculate the correlation for the merged matrix
+	for (name in names(method.args)) {					#Add the entries in method.args to the measuring parameter list			
+ 		meas.function.parm.list[[name]]<-method.args[[name]]
+		}
+			
+	mat_C <-do.call(my.method,meas.function.parm.list)	#Invoke the measuring fnction
+	 
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
 	return(sub_mat_C)
 }
@@ -642,7 +649,7 @@ function(CA){
 	CA$data2 <- NULL													
 	CA$data2.norm <- NULL  												
 	CA$method <- NULL													
-	CA$method.args.method<- NULL 										
+	CA$method.args<- NULL 										
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
@@ -652,7 +659,7 @@ function(CA){
 		CA$min.subj <- NULL													 
 		CA$iterations <- NULL												 
 		CA$errthresh <- NULL												 
-		CA$method.args.method <- NULL										 		
+		CA$method.args <- NULL										 		
 		CA$subset.cols.1 <- NULL	
 		CA$subset.cols.2<-NULL			
 		CA$verbose <- NULL													 
