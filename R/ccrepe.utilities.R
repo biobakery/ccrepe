@@ -264,6 +264,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
 	# second element of each, etc.
  
+	cat('\nBefore passing control to mapply\n')
+	browser()
+	
 
 	permutation.cor = mapply(extractCor,
 		            mat1=permutation.norm1,
@@ -308,14 +311,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 
 			n.c = n.c + 1
-
-			meas.function.parm.list <- list(x=data[,i],y=data[,n1+k])
-			for (name in names(CA$method.args))  					#Add the entries in method.args to the measuring parameter list	
-			{
-				meas.function.parm.list[[name]]<-CA$method.args[[name]]
-			}
+		
 			
-			cor.meas[n.c] <- do.call(CA$method,meas.function.parm.list)	#Invoke the measuring function
+			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
 			# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
@@ -489,15 +488,9 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method=cor,method.args=met
 # The method and the method parameters are passed via the list
 #******************************************************************************************
 {
-	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
-	meas.function.parm.list <- list(x=mat)				#Initialize do.call parameter list
-	
-	for (name in names(method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		meas.function.parm.list[[name]]<-method.args[[name]]
-		}
-			
-	mat_C <-do.call(my.method,meas.function.parm.list)	#Invoke the measuring fnction
-	 
+ 	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+	measure.function.parm.list <- append(list(x=mat), method.args)	
+	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
 	return(sub_mat_C)
 }
@@ -680,14 +673,8 @@ function(b,nsubj,data,CA){
 			}
 		}
 	
-	meas.function.parm.list <- list(x=b)				#Initialize do.call parameter list
-	
-	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		meas.function.parm.list[[name]]<-CA$method.args[[name]]
-		}
-			
-	boot.cor <-do.call(CA$method,meas.function.parm.list)	#Invoke the measuring fnction	
-
+	measure.function.parm.list <- append(list(x=b), CA$method.args)	#Build the measure function parameter list
+	boot.cor <-do.call(CA$method,measure.function.parm.list)	#Invoke the measuring function		
 	return(boot.cor)				
 	}
 
