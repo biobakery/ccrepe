@@ -469,7 +469,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method=cor,method.args=method.args,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -645,7 +645,7 @@ function(b,nsubj,data,CA){
 #*************************************************************************************
 
 	check.col.sums <- colSums(b)==0
-	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeors - try to reboot data 5 times
+	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeros - try to reboot data 5 times
 		{
 		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
 		while(cnt.tries < 5  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebooting the data so no cols are zero
