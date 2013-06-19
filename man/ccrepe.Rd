@@ -31,25 +31,23 @@
 }
 \arguments{
   \item{x}{
-   First dataframe containing the relative abundances in cavity1 : Columns are bugs, rows are samples
+   First dataframe containing the relatdive abundances in cavity1 : Columns are bugs, rows are samples\cr
+   The first column is considered data 
 }
   \item{y}{
-   Second dataframe containing the relative abundances in cavity2: Columns are bugs, rows are samples
+   Second dataframe (optional) containing the relative abundances in cavity2: Columns are bugs, rows are samples \cr
+   The first column is considered data 
+   This dataframe will be merged with the first dataframe by Row Number, therefore same rows must pertain to same subjects
+   The matrices are merged by row name (Which defaults to row number)  
 }
  
   \item{method}{
-	If method=cor   the function invokes ccrepe calculations
-	If method=nc.score the function invokes nc.score calculations
-	If it is another function, provided bu the User, it must have the following characteristics:
-	Needs to be able to take two vectors or one matrix; Does not have to be able to take two matrices
+   Measurement function, such as cor
 }
   \item{method.args}{
-	A list of arguments for the cor function.
-	Used to select the correlation method 
-	Could be
-	list(method = "pearson")
-	list(method = "spearman")
-	list(method = "kendall")
+	A list of arguments for the measurement function.
+	For example:  In the case of cor, the following would be acceptable:
+	method.args = list(method='spearman',use='complete.obs'	)	
 }
   \item{min.subj}{
   Minimum rows (Subjects) in "data" frame to proceed (default: 20)

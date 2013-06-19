@@ -478,7 +478,7 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
 # The method and the method parameters are passed via the list
 #******************************************************************************************
 {
- 	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+  	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -500,13 +500,11 @@ function(mat1,mat2)
 #* so the assumption is that SAME ROWS pertain to SAME SUBJECTS                      *
 #* Also not that first column is treated as data - not Subject.ID or any other       *
 #* identifier                                                                        *
-# <----------- Important  !!! --------------->                                       *
 #*************************************************************************************
 {
-	mat <- as.matrix(merge(mat1,mat2,by="row.names"))
+ 	mat <- merge(mat1,mat2,by="row.names")
 	rownames(mat) = mat[,1]    # The first column has the row names
 	mat = mat[,-1]             # Remove the first column
-	class(mat) <- "numeric"    # The default output of merge is strings; convert back to numbers
 	return(mat)
 }
 
@@ -620,6 +618,7 @@ function(CA){
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
+	CA$data.cor <- NULL 		
 						 
 	if (!CA$verbose == TRUE)												 
 		{
