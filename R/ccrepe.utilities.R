@@ -618,13 +618,14 @@ function(CA){
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
-	CA$data.cor <- NULL 		
+	CA$data.cor <- NULL 	
+	CA$meas.function.parm.list <- NULL
 						 
 	if (!CA$verbose == TRUE)												 
 		{
-		CA$min.subj <- NULL													 
+		#CA$min.subj <- NULL		#Should be included in the default output												 
 		CA$iterations <- NULL												 
-		CA$errthresh <- NULL												 
+		#CA$errthresh <- NULL		#Should be included in the default output										 
 		CA$method.args <- NULL										 		
 		CA$subset.cols.1 <- NULL	
 		CA$subset.cols.2<-NULL			
