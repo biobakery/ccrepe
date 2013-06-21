@@ -39,8 +39,13 @@
 }
  
   \item{method}{
-   Measurement function, such as cor
-   
+   Measurement function, such as cor\cr
+   some properties of the function:\cr
+   1. Be able to take either two inputs which are vectors or one input which is either a matrix or a data frame\cr
+   2.In the case of two inputs, return a single number\cr
+   3.In the case of one input, return a matrix in which the (i,j)th entry is the similarity score for column i and column j in the original matrix\cr
+   4.Resulting matrix must be symmetric\cr
+   5.The inputs must be named x and y\cr
 }
   \item{method.args}{
 	A list of arguments for the measurement function.
