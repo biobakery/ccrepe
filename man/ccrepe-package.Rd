@@ -31,7 +31,7 @@ License: \tab MIT\cr
    \cr
     data1<-matrix(rlnorm(21*5,1,1),nrow=21)\cr
 	data2<-matrix(rlnorm(5*17,1,1),nrow=17)\cr
-	nc.score.results <- ccrepe( x=data1, y=data2, method = nc.score )
+	nc.score.results <- nc.score( x=data1, y=data2 )
 }
 \author{
 Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>\cr

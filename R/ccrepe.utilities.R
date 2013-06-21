@@ -194,6 +194,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	n2 = ncol(data2.norm)
 
 	data = merge_two_matrices(data1.norm,data2.norm)
+	
+	
+	if(nrow(data) < CA$min.subj ) 	#If not enough data, issue messages in files and stop the run 
+			{
+			ErrMsg = paste('Not enough data - found ',nrow(data),' rows of data in the merged matrix - Less than  ',CA$min.subj, ' (=min.subj)  - Run Stopped')  #Error 
+			stop(ErrMsg)
+			}
+	
+	
+	
 	data1 <- data[,1:n1]
 	data2 <- data[,(n1+1):(n1+n2)]
 
@@ -553,9 +563,9 @@ function(X,SelectedSubset,CA)
 		MyDataFrame<-na.omit(X	)									#Post the input data into a working data frame - take only subset requestd by user
 		MyDataFrame1  = MyDataFrame[,SelectedSubset]				#Select only the columns the User requested (If he did not: subset1=all columns)
 		mydata <- MyDataFrame1[rowSums(MyDataFrame1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
-		if(nrow(mydata) < CA$min.subj) 						#If not enough data, issue messages in files and stop the run 
+		if(nrow(mydata) < CA$min.subj && CA$OneDataset == TRUE ) 	#If not enough data, issue messages in files and stop the run 
 			{
-			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
+			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less than  ',CA$min.subj, ' (=min.subj) - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
 		ProcessedX = mydata/apply(mydata,1,sum)
@@ -618,13 +628,14 @@ function(CA){
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
-	CA$data.cor <- NULL 		
+	CA$data.cor <- NULL 	
+	CA$meas.function.parm.list <- NULL
 						 
 	if (!CA$verbose == TRUE)												 
 		{
-		CA$min.subj <- NULL													 
+		#CA$min.subj <- NULL		#Should be included in the default output												 
 		CA$iterations <- NULL												 
-		CA$errthresh <- NULL												 
+		#CA$errthresh <- NULL		#Should be included in the default output										 
 		CA$method.args <- NULL										 		
 		CA$subset.cols.1 <- NULL	
 		CA$subset.cols.2<-NULL			

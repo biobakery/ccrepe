@@ -15,18 +15,15 @@
  x = NA,
  y = NA,
  method = cor,
- method.args = list(),
- min.subj = 20,
+ method.args = list(method = "spearman", use = "complete.obs"),
+  min.subj = 20,
  iterations = 1000,
  subset.cols.1 = c(0),
  subset.cols.2 = c(0),
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
- distributions = NA,
- bins = NA,
- min.abundance = 1e-04,
- min.samples = 0.1)
+ distributions = NA)
  
 }
 \arguments{
@@ -43,6 +40,7 @@
  
   \item{method}{
    Measurement function, such as cor
+   
 }
   \item{method.args}{
 	A list of arguments for the measurement function.
@@ -50,7 +48,7 @@
 	method.args = list(method='spearman',use='complete.obs'	)	
 }
   \item{min.subj}{
-  Minimum rows (Subjects) in "data" frame to proceed (default: 20)
+  Minimum number of subjects that must be present (default: 20)
 }
   \item{iterations}{
   Reboot iterations (default: 1000)
@@ -62,7 +60,8 @@
   Subset of cols(bugs) from cavity2 to iterate on (default: c(0)== ALL)
 }
   \item{errthresh}{
-	Threshold error if there is enough data to calculate cor an pval for certain i and k (default: 0.0001)
+	errThresh   (default= 0.0001)  Represents the probability of getting all 0's in a given bootstrapped column.
+	If a bug/feature/column has too many 0's, its probability of sampling all 0's will be too large; it is therefore not used
 }
   \item{verbose}{
 	Indicator whether the User requested verbose Output  (default:FALSE)
@@ -72,15 +71,6 @@
 }
   \item{distributions}{
 	Output Distribution file  (default:NA)
-}
-  \item{bins}{
-	Number of bins to use
-}
- \item{min.abundance}{
-  Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples
-}
-  \item{min.samples}{
-  Minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples
 }
 }
  
@@ -110,8 +100,8 @@
   Emma Schwager <emma.schwager@gmail.com>,Craig Bielski<craig.bielski@gmail.com>
 }
 \examples{
-	data1<-matrix(rlnorm(21*5,1,1),nrow=21)
-	data2<-matrix(rlnorm(5*17,1,1),nrow=17)
+	data1<-matrix(rlnorm(21*23,1,1),nrow=21)
+	data2<-matrix(rlnorm(23*24,1,1),nrow=24)
 	ccrepe.results <-ccrepe  (x=data1, method = cor ,iterations=100) 
-	nc.score.results <- ccrepe( x=data1, y=data2, method = nc.score )
+	nc.score.results1<- nc.score( x=data1,y=data2)
 }
