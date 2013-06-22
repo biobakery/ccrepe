@@ -155,14 +155,10 @@ function(data,N.rand, CA){
 
 	if    (!is.na(CA$outdist))													#If user requested to print the distributions
 		{
-		lapply(boot.data,printDF,CA=CA,DistributionType=" Boot")
-		lapply(permutation.norm,printDF,CA=CA,DistributionType=" Permutation")
+		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
+		lapply(permutation.norm,printDF,outdistFile=CA$outdistFile,DistributionType="Permutation")
 		}
-	if   (!is.na(CA$outdist))										#If user requested to print the distributions
-		{
-		close(CA$outdistFile)										#Close outdist file	
-		CA$outdistFile <- NULL										#And remove it from the common area
-		}
+
 		
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
@@ -251,6 +247,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
  
+
+	if    (!is.na(CA$outdist))													#If user requested to print the distributions
+		{
+		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
+		#lapply(permutation.cor,printDF,CA=CA,DistributionType="Permutation")
+		}
+
+ 
+ 
 	
 	
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -275,7 +280,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1,
 		            startcol=(n1+1),
 		            endcol=(n1+n2), 				 
-					MoreArgs = list(my.method=CA$method,method.args=CA$method.args),
+					MoreArgs = list(my.method=CA$method,
+					method.args=CA$method.args,
+					outdist=CA$outdist,
+					outdistFile=CA$outdistFile),
 		            SIMPLIFY=FALSE)
 		
 			
@@ -291,12 +299,18 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
 	
 
+	
+	
+	
+	
 	# Now calculating the correlations and p-values between the two datasets
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
 	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty PValues matrix
 	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
+	
+	
 	
 	
 	for(i in 1:n1){
@@ -357,6 +371,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
+	
+	
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
 }
@@ -479,7 +495,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -489,6 +505,12 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
 #******************************************************************************************
 {
   	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+	
+	if    (!is.na(outdist))													#If user requested to print the distributions
+		{
+		RC <- printDF(mat, outdistFile, "Permutation")
+		}
+
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -576,20 +598,24 @@ function(X,SelectedSubset,CA)
 
 
 printDF <-
-function(Input1, CA, DistributionType)	{
+function(Input1, outdistFile, DistributionType)	{
 #*************************************************************************************
 #*  Function to print a data frame                                                   *
 #*************************************************************************************
-	OutputLine = c('Distribution:',DistributionType  )
-	cat(OutputLine,file=CA$outdistFile,append=T)		#Output header to outdist file
-	cat('\n',file=CA$outdistFile,append=T)				#Line feed
 	df <- data.frame(Input1)							#convert input to data frame
-	pm <- data.matrix(df, rownames.force = NA)			#convert df to matrix
-	write.table(pm,CA$outdistFile,quote=F,row.names=F,col.names=F) 	#Write to file
-	cat('\n',file=CA$outdistFile,append=T)		   		#Line feed
+	
+	RowDistribuitionId <- vector()
+	for (i in 1:nrow(Input1)) {
+		RowDistribuitionId[i] <-  paste(DistributionType,'Row',i,sep='.')
+			}
+	df$RowDistribuitionId <- RowDistribuitionId
+
+	write.table(df,outdistFile,quote=F,row.names=F,col.names=F,sep = "\t") 	#Write to file
+
 	return (0)
 	}
-	
+
+ 
 	
 	
 	
@@ -619,6 +645,11 @@ function(CA){
 #* 	Function to clean the Common Area After processing                               *
 #*  Common Area is passed to the User as results                                     *
 #*************************************************************************************
+	if   (!is.na(CA$outdist))										#If user requested to print the distributions
+		{
+		close(CA$outdistFile)										#Close outdist file	
+		CA$outdistFile <- NULL										#And remove it from the common area
+		}
 	CA$data1 <- NULL													
 	CA$data1.norm <- NULL  											
 	CA$data2 <- NULL													
@@ -642,6 +673,7 @@ function(CA){
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL											 			
 		}
+
 
 	return(CA)
 }
