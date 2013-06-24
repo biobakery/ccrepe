@@ -122,7 +122,7 @@ function(data,N.rand, CA){
 					} else
 					{
 
-					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 				 	
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
@@ -327,7 +327,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.c = n.c + 1
 		
 			
-			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
 			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
@@ -485,7 +485,7 @@ function(CA){
 		
 		
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		CA$meas.function.parm.list[[name]]<-CA$method.args[[name]]
+ 		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
 		}	
 		
 	return(CA)			 				#Return list of decoded input parameters
@@ -660,7 +660,7 @@ function(CA){
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
 	CA$data.cor <- NULL 	
-	CA$meas.function.parm.list <- NULL
+
 						 
 	if (!CA$verbose == TRUE)												 
 		{
@@ -671,7 +671,8 @@ function(CA){
 		CA$subset.cols.1 <- NULL	
 		CA$subset.cols.2<-NULL			
 		CA$verbose <- NULL													 
-		CA$iterations.gap <- NULL											 			
+		CA$iterations.gap <- NULL	
+		CA$sim.score.parameters <- NULL		
 		}
 
 
