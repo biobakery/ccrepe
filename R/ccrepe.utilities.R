@@ -443,7 +443,7 @@ function(CA){
 #*************************************************************************************
 #*	Decode and validate input parameters                                             *
 #*************************************************************************************
-	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#I need to find the R version of Gamma!
+	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#Euler's Gamma
 
 	if (length(CA$data1) == 1)					#If the user did not select at least one input dataframe - Stop the run
 		{
@@ -483,7 +483,11 @@ function(CA){
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
-		
+
+	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
+		{
+			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
+		}
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
  		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
 		}	

@@ -6,8 +6,7 @@ function(
 	x=NA,								#Data Frame  1 - For ccrepe and nc.score
 	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
 	method = cor,						#Default
-	method.args = list(method='spearman',use='complete.obs'
-	), 	#Arguments for the method
+	method.args = list(), 	#Arguments for the method
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
 	subset.cols.1 = c(0),				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
