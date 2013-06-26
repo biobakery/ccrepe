@@ -17,8 +17,6 @@
  method.args = list(),
  min.subj = 20,
  iterations = 1000,
- subset.cols.1 = c(0),
- subset.cols.2 = c(0),
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
@@ -56,12 +54,6 @@
 }
   \item{iterations}{
   Reboot iterations (default: 1000)
-}
-  \item{subset.cols.1}{
-  Subset of cols(bugs) from cavity1 to iterate on (default: c(0)== ALL)
-}
-  \item{subset.cols.2}{
-  Subset of cols(bugs) from cavity2 to iterate on (default: c(0)== ALL)
 }
   \item{errthresh}{
 	errThresh   (default= 0.0001)  Represents the probability of getting all 0's in a given bootstrapped column.

@@ -23,17 +23,10 @@ Version: \tab 1.0\cr
 Date: \tab 2013-04-18\cr
 License: \tab MIT\cr
 }
-   An example of how to invoke the ccrepe calculations:\cr 
-    data1<-matrix(rlnorm(21*5,1,1),nrow=21)\cr
-	ccrepe.results <-ccrepe  (x=data1, method = cor ,iterations=100)\cr
-	\cr
-   An example of how to invoke the nc.score calculations:\cr 	
-   \cr
-    data1<-matrix(rlnorm(21*5,1,1),nrow=21)\cr
-	data2<-matrix(rlnorm(5*17,1,1),nrow=17)\cr
-	nc.score.results <- nc.score( x=data1, y=data2 )
 }
 \author{
 Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>\cr
-Maintainer: Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>, George Weingart<george.weingart@gmail.com>
+Maintainer: Emma Schwager <emma.schwager@gmail.com>,\cr
+  Craig Bielski<craig.bielski@gmail.com>,\cr
+  George Weingart<george.weingart@gmail.com>
 }

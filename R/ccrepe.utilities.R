@@ -397,8 +397,6 @@ function(
 				method.args,				#Areguments for the method
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
-				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
-				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 				verbose,					#Request for verbose output?
 				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
@@ -413,8 +411,6 @@ function(
 			errthresh=errthresh,
 			method=method,
 			method.args=method.args,
-			subset.cols.1=subset.cols.1,
-			subset.cols.2=subset.cols.2,
 			verbose=verbose,
 			iterations.gap=iterations.gap,
 			outdist=distributions
@@ -425,13 +421,13 @@ function(
 
 	if (CA$OneDataset == TRUE)
 		{
-		mydata.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)						#Preprocess the data 
+		mydata.norm = preprocess_data(CA$data1,CA)						#Preprocess the data 
 		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Invoke the new function 
 		}
 	else
 		{
-		CA$data1.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)					#Preprocess data1 
-		CA$data2.norm = preprocess_data(CA$data2,CA$subset.cols.2,CA)					#Preprocess data2
+		CA$data1.norm = preprocess_data(CA$data1,CA)					#Preprocess data1 
+		CA$data2.norm = preprocess_data(CA$data2,CA)					#Preprocess data2
 		CA = ccrepe_process_two_datasets  (CA$data1.norm ,CA$data2.norm ,CA$iterations, CA)
 		}
 	return ( CA )
@@ -462,18 +458,7 @@ function(CA){
 		}
 
 
-	if ( CA$subset.cols.1[1]  == 0)					#If user did not pass any request for the number fo cols in data1 to process
-		CA$subset.cols.1<-c(1:ncol(CA$data1))			# - We will use All the columns	
-
 	
-
-	if (CA$OneDataset == FALSE)
-		{
-		if ( CA$subset.cols.2[1]  == 0)					#If user did not pass any request for the number fo cols in data1 to process
-		CA$subset.cols.2<-c(1:ncol(CA$data2))				# - We will use All the columns	
-		}
- 
-	 
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
@@ -585,14 +570,13 @@ function(data,permute.id.matrix){
 
 
 preprocess_data <-
-function(X,SelectedSubset,CA)
+function(X,CA)
 #**********************************************************************
 #	Preprocess input data 				                              *
 #**********************************************************************
 {	
-		MyDataFrame<-na.omit(X	)									#Post the input data into a working data frame - take only subset requestd by user
-		MyDataFrame1  = MyDataFrame[,SelectedSubset]				#Select only the columns the User requested (If he did not: subset1=all columns)
-		mydata <- MyDataFrame1[rowSums(MyDataFrame1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
+		MyDataFrame<-na.omit(X	)									
+		mydata <- MyDataFrame[rowSums(MyDataFrame != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
 		if(nrow(mydata) < CA$min.subj && CA$OneDataset == TRUE ) 	#If not enough data, issue messages in files and stop the run 
 			{
 			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less than  ',CA$min.subj, ' (=min.subj) - Run Stopped')  #Error 
@@ -676,8 +660,6 @@ function(CA){
 		CA$iterations <- NULL												 
 		#CA$errthresh <- NULL		#Should be included in the default output										 
 		CA$method.args <- NULL										 		
-		CA$subset.cols.1 <- NULL	
-		CA$subset.cols.2<-NULL			
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
 		CA$sim.score.parameters <- NULL		
