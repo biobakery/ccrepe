@@ -64,7 +64,7 @@ function(
 		{
 		for (j in (i+1):(length(y))) #Loop on the entries of y	
 			{
-				mx <- (c(x[i], y[i], x[j], y[j]))	# We have x and y - this is how mx looks in this conf. <---Need to verify !!!!! GW
+				mx <- (c(x[i], y[i], x[j], y[j]))	#  
 				if (length(unique(mx)) >= 2) 							#These are the core calculations 
 					{
 					if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) 
@@ -117,8 +117,7 @@ function(
 	if (is.null(rownames(x))) {rownames(x)<-seq(1:nrow(x))} #If there are no row names - plug them in
 	
 	CA$x <-  x 												#Post it to common Area
-	cat('\nAfter filtering there are ',nrow(CA$x),'samples with ',ncol(CA$x),
-		'variables (bugs): Output is a matrix of ',ncol(CA$x), ' by ' , ncol(CA$x), '\n')
+ 
 	CA$x.discretized <- matrix(nrow=nrow(CA$x),ncol=ncol(CA$x))			#Build x Discretized empty Matrix			
 	#****************************************************************************************
 	#*   Process Bins  passed by the user  or set default                                   *
