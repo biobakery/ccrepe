@@ -8,7 +8,6 @@
 \description{
    ccrepe uploads the relative abundances of bugs in one or two cavities and calculates their correlation, p-value and q-value using permutation\cr
    and rebooting of the data\cr
-   nc.score calculates species-level co-variation and co-exclusion patterns of two inputs based on an extension of the checkerboard score to ordinal data
  }
 \usage{
  ccrepe(
@@ -16,7 +15,7 @@
  y = NA,
  method = cor,
  method.args = list(),
-  min.subj = 20,
+ min.subj = 20,
  iterations = 1000,
  subset.cols.1 = c(0),
  subset.cols.2 = c(0),
@@ -28,8 +27,8 @@
 }
 \arguments{
   \item{x}{
-   First dataframe containing the relatdive abundances in cavity1 : Columns are bugs, rows are samples\cr
-   The first column is considered data 
+   First dataframe containing the relative abundances in cavity1 : Columns are bugs, rows are samples\cr
+   The first column is considered data\cr 
 }
   \item{y}{
    Second dataframe (optional) containing the relative abundances in cavity2: Columns are bugs, rows are samples \cr
@@ -87,7 +86,7 @@
 		iterations.gap and method.args.method('spearman','kendall' or 'pearson')\cr
 		Their descriptions are above\cr
 	The calculation results consist of:\cr
-		PValues.matrix,  Q.matrix and  data.cor that contains:  bug1 bug2 cor   p.value  q.value\cr
+		cor.matrix, p-values.matrix,  q-values.matrix  
 	\cr
 	\cr
 	For nc.score\cr
@@ -102,11 +101,10 @@
 		
 }
 \author{
-  Emma Schwager <emma.schwager@gmail.com>,Craig Bielski<craig.bielski@gmail.com>
+  Emma Schwager <emma.schwager@gmail.com> 
 }
 \examples{
 	data1<-matrix(rlnorm(21*23,1,1),nrow=21)
 	data2<-matrix(rlnorm(23*24,1,1),nrow=24)
-	ccrepe.results <-ccrepe  (x=data1, method = cor ,iterations=100) 
-	nc.score.results1<- nc.score( x=data1,y=data2)
+	ccrepe.results <-ccrepe  (x=data1,iterations=100) 
 }

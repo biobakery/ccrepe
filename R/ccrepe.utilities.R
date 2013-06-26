@@ -365,6 +365,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 
 	
+	#********************************************************************
+	#*  Final Edits before exiting                                      *
+	#********************************************************************
+	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
