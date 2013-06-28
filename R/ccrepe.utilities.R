@@ -122,7 +122,7 @@ function(data,N.rand, CA){
 					} else
 					{
 
-					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 				 	
 					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
@@ -155,14 +155,10 @@ function(data,N.rand, CA){
 
 	if    (!is.na(CA$outdist))													#If user requested to print the distributions
 		{
-		lapply(boot.data,printDF,CA=CA,DistributionType=" Boot")
-		lapply(permutation.norm,printDF,CA=CA,DistributionType=" Permutation")
+		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
+		lapply(permutation.norm,printDF,outdistFile=CA$outdistFile,DistributionType="Permutation")
 		}
-	if   (!is.na(CA$outdist))										#If user requested to print the distributions
-		{
-		close(CA$outdistFile)										#Close outdist file	
-		CA$outdistFile <- NULL										#And remove it from the common area
-		}
+
 		
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
@@ -194,6 +190,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	n2 = ncol(data2.norm)
 
 	data = merge_two_matrices(data1.norm,data2.norm)
+	
+	
+	if(nrow(data) < CA$min.subj ) 	#If not enough data, issue messages in files and stop the run 
+			{
+			ErrMsg = paste('Not enough data - found ',nrow(data),' rows of data in the merged matrix - Less than  ',CA$min.subj, ' (=min.subj)  - Run Stopped')  #Error 
+			stop(ErrMsg)
+			}
+	
+	
+	
 	data1 <- data[,1:n1]
 	data2 <- data[,(n1+1):(n1+n2)]
 
@@ -241,6 +247,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
  
+
+	if    (!is.na(CA$outdist))													#If user requested to print the distributions
+		{
+		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
+		#lapply(permutation.cor,printDF,CA=CA,DistributionType="Permutation")
+		}
+
+ 
+ 
 	
 	
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -265,7 +280,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1,
 		            startcol=(n1+1),
 		            endcol=(n1+n2), 				 
-					MoreArgs = list(my.method=CA$method,method.args=CA$method.args),
+					MoreArgs = list(my.method=CA$method,
+					method.args=CA$method.args,
+					outdist=CA$outdist,
+					outdistFile=CA$outdistFile),
 		            SIMPLIFY=FALSE)
 		
 			
@@ -281,12 +299,18 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
 	
 
+	
+	
+	
+	
 	# Now calculating the correlations and p-values between the two datasets
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
 	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty PValues matrix
 	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
+	
+	
 	
 	
 	for(i in 1:n1){
@@ -303,7 +327,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.c = n.c + 1
 		
 			
-			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$meas.function.parm.list)  #build the method do.call parameter list
+			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
 			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
@@ -341,12 +365,18 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 
 	
+	#********************************************************************
+	#*  Final Edits before exiting                                      *
+	#********************************************************************
+	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
+	
+	
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
 }
@@ -367,8 +397,6 @@ function(
 				method.args,				#Areguments for the method
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
-				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
-				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 				verbose,					#Request for verbose output?
 				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
@@ -383,8 +411,6 @@ function(
 			errthresh=errthresh,
 			method=method,
 			method.args=method.args,
-			subset.cols.1=subset.cols.1,
-			subset.cols.2=subset.cols.2,
 			verbose=verbose,
 			iterations.gap=iterations.gap,
 			outdist=distributions
@@ -395,13 +421,13 @@ function(
 
 	if (CA$OneDataset == TRUE)
 		{
-		mydata.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)						#Preprocess the data 
+		mydata.norm = preprocess_data(CA$data1,CA)						#Preprocess the data 
 		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Invoke the new function 
 		}
 	else
 		{
-		CA$data1.norm = preprocess_data(CA$data1,CA$subset.cols.1,CA)					#Preprocess data1 
-		CA$data2.norm = preprocess_data(CA$data2,CA$subset.cols.2,CA)					#Preprocess data2
+		CA$data1.norm = preprocess_data(CA$data1,CA)					#Preprocess data1 
+		CA$data2.norm = preprocess_data(CA$data2,CA)					#Preprocess data2
 		CA = ccrepe_process_two_datasets  (CA$data1.norm ,CA$data2.norm ,CA$iterations, CA)
 		}
 	return ( CA )
@@ -417,7 +443,7 @@ function(CA){
 #*************************************************************************************
 #*	Decode and validate input parameters                                             *
 #*************************************************************************************
-	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#I need to find the R version of Gamma!
+	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#Euler's Gamma
 
 	if (length(CA$data1) == 1)					#If the user did not select at least one input dataframe - Stop the run
 		{
@@ -432,18 +458,7 @@ function(CA){
 		}
 
 
-	if ( CA$subset.cols.1[1]  == 0)					#If user did not pass any request for the number fo cols in data1 to process
-		CA$subset.cols.1<-c(1:ncol(CA$data1))			# - We will use All the columns	
-
 	
-
-	if (CA$OneDataset == FALSE)
-		{
-		if ( CA$subset.cols.2[1]  == 0)					#If user did not pass any request for the number fo cols in data1 to process
-		CA$subset.cols.2<-c(1:ncol(CA$data2))				# - We will use All the columns	
-		}
- 
-	 
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
@@ -457,9 +472,13 @@ function(CA){
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
-		
+
+	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
+		{
+			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
+		}
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		CA$meas.function.parm.list[[name]]<-CA$method.args[[name]]
+ 		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
 		}	
 		
 	return(CA)			 				#Return list of decoded input parameters
@@ -469,7 +488,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -479,6 +498,12 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,  ...)
 #******************************************************************************************
 {
   	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+	
+	if    (!is.na(outdist))													#If user requested to print the distributions
+		{
+		RC <- printDF(mat, outdistFile, "Permutation")
+		}
+
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -545,17 +570,16 @@ function(data,permute.id.matrix){
 
 
 preprocess_data <-
-function(X,SelectedSubset,CA)
+function(X,CA)
 #**********************************************************************
 #	Preprocess input data 				                              *
 #**********************************************************************
 {	
-		MyDataFrame<-na.omit(X	)									#Post the input data into a working data frame - take only subset requestd by user
-		MyDataFrame1  = MyDataFrame[,SelectedSubset]				#Select only the columns the User requested (If he did not: subset1=all columns)
-		mydata <- MyDataFrame1[rowSums(MyDataFrame1 != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
-		if(nrow(mydata) < CA$min.subj) 						#If not enough data, issue messages in files and stop the run 
+		MyDataFrame<-na.omit(X	)									
+		mydata <- MyDataFrame[rowSums(MyDataFrame != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
+		if(nrow(mydata) < CA$min.subj && CA$OneDataset == TRUE ) 	#If not enough data, issue messages in files and stop the run 
 			{
-			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less rows than  ',CA$min.rows, ' min.rows - Run Stopped')  #Error 
+			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less than  ',CA$min.subj, ' (=min.subj) - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
 		ProcessedX = mydata/apply(mydata,1,sum)
@@ -566,20 +590,24 @@ function(X,SelectedSubset,CA)
 
 
 printDF <-
-function(Input1, CA, DistributionType)	{
+function(Input1, outdistFile, DistributionType)	{
 #*************************************************************************************
 #*  Function to print a data frame                                                   *
 #*************************************************************************************
-	OutputLine = c('Distribution:',DistributionType  )
-	cat(OutputLine,file=CA$outdistFile,append=T)		#Output header to outdist file
-	cat('\n',file=CA$outdistFile,append=T)				#Line feed
 	df <- data.frame(Input1)							#convert input to data frame
-	pm <- data.matrix(df, rownames.force = NA)			#convert df to matrix
-	write.table(pm,CA$outdistFile,quote=F,row.names=F,col.names=F) 	#Write to file
-	cat('\n',file=CA$outdistFile,append=T)		   		#Line feed
+	
+	RowDistribuitionId <- vector()
+	for (i in 1:nrow(Input1)) {
+		RowDistribuitionId[i] <-  paste(DistributionType,'Row',i,sep='.')
+			}
+	df$RowDistribuitionId <- RowDistribuitionId
+
+	write.table(df,outdistFile,quote=F,row.names=F,col.names=F,sep = "\t") 	#Write to file
+
 	return (0)
 	}
-	
+
+ 
 	
 	
 	
@@ -609,6 +637,11 @@ function(CA){
 #* 	Function to clean the Common Area After processing                               *
 #*  Common Area is passed to the User as results                                     *
 #*************************************************************************************
+	if   (!is.na(CA$outdist))										#If user requested to print the distributions
+		{
+		close(CA$outdistFile)										#Close outdist file	
+		CA$outdistFile <- NULL										#And remove it from the common area
+		}
 	CA$data1 <- NULL													
 	CA$data1.norm <- NULL  											
 	CA$data2 <- NULL													
@@ -619,7 +652,7 @@ function(CA){
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
 	CA$data.cor <- NULL 	
-	CA$meas.function.parm.list <- NULL
+
 						 
 	if (!CA$verbose == TRUE)												 
 		{
@@ -627,11 +660,11 @@ function(CA){
 		CA$iterations <- NULL												 
 		#CA$errthresh <- NULL		#Should be included in the default output										 
 		CA$method.args <- NULL										 		
-		CA$subset.cols.1 <- NULL	
-		CA$subset.cols.2<-NULL			
 		CA$verbose <- NULL													 
-		CA$iterations.gap <- NULL											 			
+		CA$iterations.gap <- NULL	
+		CA$sim.score.parameters <- NULL		
 		}
+
 
 	return(CA)
 }
