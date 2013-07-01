@@ -47,7 +47,8 @@
   \item{method.args}{
 	A list of arguments for the measurement function.
 	For example:  In the case of cor, the following would be acceptable:
-	method.args = list(method='spearman',use='complete.obs'	)	
+	method.args = list(method='spearman',use='complete.obs'	)\cr	
+	which is the default for 'cor' 
 }
   \item{min.subj}{
   Minimum number of subjects that must be present (default: 20)

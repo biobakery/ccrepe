@@ -163,7 +163,7 @@ function(data,N.rand, CA){
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
 	#********************************************************************
-	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
+	diag(CA$q.values) <- NA											#Set diagonal of p.values to NA 
 	colnames(CA$p.values)<-colnames(CA$data1)						#Set the names of the columns in the p.values matrix
 	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the roes in the p.values matrix
 	colnames(CA$q.values)<-colnames(CA$data1)						#Set the names of the columns in the q.values matrix
@@ -368,14 +368,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
 	#********************************************************************
-	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
-	
+	diag(CA$q.values) <- NA									#Set diagonal of p.values to NA 
+
 	
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
