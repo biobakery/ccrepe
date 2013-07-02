@@ -38,8 +38,6 @@ function(
 	#************************************************************************
 	#*        It is a dataframe or a matrix                                 *
 	#************************************************************************
-	cat('\nSetting up the flag\n')
-	browser()
 	CA = preprocess_nc_score_input (
 			x, 										#First Input
 			bins,									#Bins
