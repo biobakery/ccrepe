@@ -78,7 +78,6 @@ function(data,N.rand, CA){
 		perm.matrix = replicate(n,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
 		permutation.matrices = lappend(permutation.matrices,perm.matrix)     # Add the new matrix to the list
 	}
-
  
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
@@ -97,7 +96,6 @@ function(data,N.rand, CA){
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
-	
 	 
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
@@ -141,9 +139,6 @@ function(data,N.rand, CA){
 		}
 	}
 	
-	
-	
-	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 	for (indx in 1:nrow(data.cor))						#post the q-values
 		{
@@ -184,27 +179,19 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #* 	ccrepe function for two datasets                                                 *
 #*************************************************************************************
 {
- 
 	# Get number of bugs, subjects for each dataset
 	n1 = ncol(data1.norm)
 	n2 = ncol(data2.norm)
 
-	data = merge_two_matrices(data1.norm,data2.norm)
-	
-	
+	data = merge_two_matrices(data1.norm,data2.norm)	
 	if(nrow(data) < CA$min.subj ) 	#If not enough data, issue messages in files and stop the run 
 			{
 			ErrMsg = paste('Not enough data - found ',nrow(data),' rows of data in the merged matrix - Less than  ',CA$min.subj, ' (=min.subj)  - Run Stopped')  #Error 
 			stop(ErrMsg)
 			}
 	
-	
-	
 	data1 <- data[,1:n1]
 	data2 <- data[,(n1+1):(n1+n2)]
-
-	
-	
 	nsubj = nrow(data)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
@@ -253,10 +240,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
 		#lapply(permutation.cor,printDF,CA=CA,DistributionType="Permutation")
 		}
-
- 
- 
-	
 	
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
@@ -297,10 +280,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#********************************************************************************
 	
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
-	
-
-	
-	
 	
 	
 	# Now calculating the correlations and p-values between the two datasets
@@ -480,6 +459,10 @@ function(CA){
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
  		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
 		}	
+		
+
+	CA$retries.max.iterations =  -round(log2(CA$errthresh)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
+		
 		
 	return(CA)			 				#Return list of decoded input parameters
 }
@@ -676,12 +659,11 @@ function(b,nsubj,data,CA){
 #*************************************************************************************
 #* 	Function to calculate cor  and check that total in cols is not zero              *
 #*************************************************************************************
-
 	check.col.sums <- colSums(b)==0
 	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeros - try to reboot data 5 times
 		{
 		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
-		while(cnt.tries < 5  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebooting the data so no cols are zero
+		while(cnt.tries < CA$retries.max.iterations  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebooting the data so no cols are zero
 			{
 			cnt.tries <- cnt.tries+1			#Increase the counter
 			b1 = try.reboot.again (nsubj,data)	#Try to reboot again
@@ -689,10 +671,11 @@ function(b,nsubj,data,CA){
 			if (!length(check.col.sums[check.col.sums==TRUE])) #If there is no column that is all zeros - post the result to continue processing
 				{b <- b1}						#Post the result
 			}
-		if (cnt.tries > 5  && length(check.col.sums[check.col.sums==TRUE]))	#If reboot did not work - Stop the run
+		if (cnt.tries > CA$retries.max.iterations  && length(check.col.sums[check.col.sums==TRUE]))	#If reboot did not work - Stop the run
 			{
-			ErrMsg = paste('Run Stopped - tried to reboot the data 5 times but always get a column that is all zeros')  #Error 
-			stop(ErrMsg)
+			ErrMsg = paste('Tried to reboot the data', CA$retries.max.iterations, 'times but always get a column that is all zeros')  #Error 
+			warning(ErrMsg)
+
 			}
 		}
 	
