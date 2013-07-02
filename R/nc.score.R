@@ -7,6 +7,7 @@ function(
    	x=NA,						#First input 
 	y=NA,						#Second input
 	bins=NA,					#Number of Input Bins
+	verbose = FALSE,			#Request for verbose output?
 	min.abundance=0.0001,		#Minimum Abundance
 	min.samples=0.1)			#Minimum Samples
 	
@@ -21,10 +22,11 @@ function(
 		& length(x) == length(y)
 		& class(x) == "numeric"
 	    & class(y) == "numeric"
-		)
+		) 
 		{
 			CA <-list()									#Set the common area
 			CA$x <- x									#Post x to common area
+			CA$verbose <- verbose						#Post the verbose flag
 			CA <- process.input.bins(bins, CA)
 			x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
 			y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
@@ -36,7 +38,8 @@ function(
 	#************************************************************************
 	#*        It is a dataframe or a matrix                                 *
 	#************************************************************************
-
+	cat('\nSetting up the flag\n')
+	browser()
 	CA = preprocess_nc_score_input (
 			x, 										#First Input
 			bins,									#Bins
@@ -44,6 +47,8 @@ function(
 			min.samples)							#Minimum Samples
 	
 	x <- CA$x										#Get the filtered x from common area
+	CA$verbose <- verbose							#Post the verbose flag
+
     x.discretized <- CA$x.discretized				#Get it from Common Area
  
 	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
@@ -58,5 +63,9 @@ function(
 	CA$x.discretized <- NULL		#Not needed anymore
 	CA$x <- NULL					#Not Needed anymore
 	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
+	if (!CA$verbose == TRUE)		#If abbreviated output
+		{
+		CA <- CA$nc.score.matrix	#just post the resulting matrix
+		}
 return(CA)
 }
