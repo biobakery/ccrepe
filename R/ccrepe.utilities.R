@@ -165,6 +165,8 @@ function(data,N.rand, CA){
 	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the roes in the q.values matrix
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
 	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
+	CA$sim.score <- CA$cor											#Rename cor to sim.score
+	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 
 	return(CA)														# Return the output matrix
@@ -354,8 +356,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
 	diag(CA$q.values) <- NA									#Set diagonal of p.values to NA 
-
-	
+	CA$sim.score <- CA$cor									#Rename cor to sim.score
+	CA$cor <- NULL
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	return(CA)			# Return the output matrix
 }
@@ -634,7 +636,8 @@ function(CA){
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
-	CA$data.cor <- NULL 	
+	CA$data.cor <- NULL 
+	CA$retries.max.iterations <- NULL
 
 						 
 	if (!CA$verbose == TRUE)												 
