@@ -104,10 +104,21 @@ function(data,N.rand, CA){
 		if((i+1)<=n){
 			for(k in (i+1):n){
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
+ 
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 				permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
+				
+				
+				if    (!is.na(CA$outdist))						#If user requested to print the distributions
+					{
+					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
+					}
+				
+				
+				
+				
 				
 				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
@@ -148,11 +159,7 @@ function(data,N.rand, CA){
 		}
 	CA$data.cor <- data.cor								# Post it in the common Area
 
-	if    (!is.na(CA$outdist))													#If user requested to print the distributions
-		{
-		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
-		lapply(permutation.norm,printDF,outdistFile=CA$outdistFile,DistributionType="Permutation")
-		}
+	
 
 		
 	#********************************************************************
@@ -237,11 +244,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
  
 
-	if    (!is.na(CA$outdist))													#If user requested to print the distributions
-		{
-		lapply(boot.data,printDF,outdistFile=CA$outdistFile,DistributionType="Boot")
-		#lapply(permutation.cor,printDF,CA=CA,DistributionType="Permutation")
-		}
+
 	
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
@@ -298,12 +301,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		for(k in 1:n2){
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
-			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
 
-			
+			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
 			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
+			
+			if    (!is.na(CA$outdist))						#If user requested to print the distributions
+					{
+					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
+					}
 
 			n.c = n.c + 1
 		
@@ -483,12 +490,6 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist
 #******************************************************************************************
 {
   	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
-	
-	if    (!is.na(outdist))													#If user requested to print the distributions
-		{
-		RC <- printDF(mat, outdistFile, "Permutation")
-		}
-
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -574,20 +575,29 @@ function(X,CA)
 
 
 
-printDF <-
-function(Input1, outdistFile, DistributionType)	{
-#*************************************************************************************
-#*  Function to print a data frame                                                   *
-#*************************************************************************************
-	df <- data.frame(Input1)							#convert input to data frame
 	
-	RowDistribuitionId <- vector()
-	for (i in 1:nrow(Input1)) {
-		RowDistribuitionId[i] <-  paste(DistributionType,'Row',i,sep='.')
-			}
-	df$RowDistribuitionId <- RowDistribuitionId
+print.dist <-
+function(bootstrap.dist,permutation.dist,  CA,i, k)	{
+#*************************************************************************************
+#*  Function to print the distribution                                               *
+#*************************************************************************************
+	outdistFile = CA$outdistFile 						#Output file
+	
+	output.string0 <- paste(bootstrap.dist,sep="",collapse=',')		#Build the output string 
+	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
+		{output.string <-paste("Boot,",colnames(CA$data1.norm[i]),",",colnames(CA$data1.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		else
+		{output.string <-paste("Boot,",colnames(CA$data1.norm[i]),",",colnames(CA$data2.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
 
-	write.table(df,outdistFile,quote=F,row.names=F,col.names=F,sep = "\t") 	#Write to file
+	cat(output.string,file=CA$outdistFile,append=TRUE)
+	
+	output.string0 <- paste(permutation.dist,sep="",collapse=',')		#Build the output string 
+	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
+		{output.string <-paste("Permutation,",colnames(CA$data1.norm[i]),",",colnames(CA$data1.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		else
+		{output.string <-paste("Permutation,",colnames(CA$data1.norm[i]),",",colnames(CA$data2.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+	cat(output.string,file=CA$outdistFile,append=TRUE)
+
 
 	return (0)
 	}
