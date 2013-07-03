@@ -11,6 +11,7 @@
 nc.score(x = NA,
  y = NA, 
  bins = NA, 
+ verbose = FALSE,			 
  min.abundance = 1e-04,
  min.samples = 0.1)
 }
@@ -23,6 +24,9 @@ nc.score(x = NA,
 }
   \item{bins}{
  Number of bins to use
+}
+\item{verbose}{
+ Request verbose output
 }
   \item{min.abundance}{
   Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples
