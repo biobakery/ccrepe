@@ -100,9 +100,23 @@ function(data,N.rand, CA){
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
-	for(i in 1:n){
-		if((i+1)<=n){
-			for(k in (i+1):n){
+	
+	loop.range <- 1:n						#Establish looping range default
+	max.loop.range = n						#Maximum entry of the loop range default
+	
+ 	if (length(CA$subset.cols.1 > 1))		#If the User entered a subset of columns
+		{
+		loop.range <- CA$subset.cols.1		#Use the subset of columns
+		max.loop.range <-max(loop.range)	#and set up the max 
+		}
+
+
+	for(i in loop.range){
+		if((i+1)<=max.loop.range){
+			for(k in (i+1):max.loop.range){	
+	#####for(i in 1:n){
+		#####if((i+1)<=n){
+			######for(k in (i+1):n){
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
  
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
@@ -115,11 +129,7 @@ function(data,N.rand, CA){
 					{
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
-				
-				
-				
-				
-				
+					
 				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
 				n.p   = nrow(data)						#Number of rows in data
@@ -648,6 +658,8 @@ function(CA){
 	CA$Gamma <- NULL 
 	CA$data.cor <- NULL 
 	CA$retries.max.iterations <- NULL
+	CA$subset.cols.1 <- NULL
+	CA$subset.cols.2 <- NULL
 
 						 
 	if (!CA$verbose == TRUE)												 

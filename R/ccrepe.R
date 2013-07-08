@@ -9,6 +9,8 @@ function(
 	method.args = list(), 				#Arguments for the method
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
+	subset.cols.1 = c(0),				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
+	subset.cols.2 = c(0),				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 	verbose = FALSE,					#Request for verbose output?
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
@@ -19,6 +21,9 @@ function(
 	#**********************************************************************
 	# Invoke ccrepe using the method                                      *
 	#**********************************************************************
+	
+ 
+	
 			CA <- ccrepe.calculations(
 				x, 							#Data Frame  1 - For ccrepe and nc.score
 				y,							#Data Frame  2 - For ccrepe and nc.score 
@@ -26,6 +31,8 @@ function(
 				method.args,				#Method argument
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
+				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
+				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 				verbose,					#Request for verbose output?
 				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
@@ -51,6 +58,8 @@ function(
 				method.args,				#Method Arguments
 				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 				iterations,					#Reboot iterations - For ccrepe
+				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
+				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 				verbose,					#Request for verbose output?
 				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
@@ -62,6 +71,8 @@ function(
 			data2=y,
 			min.subj=min.subj,
 			iterations=iterations,
+			subset.cols.1=subset.cols.1,
+			subset.cols.2=subset.cols.2,
 			errthresh=errthresh,
 			method=method,
 			method.args=method.args,
@@ -72,7 +83,6 @@ function(
 
 	
 	CA <- DecodeInputCAArguments(CA)							#Decode Input Parameters
-
 	if (CA$OneDataset == TRUE)
 		{
 		mydata.norm = preprocess_data(CA$data1,CA)						#Preprocess the data 
