@@ -114,6 +114,7 @@ function(data,N.rand, CA){
 	for(i in loop.range){
 		if((i+1)<=max.loop.range){
 			for(k in (i+1):max.loop.range){	
+ 
 	#####for(i in 1:n){
 		#####if((i+1)<=n){
 			######for(k in (i+1):n){
@@ -304,13 +305,38 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty PValues matrix
 	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
+	loop.range1 <- 1:n1						#Establish looping range default
+	max.loop.range1 = n1					#Maximum entry of the loop range default
+	
+ 	if (length(CA$subset.cols.1 > 1))		#If the User entered a subset of columns
+		{
+		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
+		max.loop.range1 <-max(loop.range1)	#and set up the max 
+		}
+
+	loop.range2 <- 1:n2						#Establish looping range default
+	max.loop.range2 = n2					#Maximum entry of the loop range default
+	
+ 	if (length(CA$subset.cols.2 > 1))		#If the User entered a subset of columns
+		{
+		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
+		max.loop.range2 <-max(loop.range2)	#and set up the max 
+		}
 	
 	
 	
-	for(i in 1:n1){
-		for(k in 1:n2){
+	
+	
+	
+	
+	#####for(i in 1:n1){
+		#####for(k in 1:n2){
+	for(i in loop.range1){
+		for(k in loop.range2){
+			
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
+			#######bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
+			bootstrap.dist = unlist(lapply(boot.cor,'[',i,max.loop.range1+k))
 
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
 			
@@ -325,7 +351,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.c = n.c + 1
 		
 			
-			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
+			measure.parameter.list <- append(list(x=data[,i],y=data[,max.loop.range1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
 			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
@@ -658,8 +684,7 @@ function(CA){
 	CA$Gamma <- NULL 
 	CA$data.cor <- NULL 
 	CA$retries.max.iterations <- NULL
-	CA$subset.cols.1 <- NULL
-	CA$subset.cols.2 <- NULL
+
 
 						 
 	if (!CA$verbose == TRUE)												 
@@ -670,7 +695,9 @@ function(CA){
 		CA$method.args <- NULL										 		
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
-		CA$sim.score.parameters <- NULL		
+		CA$sim.score.parameters <- NULL	
+		CA$subset.cols.1 <- NULL
+		CA$subset.cols.2 <- NULL		
 		}
 
 
