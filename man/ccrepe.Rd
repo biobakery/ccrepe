@@ -12,7 +12,7 @@
 \usage{
  ccrepe(
  x = NA,
- y = NULL,
+ y = NA,
  method = cor,
  method.args = list(),
  min.subj = 20,
@@ -95,4 +95,9 @@
 }
 \author{
   Emma Schwager <emma.schwager@gmail.com> 
+}
+\examples{
+	data1<-matrix(rlnorm(21*23,1,1),nrow=21)
+	data2<-matrix(rlnorm(23*24,1,1),nrow=24)
+	ccrepe.results <-ccrepe  (x=data1,iterations=100) 
 }

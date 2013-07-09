@@ -418,33 +418,10 @@ ccrepe.calculations  <-
 #*************************************************************************************
 #*  	ccrepe calculations                                                          *
 #*************************************************************************************
-function(
- 				x, 							#Data Frame  1 - For ccrepe and nc.score
-				y,							#Data Frame  2 - For ccrepe and nc.score 
-				method,						#Parameters,
-				method.args,				#Areguments for the method
-				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
-				iterations,					#Reboot iterations - For ccrepe
-				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
-				verbose,					#Request for verbose output?
-				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
-				distributions 				#Output Distribution file - For ccrepe
-		)
+function(CA) 
 {
 	Output <-list()
-	CA <-list(	data1=x,
-			data2=y,
-			min.subj=min.subj,
-			iterations=iterations,
-			errthresh=errthresh,
-			method=method,
-			method.args=method.args,
-			verbose=verbose,
-			iterations.gap=iterations.gap,
-			outdist=distributions
-			)
-
-	
+ 
 	CA <- DecodeInputCAArguments(CA)							#Decode Input Parameters
 
 	if (CA$OneDataset == TRUE)
@@ -473,14 +450,15 @@ function(CA){
 #*************************************************************************************
 	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#Euler's Gamma
 
+
 	if (length(CA$data1) == 1)					#If the user did not select at least one input dataframe - Stop the run
 		{
 		if (is.na(CA$data1))
 			stop('You must select at least one input data frame (data1<-YourData)') 
 		}
 	CA$OneDataset <- FALSE						#Set the symmmetrical flag to False (Will be true if data2=data1)		
-	if (length(CA$data2) == 0)					#If user did not enter data2 - we assume he wants data2=data1
-		if (is.null(CA$data2))					
+	if (length(CA$data2) == 1)					#If user did not enter data2 - we assume he wants data2=data1
+		if (is.na(CA$data2))					
 		{
 		CA$OneDataset <- TRUE					#And set up the Symmetrical flag
 		}
