@@ -104,7 +104,7 @@ function(data,N.rand, CA){
 	loop.range <- 1:n						#Establish looping range default
 	max.loop.range = n						#Maximum entry of the loop range default
 	
- 	if ( !CA$subset.cols.1 == 0)		#If the User entered a subset of columns
+ 	if ( length(CA$subset.cols.1) == 1 && !CA$subset.cols.1[1] == 0)		#If the User entered a subset of columns
 		{
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
 		max.loop.range <-max(loop.range)	#and set up the max 
@@ -311,7 +311,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	loop.range1 <- 1:n1						#Establish looping range default
 	max.loop.range1 = n1					#Maximum entry of the loop range default
 	
- 	if (!CA$subset.cols.1 == 0)		#If the User entered a subset of columns
+	
+	if ( length(CA$subset.cols.1) == 1 && !CA$subset.cols.1[1] == 0)		#If the User entered a subset of columns
 		{
 		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
 		max.loop.range1 <-max(loop.range1)	#and set up the max 
@@ -320,7 +321,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	loop.range2 <- 1:n2						#Establish looping range default
 	max.loop.range2 = n2					#Maximum entry of the loop range default
 	
- 	if (!CA$subset.cols.2 == 0)		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.2) == 1 && !CA$subset.cols.2[1] == 0)		#If the User entered a subset of columns
 		{
 		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
 		max.loop.range2 <-max(loop.range2)	#and set up the max 
@@ -478,8 +479,8 @@ function(CA){
 			stop('You must select at least one input data frame (data1<-YourData)') 
 		}
 	CA$OneDataset <- FALSE						#Set the symmmetrical flag to False (Will be true if data2=data1)		
-	if (length(CA$data2) == 1)					#If user did not enter data2 - we assume he wants data2=data1
-		if (is.na(CA$data2))					
+	if (length(CA$data2) == 0)					#If user did not enter data2 - we assume he wants data2=data1
+		if (is.null(CA$data2))					
 		{
 		CA$OneDataset <- TRUE					#And set up the Symmetrical flag
 		}

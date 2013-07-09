@@ -4,7 +4,7 @@ function(
 #*  	ccrepe                                                                       *
 #*************************************************************************************
 	x=NA,								#Data Frame  1 - For ccrepe and nc.score
-	y=NA,								#Data Frame  2 - For ccrepe and nc.score 
+	y=NULL,								#Data Frame  2 - For ccrepe and nc.score 
 	method = cor,						#Default
 	method.args = list(), 				#Arguments for the method
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
@@ -12,7 +12,7 @@ function(
 	subset.cols.1 = c(0),				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
 	subset.cols.2 = c(0),				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
-	verbose = FALSE,					#Request for verbose output?
+	verbose = FALSE,					#Request for verbose output
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
 	distributions = NA					#Output Distribution file - For ccrepe
 	)					
@@ -23,51 +23,7 @@ function(
 	#**********************************************************************
 	
  
-	
-			CA <- ccrepe.calculations(
-				x, 							#Data Frame  1 - For ccrepe and nc.score
-				y,							#Data Frame  2 - For ccrepe and nc.score 
-				method,						#Method
-				method.args,				#Method argument
-				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
-				iterations,					#Reboot iterations - For ccrepe
-				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
-				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
-				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
-				verbose,					#Request for verbose output?
-				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
-				distributions  				#Output Distribution file - For ccrepe
-				)
-				return(CA)					
-		
-		
-
-}
-
-
-
-
-ccrepe.calculations  <-
-#*************************************************************************************
-#*  	ccrepe calculations                                                          *
-#*************************************************************************************
-function(
- 				x, 							#Data Frame  1 - For ccrepe and nc.score
-				y,							#Data Frame  2 - For ccrepe and nc.score 
-				method,						#Parameters,
-				method.args,				#Method Arguments
-				min.subj,					#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
-				iterations,					#Reboot iterations - For ccrepe
-				subset.cols.1,				#Subset of cols from cav1 to iterate on (c(0)== ALL) - For ccrepe
-				subset.cols.2,				#Subset of cols from cav2 to iterate on (c(0)== ALL) - For ccrepe
-				errthresh, 					#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
-				verbose,					#Request for verbose output?
-				iterations.gap,				#If output is verbose - after how many iterations issue a status message?
-				distributions 				#Output Distribution file - For ccrepe
-		)
-{
-	Output <-list()
-	CA <-list(	data1=x,
+	CA <-list(data1=x,
 			data2=y,
 			min.subj=min.subj,
 			iterations=iterations,
@@ -78,10 +34,21 @@ function(
 			method.args=method.args,
 			verbose=verbose,
 			iterations.gap=iterations.gap,
-			outdist=distributions
-			)
+			outdist=distributions)
+			
+			
+			CA <- ccrepe.calculations(CA)
+			return(CA)					
 
-	
+}
+
+ccrepe.calculations  <-
+#*************************************************************************************
+#*  	ccrepe calculations                                                          *
+#*************************************************************************************
+function( CA )
+{
+	Output <-list()
 	CA <- DecodeInputCAArguments(CA)							#Decode Input Parameters
 	if (CA$OneDataset == TRUE)
 		{

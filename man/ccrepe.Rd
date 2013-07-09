@@ -12,13 +12,13 @@
 \usage{
  ccrepe(
  x = NA,
- y = NA,
+ y = NULL,
  method = cor,
  method.args = list(),
  min.subj = 20,
  iterations = 1000,
- subset.cols.1 = c(0),			 
- subset.cols.2 = c(0),				 
+ subset.cols.1 = c(0),				 
+ subset.cols.2 = c(0), 
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
@@ -59,15 +59,15 @@
   Reboot iterations (default: 1000)
 }
   \item{subset.cols.1}{
-  Subset of columns from x to work on.  (Default: c(0) - meaning: Use all columns of x\cr
-  All the columns of x are used for normalization\cr
+  Subset of columns from x to work on.  (Default: c(0) - meaning: Use all columns of x 
+  All the columns of x are used for normalization 
   Calculations are performed with the requested subset (or by default, all columns) 
-  }
-  \item{subset.cols.2}{
-  Subset of columns from y to work on.  (Default: c(0) - meaning: Use all columns of y\cr
-  If applicable (y present), all the columns of y are used for normalization\cr
-  Calculations are performed with the requested subset (or by default, all columns) 
-  }
+}
+ \item{subset.cols.2}{
+  Subset of columns from y to work on.  (Default: c(0) - meaning: Use all columns of y  
+  If applicable (y present), all the columns of y are used for normalization 
+  Calculations are performed with the requested subset (or by default, all columns)  
+}
   \item{errthresh}{
 	errThresh   (default= 0.0001)  Represents the probability of getting all 0's in a given bootstrapped column.
 	If a bug/feature/column has too many 0's, its probability of sampling all 0's will be too large; it is therefore not used
@@ -92,24 +92,7 @@
 		Their descriptions are above\cr
 	The calculation results consist of:\cr
 		cor.matrix, p-values.matrix,  q-values.matrix  
-	\cr
-	\cr
-	For nc.score\cr
-	It returns a dataframe containing the calculation results and the parameters used.\cr
-	Parameters shown:\cr
-	min.abundance, min.samples and adBons\cr
-	In addition, the function displays the matrices of the filtered data x.filtered and y.filtered\cr
-	Filtering consists of eliminating NA's as well as observations that do not meet \cr
-	the minimum abundance threshold: Selection of species with abundance has to be  >= min.abundance \cr
-	in more than min.samples percent of samples\cr
-	The calculation results consists of matrix or vectors of normalized scores\cr
-		
 }
 \author{
   Emma Schwager <emma.schwager@gmail.com> 
-}
-\examples{
-	data1<-matrix(rlnorm(21*23,1,1),nrow=21)
-	data2<-matrix(rlnorm(23*24,1,1),nrow=24)
-	ccrepe.results <-ccrepe  (x=data1,iterations=100) 
 }
