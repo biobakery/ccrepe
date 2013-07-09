@@ -17,6 +17,8 @@
  method.args = list(),
  min.subj = 20,
  iterations = 1000,
+ subset.cols.1 = c(0),			 
+ subset.cols.2 = c(0),				 
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
@@ -56,6 +58,16 @@
   \item{iterations}{
   Reboot iterations (default: 1000)
 }
+  \item{subset.cols.1}{
+  Subset of columns from x to work on.  (Default: c(0) - meaning: Use all columns of x\cr
+  All the columns of x are used for normalization\cr
+  Calculations are performed with the requested subset (or by default, all columns) 
+  }
+  \item{subset.cols.2}{
+  Subset of columns from y to work on.  (Default: c(0) - meaning: Use all columns of y\cr
+  If applicable (y present), all the columns of y are used for normalization\cr
+  Calculations are performed with the requested subset (or by default, all columns) 
+  }
   \item{errthresh}{
 	errThresh   (default= 0.0001)  Represents the probability of getting all 0's in a given bootstrapped column.
 	If a bug/feature/column has too many 0's, its probability of sampling all 0's will be too large; it is therefore not used

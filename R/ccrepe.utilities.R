@@ -100,15 +100,16 @@ function(data,N.rand, CA){
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
-	
+
 	loop.range <- 1:n						#Establish looping range default
 	max.loop.range = n						#Maximum entry of the loop range default
 	
- 	if (length(CA$subset.cols.1 > 1))		#If the User entered a subset of columns
+ 	if ( !CA$subset.cols.1 == 0)		#If the User entered a subset of columns
 		{
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
 		max.loop.range <-max(loop.range)	#and set up the max 
 		}
+
 
 
 	for(i in loop.range){
@@ -160,6 +161,8 @@ function(data,N.rand, CA){
 			}
 		}
 	}
+	
+
 	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 	for (indx in 1:nrow(data.cor))						#post the q-values
@@ -308,7 +311,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	loop.range1 <- 1:n1						#Establish looping range default
 	max.loop.range1 = n1					#Maximum entry of the loop range default
 	
- 	if (length(CA$subset.cols.1 > 1))		#If the User entered a subset of columns
+ 	if (!CA$subset.cols.1 == 0)		#If the User entered a subset of columns
 		{
 		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
 		max.loop.range1 <-max(loop.range1)	#and set up the max 
@@ -317,7 +320,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	loop.range2 <- 1:n2						#Establish looping range default
 	max.loop.range2 = n2					#Maximum entry of the loop range default
 	
- 	if (length(CA$subset.cols.2 > 1))		#If the User entered a subset of columns
+ 	if (!CA$subset.cols.2 == 0)		#If the User entered a subset of columns
 		{
 		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
 		max.loop.range2 <-max(loop.range2)	#and set up the max 
