@@ -1,11 +1,10 @@
 \name{nc.score}
 \alias{nc.score}
 \title{
-  Calculate  species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data
-
+  nc.score
 }
 \description{
-  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data
+  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
   }
 \usage{
 nc.score(x = NA,
@@ -17,10 +16,10 @@ nc.score(x = NA,
 }
 \arguments{
   \item{x}{
-   First entity to be processed
+   First entity to be processed.
 }
   \item{y}{
-   Second entity to be processed
+   Second entity to be processed.
 }
   \item{bins}{
  Number of bins to use
@@ -29,14 +28,14 @@ nc.score(x = NA,
  Request verbose output
 }
   \item{min.abundance}{
-  Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples
+  Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
   \item{min.samples}{
-  Minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples
+  Minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
 }
 \value{ 
-	matrix or vectors of normalized scores
+	Matrix or vectors of normalized scores.
 }
 
 \author{
