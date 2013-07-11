@@ -44,8 +44,7 @@ nc.score(x = NA,
 }
 \examples{
 	data1<-matrix(rlnorm(21*5,1,1),nrow=21)
-	data2<-matrix(rlnorm(5*17,1,1),nrow=17)
-	nc.score.results <- nc.score( x=data1, y=data2 )
+	nc.score.results <- nc.score( x=data1 )
 }
 
 

@@ -2,18 +2,12 @@
 \alias{ccrepe-package}
 \docType{package}
 \title{
- The package has two functions\cr 
- 1. ccrepe: Calculate correlations, p-values and q-values for relative abundances of bugs in one or two body sites \cr 
- 2. nc.score: Calculate Species-Level Co-Variation and Co-Exclusion Patterns in the Human Microbiome
+ A package for analysis of sparse compositional data.\cr
+ Allows calculation of similarity scores based on nc-score and calculation of compositionality-corrected p-values\cr
+ for arbitrary distance metrics applied to compositional data.
 }
 \description{
- Function number 1 (ccrepe):\cr 
-     Calculate correlations, p-values and q-values for relative abundances of bugs in one or two body sites using bootstrap and permutation matrices of the data.\cr 
- Function number 2 (nc.score):\cr 
-     Calculate species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data\cr
- The calculations of ccrepe or nc.score are controlled via the parameter method\cr
- When method=cor the package performs ccrepe calculations
- When method=nc.score, the package perform nc.score calculations
+ ccrepe was developed for use with microbial metagenomic data, which is both sparse and compositional in nature.
 }
 \details{
 \tabular{ll}{

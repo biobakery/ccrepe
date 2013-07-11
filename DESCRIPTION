@@ -1,13 +1,13 @@
 Package: ccrepe 
 Type: Package
-Title: The package invokes the ccrepe and the nc.score functions
+Title: ccrepe and nc.score
 Version: 1.0
 Imports:
     infotheo (>= 1.1)
 Date: 2013-04-18
-Author: Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>
-Maintainer: Emma Schwager <emma.schwager@gmail.com>, Craig Bielski<craig.bielski@gmail.com>, George Weingart<george.weingart@gmail.com>
-Description: The package has two functions 
- Function number 1 (ccrepe):    Calculate correlations, p-values and q-values for relative abundances of bugs in one or two body sites using bootstrap and permutation matrices of the data
- Function number 2 (nc.score):  Calculate species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data
+Author: Emma Schwager <emma.schwager@gmail.com>,Craig Bielski<craig.bielski@gmail.com>
+Maintainer: Emma Schwager <emma.schwager@gmail.com>,Craig Bielski<craig.bielski@gmail.com>,George Weingart<george.weingart@gmail.com>
+Description: The package has two functions: 
+ ccrepe:    Calculates correlations, p-values and q-values for relative abundances of bugs in one or two body sites using bootstrap and permutation matrices of the data.
+ nc.score:  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
 License: MIT | file LICENSE
