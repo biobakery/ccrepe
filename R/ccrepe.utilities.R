@@ -1,27 +1,20 @@
-calculate_q_values <- function(CA)
-  #**********************************************************************
-  #       Calculate Q values                                                            *
-  #**********************************************************************
-  {
-		non.missing.p.values <- CA$p.values[which(!is.na(CA$p.values))]
-		m = length(non.missing.p.values)                                #m is the total number of p-values
-		ln_m = log(m)                                           #log m
-		ln_m_Plus_Gamma = ln_m + CA$Gamma	
-		SortedVector = sort(non.missing.p.values,index.return = TRUE)    #Sort the entire PValues matrix into a vector
-		KVector = seq(1,m)                                              #A vector with the total number of entries in the PValues matrix
-		QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector              #Calculate a vector containing the Q values
-		QValuesArranged = rep(-1,m)
-		QValuesArranged[SortedVector$ix] = QValues
-		CA$q.values<-CA$p.values
-		CA$q.values[which(!is.na(CA$p.values))] = QValuesArranged
-		return(CA)
-  }
-
-
-
-
-
-
+ calculate_q_values <-
+function(CA)
+#**********************************************************************
+#	Calculate Q values    				                              *
+#**********************************************************************
+{
+	m = length(CA$p.values)					#m is the total number of p-values
+	ln_m = log(m)									#log m
+	ln_m_Plus_Gamma = ln_m + CA$Gamma					
+	SortedVector = sort(CA$p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
+	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
+	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
+	QValuesArranged = rep(-1,m)
+	QValuesArranged[SortedVector$ix] = QValues
+	CA$q.values<-matrix(QValuesArranged, nrow= nrow(CA$p.values), byrow=TRUE)
+	return(CA)
+}
 
 
 
@@ -106,26 +99,22 @@ function(data,N.rand, CA){
 	 
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
-	
 
 	loop.range <- 1:n						#Establish looping range default
-	max.loop.range = n						#Maximum entry of the loop range default
-	
- 	if ( length(CA$subset.cols.1) == 1 && !CA$subset.cols.1[1] == 0)		#If the User entered a subset of columns
+		if ( length(CA$subset.cols.1) > 1 )		#If the User entered a subset of columns
+
 		{
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
-		max.loop.range <-max(loop.range)	#and set up the max 
 		}
 
 
-
-	for(i in loop.range){
-		if((i+1)<=max.loop.range){
-			for(k in (i+1):max.loop.range){	
- 
-	#####for(i in 1:n){
-		#####if((i+1)<=n){
-			######for(k in (i+1):n){
+	for( index1 in 1:(length(loop.range)-1) )
+	{
+		i = loop.range[index1]
+		{
+			for(index2 in (index1+1):length(loop.range))
+			{	
+				k = loop.range[index2]
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
  
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
@@ -194,6 +183,7 @@ function(data,N.rand, CA){
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
 	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
 	CA$sim.score <- CA$cor											#Rename cor to sim.score
+	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 
@@ -316,38 +306,32 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
 	loop.range1 <- 1:n1						#Establish looping range default
-	max.loop.range1 = n1					#Maximum entry of the loop range default
 	
 	
-	if ( length(CA$subset.cols.1) == 1 && !CA$subset.cols.1[1] == 0)		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.1)> 1 )		#If the User entered a subset of columns
 		{
 		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
-		max.loop.range1 <-max(loop.range1)	#and set up the max 
 		}
 
 	loop.range2 <- 1:n2						#Establish looping range default
-	max.loop.range2 = n2					#Maximum entry of the loop range default
 	
-	if ( length(CA$subset.cols.2) == 1 && !CA$subset.cols.2[1] == 0)		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.2) > 1 )		#If the User entered a subset of columns
 		{
 		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
-		max.loop.range2 <-max(loop.range2)	#and set up the max 
 		}
 	
 	
 	
-	
-	
-	
-	
-	#####for(i in 1:n1){
-		#####for(k in 1:n2){
-	for(i in loop.range1){
-		for(k in loop.range2){
-			
+
+	for(index1 in 1:(length(loop.range1)))
+	{
+		i = loop.range1[index1]
+		for(index2 in 1:(length(loop.range2)))
+		{
+			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
-			#######bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,max.loop.range1+k))
+
+			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
 
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
 			
@@ -362,7 +346,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.c = n.c + 1
 		
 			
-			measure.parameter.list <- append(list(x=data[,i],y=data[,max.loop.range1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
+			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
 			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
@@ -409,7 +393,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
-	diag(CA$q.values) <- NA									#Set diagonal of p.values to NA 
+	diag(CA$q.values) <- NA									#Set diagonal of q.values to NA 
+	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	CA$sim.score <- CA$cor									#Rename cor to sim.score
 	CA$cor <- NULL
     CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
