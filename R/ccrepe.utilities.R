@@ -186,7 +186,12 @@ function(data,N.rand, CA){
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
-
+	if (length(CA$subset.cols.1) > 1)				#If used a subset - present only the subset
+		{
+		CA$p.values <- CA$p.values[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
+		CA$q.values <- CA$q.values[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
+		CA$sim.score <- CA$sim.score[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
+		}
 	return(CA)														# Return the output matrix
 }
 
@@ -397,7 +402,20 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	CA$sim.score <- CA$cor									#Rename cor to sim.score
 	CA$cor <- NULL
-    CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
+	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
+	if  (length(CA$subset.cols.1) > 1) #If User selected a subset
+		{ 
+			total.rows.to.display = CA$subset.cols.1
+		}
+	if  (length(CA$subset.cols.2) > 1) #If User selected a subset
+		{ 
+			total.cols.to.display = CA$subset.cols.2
+		}
+	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
+	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
+	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	return(CA)			# Return the output matrix
 }
 
