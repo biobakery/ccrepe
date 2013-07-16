@@ -57,6 +57,13 @@ function(data,N.rand, CA){
 	#Generating the bootstrap and permutation matrices
 	bootstrap.matrices = list()    # The list of matrices of possible bootstrap rows (each matrix multiplies by the data to give a resampled dataset)
 	permutation.matrices = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
+	
+	
+
+	if (length(colnames(CA$data1)) == 0)		#If no colum names - force them to be the column number
+		{
+		colnames(CA$data1)<-1:ncol(CA$data1) 
+		}
 
 	for(i in 1:N.rand){
 		if (CA$verbose == TRUE)		#If output is verbose - print the number of iterations
@@ -236,6 +243,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	permutation.matrices2 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 
 
+	if (length(colnames(CA$data1.norm)) == 0)		#If no colum names - force them to be the column number
+		{
+		colnames(CA$data1.norm)<-1:ncol(CA$data1.norm) 
+		}
+	if (length(colnames(CA$data2.norm)) == 0)		#If no colum names - force them to be the column number
+		{
+		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
+		}	
+	
+	
 	for(i in 1:N.rand){
  
 
@@ -613,17 +630,17 @@ function(bootstrap.dist,permutation.dist,  CA,i, k)	{
 	
 	output.string0 <- paste(bootstrap.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Boot,",colnames(CA$data1.norm[i]),",",colnames(CA$data1.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Boot,",colnames(CA$data1)[i],",",colnames(CA$data1)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
-		{output.string <-paste("Boot,",colnames(CA$data1.norm[i]),",",colnames(CA$data2.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Boot,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 
 	cat(output.string,file=CA$outdistFile,append=TRUE)
 	
 	output.string0 <- paste(permutation.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Permutation,",colnames(CA$data1.norm[i]),",",colnames(CA$data1.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Permutation,",colnames(CA$data1)[i],",",colnames(CA$data1)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
-		{output.string <-paste("Permutation,",colnames(CA$data1.norm[i]),",",colnames(CA$data2.norm[k]),",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Permutation,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 	cat(output.string,file=CA$outdistFile,append=TRUE)
 
 
