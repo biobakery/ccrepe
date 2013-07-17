@@ -48,7 +48,8 @@ function(data,N.rand, CA){
 	nsubj = nrow(data)				# Number of subjects
 
 	# Generating the output data matrix (I chose this form for simplicity; we do want to keep the output object George has made)
-	data.cor = matrix(ncol=5,nrow=choose(n,2))
+	
+	data.cor = matrix(ncol=5,nrow=(n+1)*(n/2))	#Row Number increased from range(n,2) to n+1*(n/2) because we calc diagonal
 	colnames(data.cor) = c("bug1", "bug2", "cor", "p.value", "q.value")
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
@@ -115,11 +116,11 @@ function(data,N.rand, CA){
 		}
 
 
-	for( index1 in 1:(length(loop.range)-1) )
+	for( index1 in 1:(length(loop.range)) )
 	{
 		i = loop.range[index1]
 		{
-			for(index2 in (index1+1):length(loop.range))
+			for(index2 in (index1):length(loop.range))
 			{	
 				k = loop.range[index2]
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
@@ -138,6 +139,7 @@ function(data,N.rand, CA){
 				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
 				n.p   = nrow(data)						#Number of rows in data
+
 				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
 				if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
 					{	
