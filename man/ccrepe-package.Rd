@@ -3,11 +3,11 @@
 \docType{package}
 \title{
  A package for analysis of sparse compositional data.\cr
- Allows calculation of similarity scores based on nc-score and calculation of compositionality-corrected p-values\cr
- for arbitrary distance metrics applied to compositional data.
+ Allows calculation of the similarity measure nc-score and calculation of compositionality-corrected p-values\cr
+ for arbitrary similarity scores (including user-defined) applied to compositional data.
 }
 \description{
- ccrepe was developed for use with microbial metagenomic data, which is both sparse and compositional in nature.
+ ccrepe was developed for use with microbial metagenomic data, which is both sparse and compositional in nature and therefore requires careful statistical analysis using appropriate tools.
 }
 \details{
 \tabular{ll}{
