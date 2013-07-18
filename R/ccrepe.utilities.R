@@ -13,7 +13,8 @@
 	QValuesArranged = rep(-1,m)
 	QValuesArranged[SortedVector$ix] = QValues
 	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
-	CA$q.values<-matrix(QValuesArranged, nrow= nrow(CA$p.values), byrow=TRUE)
+	CA$q.values<-CA$p.values
+	CA$q.values[which(!is.na(CA$p.values))] = QValuesArranged
 	return(CA)
 }
 
