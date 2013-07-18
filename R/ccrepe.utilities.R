@@ -1,10 +1,10 @@
- calculate_q_values <-
-function(CA)
+ calculate_q_values <- function(CA)
 #**********************************************************************
 #	Calculate Q values    				                              *
 #**********************************************************************
 {
-	m = length(CA$p.values)					#m is the total number of p-values
+	non.missing.p.values <- CA$p.values[which(!is.na(CA$p.values))]
+	m = length(non.missing.p.values)                                #m is the total number of p-values
 	ln_m = log(m)									#log m
 	ln_m_Plus_Gamma = ln_m + CA$Gamma					
 	SortedVector = sort(CA$p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
@@ -12,6 +12,7 @@ function(CA)
 	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
 	QValuesArranged = rep(-1,m)
 	QValuesArranged[SortedVector$ix] = QValues
+	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
 	CA$q.values<-matrix(QValuesArranged, nrow= nrow(CA$p.values), byrow=TRUE)
 	return(CA)
 }
