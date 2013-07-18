@@ -113,87 +113,19 @@
   Emma Schwager <emma.schwager@gmail.com> 
 }
 \examples{
-%	data1<-matrix(rlnorm(21*23,1,1),nrow=21)
-%	ccrepe.results <-ccrepe (x=data1,iterations=200) 
-        > test.data
-                        Bug 1     Bug 2     Bug 3     Bug 4
-        Subject 1  0.29787234 0.2978723 0.2553191 0.1489362
-        Subject 2  0.17073171 0.3170732 0.2682927 0.2439024
-        Subject 3  0.09302326 0.3255814 0.2558140 0.3255814
-        Subject 4  0.32352941 0.3235294 0.1470588 0.2058824
-        Subject 5  0.17241379 0.1724138 0.4137931 0.2413793
-        Subject 6  0.29729730 0.2162162 0.2702703 0.2162162
-        Subject 7  0.22500000 0.3250000 0.2000000 0.2500000
-        Subject 8  0.12820513 0.3589744 0.2307692 0.2820513
-        Subject 9  0.20000000 0.2250000 0.2250000 0.3500000
-        Subject 10 0.10256410 0.3076923 0.1794872 0.4102564
-        > ccrepe(test.data,verbose=TRUE,min.subj=10)
-        Completed  100  iterations
-        Completed  200  iterations
-        Completed  300  iterations
-        Completed  400  iterations
-        Completed  500  iterations
-        Completed  600  iterations
-        Completed  700  iterations
-        Completed  800  iterations
-        Completed  900  iterations
-        Completed  1000  iterations
-        $min.subj
-        [1] 10
-
-        $iterations
-        [1] 1000
-
-        $subset.cols.1
-        [1] 0
-
-        $subset.cols.2
-        [1] 0
-
-        $errthresh
-        [1] 1e-04
-
-        $verbose
-        [1] TRUE
-
-        $iterations.gap
-        [1] 100
-
-        $sim.score.parameters
-                method            use
-            "spearman" "complete.obs"
-
-        $p.values
-                  Bug 1     Bug 2     Bug 3     Bug 4
-        Bug 1        NA 0.4368752 0.2781620 0.9411821
-        Bug 2 0.4368752        NA 0.7786462 0.0398753
-        Bug 3 0.2781620 0.7786462        NA 0.4753067
-        Bug 4 0.9411821 0.0398753 0.4753067        NA
-
-        $q.values
-                 Bug 1    Bug 2    Bug 3    Bug 4
-        Bug 1       NA 4.683029 4.969538 4.585856
-        Bug 2 3.902524       NA 4.637000 2.137191
-        Bug 3 3.727153 4.173300       NA 3.639278
-        Bug 4 4.203701 1.068596 3.184369       NA
-
-        $sim.score
-                   Bug 1      Bug 2      Bug 3      Bug 4
-        Bug 1  1.0000000 -0.3454545 -0.1636364 -0.7818182
-        Bug 2 -0.3454545  1.0000000 -0.4424242  0.2727273
-        Bug 3 -0.1636364 -0.4424242  1.0000000 -0.2727273
-        Bug 4 -0.7818182  0.2727273 -0.2727273  1.0000000
-
-
-        ccrepeSampleTestFunction  <- function(x, y = NA){
-        #*************************************************************************************
-        #*      ccrepeSampleTestFunction                                                     *
-        #* This a simple example fot a test measurent function to be used with ccrepe        *
-        #* used in the same fashion that cor would be used                                   *
-        #*************************************************************************************
-                 if(is.vector(x) && is.vector(y)) return(.5)                                   
-                 if(is.matrix(x) && is.na(y)) return(matrix(rep(.5,ncol(x)^2),ncol=ncol(x)))   
-                 if(is.data.frame(x) && is.na(y)) return(matrix(rep(.5,ncol(x)^2),ncol=ncol(x)))
-                 else stop('ERROR')
-        }
+testdata<-matrix(c(
+0.29787234, 0.2978723, 0.2553191, 0.1489362,
+0.17073171, 0.3170732, 0.2682927, 0.2439024,
+0.09302326, 0.3255814, 0.2558140, 0.3255814,
+0.32352941, 0.3235294, 0.1470588, 0.2058824,
+0.17241379, 0.1724138, 0.4137931, 0.2413793,
+0.29729730, 0.2162162, 0.2702703, 0.2162162,
+0.22500000, 0.3250000, 0.2000000, 0.2500000,
+0.12820513, 0.3589744, 0.2307692, 0.2820513,
+0.20000000, 0.2250000, 0.2250000, 0.3500000,
+0.10256410, 0.3076923, 0.1794872, 0.4102564
+),nrow=10,ncol=4,byrow = TRUE)
+dimnames(testdata) = list( 
+  c("Subject 1", "Subject 2","Subject 3","Subject 4","Subject 5","Subject 6","Subject 7","Subject 8","Subject 9","Subject 10"),       
+  c("bug 1", "bug 2", "bug 3","bug 4")) 
 }
