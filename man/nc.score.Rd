@@ -1,10 +1,10 @@
 \name{nc.score}
 \alias{nc.score}
 \title{
-    Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
+  nc.score
 }
 \description{
-  NC score ordinalizes relative abundance data by "binning."  The resulting ordinal data is evaluated for the presence of cooccurrence and coexclusion patterns.
+  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
   }
 \usage{
 nc.score(x = NA,
@@ -16,22 +16,24 @@ nc.score(x = NA,
 }
 \arguments{
   \item{x}{
-   First entity to be processed.
-}
+   First entity to be processed.   Columns are bugs, rows are samples.
+ }
   \item{y}{
-   Second entity to be processed.
+   Vector.  If selected, x must be a vector as well.   
 }
   \item{bins}{
  Number of bins to use
+ The number of bins are used to discretize the input matrix.
+ The package uses the discretize function of the package infotheo where the number of bins is an integer specifying the number of bins to be used for the discretization 
 }
 \item{verbose}{
  Request verbose output
 }
   \item{min.abundance}{
-  Minimum abundance threshold: Bugs which do not have at least min.samples samples with abundance min.abundance are excluded to reduce computational burden.
+  Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
   \item{min.samples}{
-  Minimum samples threshold: Bugs which do not have at least min.samples samples with abundance min.abundance are excluded to reduce computational burden.
+  Minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
 }
 \value{ 
