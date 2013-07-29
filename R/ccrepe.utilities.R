@@ -494,7 +494,15 @@ function(CA){
 		CA$OneDataset <- TRUE					#And set up the Symmetrical flag
 		}
 
-
+ 
+	if  ( length(CA$subset.cols.1) == 1 && (is.na(CA$subset.cols.1)))				#If NA - set to default
+		{
+		CA$subset.cols.1 = c(0)					#Set to default
+		}
+	if  ( length(CA$subset.cols.2) == 1 && (is.na(CA$subset.cols.2)))				#If NA - set to default
+		{
+		CA$subset.cols.2 = c(0)					#Set to default
+		}
 	
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
@@ -698,6 +706,17 @@ function(CA){
 	CA$data.cor <- NULL 
 	CA$retries.max.iterations <- NULL
 
+	if  ( length(CA$subset.cols.1) == 1 &&  CA$subset.cols.1 == c(0))			#If NA - set to default
+		{
+		CA$subset.cols.1 <-NA					#Set to default
+		}
+	if  ( length(CA$subset.cols.2) == 1 &&  CA$subset.cols.2 == c(0))			#If NA - set to default
+		{
+		CA$subset.cols.2 <-NA					#Set to default
+		}
+	
+	
+	
 
 						 
 	if (!CA$verbose == TRUE)												 

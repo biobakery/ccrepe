@@ -17,8 +17,8 @@
  ccrepe(
  x = NA,
  y = NA,
- method = cor,
- method.args = list(),
+ sim.score = cor,
+ sim.score.args = list(),
  min.subj = 20,
  iterations = 1000,
  subset.cols.1 = c(0),				 
@@ -42,7 +42,7 @@
    the default is to use the row numbers as subject IDs.
 }
  
-  \item{method}{
+  \item{sim.score}{
    Similarity measure, such as cor or nc.score.  This similarity measure can be a pre-defined R function or user-defined.  If the latter,
    certain properties should be satisfied as detailed below (also see examples).  The default similarity measure is Spearman correlation.\cr
    A user-defined similarity measure should:\cr
@@ -52,10 +52,10 @@
    4.Resulting matrix (in the case of one input) must be symmetric\cr
    5.The inputs must be named x and y\cr
 }
-  \item{method.args}{
+  \item{sim.score.args}{
 	A list of arguments for the measurement function.
 	For example:  In the case of cor, the following would be acceptable:
-	method.args = list(method=`spearman',use=`complete.obs'	).\cr	
+	sim.score.args = list(method='spearman',use='complete.obs'	).\cr	
         Note that this is the default behavior.
 }
   \item{min.subj}{
@@ -66,11 +66,11 @@
   The number of iterations of bootstrap and permutation (default: 1000).
 }
   \item{subset.cols.1}{
-  Subset of columns from x to work on.  (Default: c(0) - meaning: Use all columns of x. 
+  Subset of columns from x to work on.  (Default: NA - meaning: Use all columns of x. 
   All the columns of x are used for normalization but calculations are performed only with the requested subset (by default, all columns). 
 }
  \item{subset.cols.2}{
-  Subset of columns from y to work on.  (Default: c(0) - meaning: Use all columns of y.  
+  Subset of columns from y to work on.  (Default: NA - meaning: Use all columns of y.  
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
 }
   \item{errthresh}{
