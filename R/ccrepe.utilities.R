@@ -705,18 +705,20 @@ function(CA){
 	CA$Gamma <- NULL 
 	CA$data.cor <- NULL 
 	CA$retries.max.iterations <- NULL
+	CA$subset.cols.x <-CA$subset.cols.1
+	CA$subset.cols.y <-CA$subset.cols.2
+	CA$subset.cols.1 <- NULL
+	CA$subset.cols.2 <- NULL
 
-	if  ( length(CA$subset.cols.1) == 1 &&  CA$subset.cols.1 == c(0))			#If NA - set to default
+	if  ( length(CA$subset.cols.x) == 1 &&  CA$subset.cols.x == c(0))			#If NA - set to default
 		{
-		CA$subset.cols.1 <-NA					#Set to default
+		CA$subset.cols.x <-NA					#Set to default
 		}
-	if  ( length(CA$subset.cols.2) == 1 &&  CA$subset.cols.2 == c(0))			#If NA - set to default
+	if  ( length(CA$subset.cols.y) == 1 &&  CA$subset.cols.y == c(0))			#If NA - set to default
 		{
-		CA$subset.cols.2 <-NA					#Set to default
+		CA$subset.cols.y <-NA					#Set to default
 		}
-	
-	
-	
+
 
 						 
 	if (!CA$verbose == TRUE)												 
@@ -728,8 +730,8 @@ function(CA){
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
 		CA$sim.score.parameters <- NULL	
-		CA$subset.cols.1 <- NULL
-		CA$subset.cols.2 <- NULL		
+		CA$subset.cols.x <- NULL
+		CA$subset.cols.y <- NULL			
 		}
 
 

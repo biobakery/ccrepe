@@ -21,8 +21,8 @@
  sim.score.args = list(),
  min.subj = 20,
  iterations = 1000,
- subset.cols.1 = NA,				 
- subset.cols.2 = NA, 
+ subset.cols.x = NA,				 
+ subset.cols.y = NA, 
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
@@ -65,11 +65,11 @@
   \item{iterations}{
   The number of iterations of bootstrap and permutation (default: 1000).
 }
-  \item{subset.cols.1}{
+  \item{subset.cols.x}{
   Subset of columns from x to work on.  (Default: NA - meaning: Use all columns of x. 
   All the columns of x are used for normalization but calculations are performed only with the requested subset (by default, all columns). 
 }
- \item{subset.cols.2}{
+ \item{subset.cols.y}{
   Subset of columns from y to work on.  (Default: NA - meaning: Use all columns of y.  
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
 }
@@ -96,7 +96,7 @@
 	Default parameters shown:\cr
                 min.subj,errThresh,sim.score,p.values,q.values
         Additional parameters if verbose=TRUE:
-		iterations, subset.cols.1, subset.cols.2,\cr
+		iterations, subset.cols.x, subset.cols.y,\cr
 		iterations.gap and sim.score.parameters\cr
         The descriptions of all parameters bug sim.score,p.values and q.values are above.\cr
         sim.score is a matrix of the simliarity scores for all the requested comparisons.  The (i,j)th
