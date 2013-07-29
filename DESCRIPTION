@@ -1,7 +1,7 @@
 Package: ccrepe 
 Type: Package
 Title: ccrepe and nc.score
-Version: 1.0
+Version: 0.99.0
 Imports:
     infotheo (>= 1.1)
 Date: 2013-04-18
