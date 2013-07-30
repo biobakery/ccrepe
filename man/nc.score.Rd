@@ -1,10 +1,22 @@
 \name{nc.score}
 \alias{nc.score}
 \title{
+
+
   nc.score
+  
+  
 }
 \description{
-  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
+
+
+  nc.score calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
+  
+  It is an extension to Diamond's checkerboard score (See references below) to ordinal data and implements a
+  framework for robust detection of species-level association patterns in metagenomic data.
+  It performs quality control and transforms relative abundances to ordinal values and computes an association measure,
+  the NC-score (n-dimensional checkerboard score), for each species pair.
+  
   }
 \usage{
 nc.score(x = NA,
@@ -42,6 +54,14 @@ nc.score(x = NA,
 
 \author{
  Craig Bielski<craig.bielski@gmail.com>
+}
+\references{
+
+
+  Diamond JM (1975) Assembly of species communities. In: Cody ML, Diamond JM,
+editors. Ecology and Evolution of Communities. Cambridge, MA: Harvard
+University Press. pp. 342-444.
+
 }
 \examples{
 	data1<-matrix(rlnorm(21*5,1,1),nrow=21)
