@@ -9,8 +9,8 @@ function(
 	sim.score.args = list(), 				#Arguments for the method
 	min.subj = 20,						#Minimum rows in "data" frame to proceed (If not - run stops) - For ccrepe
 	iterations = 1000,					#Reboot iterations - For ccrepe
-	subset.cols.x = NA,				#Subset of cols from cav1 to iterate on (NA = ALL) - For ccrepe
-	subset.cols.y = NA,				#Subset of cols from cav2 to iterate on (NA = ALL) - For ccrepe
+	subset.cols.x = NULL,				#Subset of cols from cav1 to iterate on (NULL = ALL) - For ccrepe
+	subset.cols.y = NULL,				#Subset of cols from cav2 to iterate on (NULL = ALL) - For ccrepe
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For ccrepe
 	verbose = FALSE,					#Request for verbose output
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?

@@ -23,8 +23,8 @@
  sim.score.args = list(),
  min.subj = 20,
  iterations = 1000,
- subset.cols.x = NA,				 
- subset.cols.y = NA, 
+ subset.cols.x = NULL,				 
+ subset.cols.y = NULL, 
  errthresh = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
@@ -68,11 +68,11 @@
   The number of iterations of bootstrap and permutation (default: 1000).
 }
   \item{subset.cols.x}{
-  Subset of columns from x to work on.  (Default: NA - meaning: Use all columns of x. 
+  Subset of columns from x to work on.  (Default: NULL - meaning: Use all columns of x. 
   All the columns of x are used for normalization but calculations are performed only with the requested subset (by default, all columns). 
 }
  \item{subset.cols.y}{
-  Subset of columns from y to work on.  (Default: NA - meaning: Use all columns of y.  
+  Subset of columns from y to work on.  (Default: NULL - meaning: Use all columns of y.  
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
 }
   \item{errthresh}{

@@ -109,10 +109,11 @@ function(data,N.rand, CA){
 	 
 	# Now, actually calculating the correlation p-values within the dataset
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
+	
+ 
 
 	loop.range <- 1:n						#Establish looping range default
-		if ( length(CA$subset.cols.1) > 1 )		#If the User entered a subset of columns
-
+	if ( length(CA$subset.cols.1) > 1 )		#If the User entered a subset of columns
 		{
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
 		}
@@ -197,11 +198,12 @@ function(data,N.rand, CA){
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
-	if (length(CA$subset.cols.1) > 1)				#If used a subset - present only the subset
+ 
+	if (length(CA$subset.cols.x) > 1)				#If used a subset - present only the subset
 		{
-		CA$p.values <- CA$p.values[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
-		CA$q.values <- CA$q.values[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
-		CA$sim.score <- CA$sim.score[CA$subset.cols.1,CA$subset.cols.1]   #Display only the subset of cols and rows
+		CA$p.values <- CA$p.values[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
+		CA$q.values <- CA$q.values[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
+		CA$sim.score <- CA$sim.score[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
 		}
 	return(CA)														# Return the output matrix
 }
@@ -426,13 +428,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
 	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
-	if  (length(CA$subset.cols.1) > 1) #If User selected a subset
+
+	if  (length(CA$subset.cols.x) > 1) #If User selected a subset
 		{ 
-			total.rows.to.display = CA$subset.cols.1
+			total.rows.to.display = CA$subset.cols.x
 		}
-	if  (length(CA$subset.cols.2) > 1) #If User selected a subset
+	if  (length(CA$subset.cols.y) > 1) #If User selected a subset
 		{ 
-			total.cols.to.display = CA$subset.cols.2
+			total.cols.to.display = CA$subset.cols.y
 		}
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
@@ -495,11 +498,12 @@ function(CA){
 		}
 
  
-	if  ( length(CA$subset.cols.1) == 1 && (is.na(CA$subset.cols.1)))				#If NA - set to default
+ 
+	if  ( length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1)))				#If NULL- set to default
 		{
 		CA$subset.cols.1 = c(0)					#Set to default
 		}
-	if  ( length(CA$subset.cols.2) == 1 && (is.na(CA$subset.cols.2)))				#If NA - set to default
+	if  ( length(CA$subset.cols.2) == 0 && (is.null(CA$subset.cols.2)))				#If NULL - set to default
 		{
 		CA$subset.cols.2 = c(0)					#Set to default
 		}
@@ -709,14 +713,15 @@ function(CA){
 	CA$subset.cols.y <-CA$subset.cols.2
 	CA$subset.cols.1 <- NULL
 	CA$subset.cols.2 <- NULL
+	
 
 	if  ( length(CA$subset.cols.x) == 1 &&  CA$subset.cols.x == c(0))			#If NA - set to default
 		{
-		CA$subset.cols.x <-NA					#Set to default
+		CA$subset.cols.x <-NULL					#Set to default
 		}
 	if  ( length(CA$subset.cols.y) == 1 &&  CA$subset.cols.y == c(0))			#If NA - set to default
 		{
-		CA$subset.cols.y <-NA					#Set to default
+		CA$subset.cols.y <-NULL					#Set to default
 		}
 
 
