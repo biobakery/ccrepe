@@ -131,4 +131,15 @@ dimnames(testdata) = list(
   c("Subject 1", "Subject 2","Subject 3","Subject 4","Subject 5","Subject 6","Subject 7","Subject 8","Subject 9","Subject 10"),       
   c("bug 1", "bug 2", "bug 3","bug 4")) 
 ccrepe.results  <-ccrepe  (x=testdata, iterations=20, min.subj=10)
+ccrepe.results.nc.score <- ccrepe(x=testdata,iterations=20,min.subj=10,sim.score=nc.score)
+}
+
+\references{
+
+
+  First Author et al (2014) Detecting statistically significant associtations between sparse and high dimensional compositioanl data.
+
+  Benjamini and Yekutieli (2001).  "The control of the false discovery rate in multiple testing under dependency." The Annals of Statistics.  Vol. 19, No. 4.  pp. 1165-1188.
+
+
 }
