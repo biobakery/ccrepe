@@ -51,7 +51,14 @@ function(
  
 	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
 		{
-			x.discretized[,i] = discretize(x[,i],nbins=CA$bins)[,1]	#Discretize it and post the value in the discretized matrix
+			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
+				{
+					x.discretized[,i] = discretize(x[,i],nbins=CA$bins)[,1]	#Bins is a number; Discretize it and post the value in the discretized matrix
+				}
+				else
+				{
+					x.discretized[,i] = findInterval(x[,i],CA$bins)	+ 1	#Use the bins provided by the User
+				}
 		}
 
  	CA$nc.score.matrix <-nc.score.helper(x.discretized,CA)	#Post it in the results area

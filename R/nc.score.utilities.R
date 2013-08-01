@@ -135,6 +135,12 @@ function(input.bins, CA)
 #*  	Preprocess input bins as passed by the user or use default                          *
 #********************************************************************************************
 {
+	if (length(input.bins) > 1)					#If the user passed a set of bins,  sort them and use them
+		{
+			CA$bins <- sort(input.bins)
+			return(CA)
+		}
+		
 	if (class(CA$x) == "numeric") 
 		{bins <- floor(sqrt(length(CA$x)))}								#If a vector - take sqrt of the length	
 		else
@@ -144,8 +150,9 @@ function(input.bins, CA)
 		if (suppressWarnings(!is.na(as.numeric(input.bins))))	#check if the User entered a numeric number of bins
 			{	bins = input.bins	}					#Valid Input from the User - Use it		
 			else
-			{	cat('\nInvalid number of bins entered - Using default =nrow(x)) : ',bins,'\n')}
-		
+			{warning('Invalid number of bins entered - Using default bins = sqrt(Number of rows) ')}
+
+
 	CA$bins = bins										#Post it to Common Area
 	return(CA)
 }
