@@ -26,13 +26,18 @@ function(
 		{
 			CA <-list()									#Set the common area
 			CA$x <- x									#Post x to common area
+			CA$y <- y									#Post y to common area
 			CA$verbose <- verbose						#Post the verbose flag
 			CA <- process.input.bins(bins, CA)
 			x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
 			y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
 			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)					#Invoke the function
 			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
-			return(nc.score.result)
+			CA$nc.score.result <- nc.score.result		#Post the result
+			if (CA$verbose == TRUE)
+				{return(CA)}
+				else
+				{return(nc.score.result)}	
 		}
 		
 	#************************************************************************
