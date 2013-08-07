@@ -145,7 +145,7 @@ function(data,N.rand, CA){
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
 				n.p   = nrow(data)						#Number of rows in data
 
-				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
+				CalcThresholdForError = ((CA$errthresh1)^(1/n.p))*n.p		#If there is not enough data 
 				if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
 					{	
 						p.value=NA
@@ -155,8 +155,6 @@ function(data,N.rand, CA){
 
 					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
-				 	
-					 
 
 					####################################################
 					#  New p.value calculation                         #
@@ -380,22 +378,33 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 			n.c = n.c + 1
 		
-			
-			measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
-			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
-			
-			
-			
-			 
-	
+					
 
-			####################################################
-			#  New p.value calculation                         #
-			####################################################
-			z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-			p.value <- 2*pnorm(-abs(z.stat))					
+			n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
+			n.0_2 = sum(data[,n1+k]==0)				#Number of zeros in column n1+k
+			n.p   = nrow(data)						#Number of rows in data
+			CalcThresholdForError1 = ((CA$errthresh1)^(1/n.p))*n.p		#If there is not enough data on col1
+			CalcThresholdForError2 = ((CA$errthresh2)^(1/n.p))*n.p		#If there is not enough data on col1
+		
 	
-	
+			
+			if (n.0_1 > CalcThresholdForError1 | n.0_2 > CalcThresholdForError2)
+					{	
+						p.value=NA
+						cor=NA
+					} 
+			else
+					{
+						measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
+						cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+
+						####################################################
+						#  New p.value calculation                         #
+						####################################################
+						z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+						p.value <- 2*pnorm(-abs(z.stat))					
+					}
+
 								  
 			CA$p.values[i,k] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[i,k] = z.stat					#Post it in the z.stat matrix 
@@ -434,6 +443,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
+	rownames(CA$z.stat) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$z.stat) <- colnames(CA$data2.norm)		#Post the column names
 	diag(CA$q.values) <- NA									#Set diagonal of q.values to NA 
 	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	CA$sim.score <- CA$cor									#Rename cor to sim.score
@@ -544,7 +555,7 @@ function(CA){
 		}	
 		
 
-	CA$retries.max.iterations =  -round(log2(CA$errthresh)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
+	CA$retries.max.iterations =  -round(log2(CA$errthresh1)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
 		
 		
 	return(CA)			 				#Return list of decoded input parameters
@@ -743,7 +754,6 @@ function(CA){
 		{
 		#CA$min.subj <- NULL		#Should be included in the default output												 
 		CA$iterations <- NULL												 
-		#CA$errthresh <- NULL		#Should be included in the default output										 
 		CA$method.args <- NULL										 		
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
