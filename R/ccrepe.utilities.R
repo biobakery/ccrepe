@@ -45,6 +45,8 @@ function(data,N.rand, CA){
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
+	CA$z.stat <-matrix(data=0,nrow=n,ncol=n)	#Build the empty z.stat matrix
+	
 	CA$cor <-matrix(data=0,nrow=n,ncol=n)	#Build the empty correlation matrix
 	
 	nsubj = nrow(data)				# Number of subjects
@@ -154,12 +156,16 @@ function(data,N.rand, CA){
 					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 				 	
-					# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
+					 
 
-					p.value = pnorm(mean(permutation.dist), 
-                                        mean=mean(bootstrap.dist), 
-                                        sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
+					####################################################
+					#  New p.value calculation                         #
+					####################################################
+					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+					p.value <- 2*pnorm(-abs(z.stat))					
 					}
+				CA$z.stat[i,k] = z.stat					#Post z.stat in output matrix	
+				CA$z.stat[k,i] = z.stat					#Post z.stat in output matrix					
 				CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
 				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
 				CA$cor[i,k] = cor						#Post it in the cor matrix  
@@ -330,7 +336,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
-	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty PValues matrix
+	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty p.values matrix
+	CA$z.stat  <-matrix(data=0,nrow=n1,ncol=n2)		#Build the empty z.stat matrix
 	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
 	loop.range1 <- 1:n1						#Establish looping range default
@@ -378,14 +385,20 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 			
 			
-			# The Z-test to get the p-value for this comparison; as in get.renorm.null.pval
-			p.value = pnorm(mean(permutation.dist), 
-                                  mean=mean(bootstrap.dist), 
-                                  sd=sqrt((var(bootstrap.dist) + var(permutation.dist))*0.5))
+			
+			 
 	
 
+			####################################################
+			#  New p.value calculation                         #
+			####################################################
+			z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+			p.value <- 2*pnorm(-abs(z.stat))					
+	
+	
 								  
-			CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
+			CA$p.values[i,k] = p.value				#Post it in the p.values matrix  
+			CA$z.stat[i,k] = z.stat					#Post it in the z.stat matrix 
 			CA$cor[i,k] = cor.meas[n.c]				#Post it in the cor matrix  
 							  
 			p.values[n.c] = p.value
