@@ -95,7 +95,9 @@ function(data,N.rand, CA){
 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
-	boot.cor <- do.call(lapply,c(list(boot.data,CA$method), CA$method.args))  #Invoke the measuring function
+
+	###  Using method.calculation  for the one dataset also
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
 
 
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -327,8 +329,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		#Function to check is all cols are zeros and apply cor
 	
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
+
 	
 	# Now calculating the correlations and p-values between the two datasets
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
