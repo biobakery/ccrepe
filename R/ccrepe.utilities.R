@@ -93,6 +93,8 @@ function(data,N.rand, CA){
  
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
+	
+	 
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
 
@@ -109,6 +111,13 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
+	
+	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
+	if (CA$verbose == TRUE)
+		{
+			CA$verbose.requested <- TRUE		#Turn of the verbose flag save variable
+			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
+		}
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
@@ -131,7 +140,7 @@ function(data,N.rand, CA){
 			{	
 				k = loop.range[index2]
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
- 
+				
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
@@ -304,7 +313,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
 	# second element of each, etc.
  
-	
+	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
+	if (CA$verbose == TRUE)
+		{
+			CA$verbose.requested <- TRUE		#Turn of the verbose flag save variable
+			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
+		}
 
 	permutation.cor = mapply(extractCor,
 		            mat1=permutation.norm1,
@@ -725,6 +739,11 @@ function(CA){
 		close(CA$outdistFile)										#Close outdist file	
 		CA$outdistFile <- NULL										#And remove it from the common area
 		}
+	if (CA$verbose.requested == TRUE)								#Check if the User requested verbose
+		{															#We might have turned it off before calling CA$method	
+		CA$verbose = TRUE	
+		CA$verbose.requested = NULL			
+		}
 	CA$data1 <- NULL													
 	CA$data1.norm <- NULL  											
 	CA$data2 <- NULL													
@@ -755,14 +774,16 @@ function(CA){
 						 
 	if (!CA$verbose == TRUE)												 
 		{
-		#CA$min.subj <- NULL		#Should be included in the default output												 
+		CA$min.subj <- NULL		 											 
 		CA$iterations <- NULL												 
 		CA$method.args <- NULL										 		
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
 		CA$sim.score.parameters <- NULL	
 		CA$subset.cols.x <- NULL
-		CA$subset.cols.y <- NULL			
+		CA$subset.cols.y <- NULL	
+		CA$errthresh1 <- NULL
+		CA$errthresh2 <- NULL	
 		}
 
 

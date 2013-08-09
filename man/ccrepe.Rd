@@ -26,6 +26,7 @@
  subset.cols.x = NULL,				 
  subset.cols.y = NULL, 
  errthresh1 = 1e-04,
+ errthresh2 = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
  distributions = NA)
