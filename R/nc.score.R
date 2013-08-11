@@ -28,9 +28,20 @@ function(
 			CA$x <- x									#Post x to common area
 			CA$y <- y									#Post y to common area
 			CA$verbose <- verbose						#Post the verbose flag
-			CA <- process.input.bins(bins, CA)
-			x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
-			y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
+
+			CA <- process.input.bins(bins, CA)			#Process bins input request
+			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
+				{
+					x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
+					y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
+				}
+				else
+				{
+					x.discretized  = as.matrix(findInterval(x,CA$bins))	 #Use the bins provided by the User
+					y.discretized  = as.matrix(findInterval(y,CA$bins))	 #Use the bins provided by the User
+				}
+			
+
 			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)					#Invoke the function
 			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
 			CA$nc.score.result <- nc.score.result		#Post the result
@@ -62,7 +73,7 @@ function(
 				}
 				else
 				{
-					x.discretized[,i] = findInterval(x[,i],CA$bins)	+ 1	#Use the bins provided by the User
+					x.discretized[,i] = findInterval(x[,i],CA$bins)	 #Use the bins provided by the User
 				}
 		}
 

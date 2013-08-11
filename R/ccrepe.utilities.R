@@ -742,8 +742,8 @@ function(CA){
 	if (CA$verbose.requested == TRUE)								#Check if the User requested verbose
 		{															#We might have turned it off before calling CA$method	
 		CA$verbose = TRUE	
-		CA$verbose.requested = NULL			
 		}
+	CA$verbose.requested = NULL		
 	CA$data1 <- NULL													
 	CA$data1.norm <- NULL  											
 	CA$data2 <- NULL													
