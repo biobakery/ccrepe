@@ -28,29 +28,29 @@ nc.score(x = NA,
 }
 \arguments{
   \item{x}{
-   First entity to be processed.   Columns are bugs, rows are samples.
+   A numeric vector, data frame, or matrix.  The first entity to be processed.   Columns are bugs, rows are samples.
  }
   \item{y}{
-   Vector.  If selected, x must be a vector as well.   
+   Numeric vector.  If selected, x must be a numeric vector as well.   
 }
   \item{bins}{
- Either the number of bins to use or a vector specifying the cutoffs.
- If a single number is give, this is used as the number of bins in the discretize function of the package infotheo.
+ Either a single integer specifying the number of bins to use or a numeric vector specifying the cutoffs.
+ If a single number is given, this is used as the number of bins in the discretize function of the package infotheo.
  If a vector is specified, the function findInterval is used to discretize the data according to the cutoffs given.
  The default behavior is to use the defaults for the discretize function.
 }
 \item{verbose}{
- Request verbose output
+ Logical flag to request verbose output
 }
   \item{min.abundance}{
-  Minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
+  A numeric value specifying the minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
   \item{min.samples}{
-  Minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
+  An integer specifying the minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
 }
 \value{ 
-	Matrix or vectors of normalized scores.
+	Matrix or vector of normalized scores.
 }
 
 \author{
@@ -77,8 +77,11 @@ nc.score(x = NA,
         ),nrow=10,ncol=4,byrow = TRUE)
 
 	nc.score.results <- nc.score( x=data1 )
-        nc.sccore.results.bins <- nc.score( x=data1, bins=5 )
+        nc.score.results.bins <- nc.score( x=data1, bins=5 )
         nc.score.results.bin.cutoffs <- nc.score( x=data1, bins = c(.001,.25,.5) )
+	nc.score.results
+	nc.score.results.bins
+	nc.score.results.bin.cutoffs
 }
 
 

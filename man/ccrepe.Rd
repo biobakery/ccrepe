@@ -46,7 +46,7 @@
 }
  
   \item{sim.score}{
-   Similarity measure, such as cor or nc.score.  This similarity measure can be a pre-defined R function or user-defined.  If the latter,
+   A function defining a similarity measure, such as cor or nc.score.  This similarity measure can be a pre-defined R function or user-defined.  If the latter,
    certain properties should be satisfied as detailed below (also see examples).  The default similarity measure is Spearman correlation.\cr
    A user-defined similarity measure should:\cr
    1.Be able to take either two inputs which are vectors or one input which is either a matrix or a dataframe\cr
@@ -77,7 +77,7 @@
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
 }
   \item{errthresh1}{
-	Represents the probability of getting all 0's in a given bootstrapped column for the first dataset
+	A numeric value representing the probability of getting all 0's in a given bootstrapped column for the first dataset
 	If a bug/feature/column has a number of zeros that makes the probability of obtaining all zeros when sampling
         with replacement > errthresh, that bug/feature/column will be excluded from the subsequent analysis.  This is 
         to ensure that the standard deviation of the bootstrap sample is non-zero. (default= 0.0001)
@@ -86,7 +86,7 @@
 	Same as errthresh1 but for the second input (y) (default= 0.0001)
 }
   \item{verbose}{
-	Indicator whether the user requested verbose output, which prints periodic progress of the algorithm through the dataset(s),
+	Logical: an indicator whether the user requested verbose output, which prints periodic progress of the algorithm through the dataset(s),
         as well as including more detailed output.  (default:FALSE)
 }
  \item{iterations.gap}{
@@ -100,20 +100,24 @@
 \value{
 	Returns a list containing the calculation results and the parameters used.\cr
 	Default parameters shown:\cr
-                min.subj,errThresh,sim.score,p.values,q.values
-        Additional parameters if verbose=TRUE:
-		iterations, subset.cols.x, subset.cols.y,\cr
-		iterations.gap and sim.score.parameters\cr
-        The descriptions of all parameters bug sim.score,p.values and q.values are above.\cr
-        sim.score is a matrix of the simliarity scores for all the requested comparisons.  The (i,j)th
+        \item{min.subj}{Description above}
+	\item{errThresh}{Description above}
+	\item{sim.score}{A matrix of the simliarity scores for all the requested comparisons.  The (i,j)th
         element of sim.score correponds to the similarity score of column i (or the ith column of subset.cols.1) 
         and column j (or the jth column of subset.cols.1) in one dataset, or
-        to the similarity score of ###DOUBLE CHECK THIS### of column i (or the ith column of subset.cols.1) in dataset x 
-        and column j (or the jth column of subset.cols.2)in dataset y in the case of two datasets.\cr
-        p.values is a matrix of the p-values for all the requested comparisons.  The (i,j)th element of p.values
-        corresponds to the p-value of the (i,j)th element of sim.score.\cr
-        q.values is a matrix of the Benjamini-Hochberg-Yekutieli FDR corrected p-values.  The (i,j)th element
-        of q.values corresponds to the q-value fo the (i,j)th element of sim.score.
+        to the similarity score of column i (or the ith column of subset.cols.1) in dataset x 
+        and column j (or the jth column of subset.cols.2)in dataset y in the case of two datasets.}
+	\item{p.values}{A  matrix of the p-values for all the requested comparisons.  The (i,j)th element of p.values
+        corresponds to the p-value of the (i,j)th element of sim.score.}
+	\item{q.values}{A matrix of the Benjamini-Hochberg-Yekutieli FDR corrected p-values.  The (i,j)th element
+        of q.values corresponds to the q-value fo the (i,j)th element of sim.score.}
+        Additional parameters if verbose=TRUE:
+	\item{iterations}{Description Above}
+	\item{subset.cols.x}{Description Above}
+	\item{subset.cols.y}{Description Above}
+	\item{iterations.gap}{Description Above}
+	\item{sim.score.parameters}{Description Above}
+
 }
 \author{
   Emma Schwager <emma.schwager@gmail.com> 
@@ -136,6 +140,8 @@ dimnames(testdata) = list(
   c("bug 1", "bug 2", "bug 3","bug 4")) 
 ccrepe.results  <-ccrepe  (x=testdata, iterations=20, min.subj=10)
 ccrepe.results.nc.score <- ccrepe(x=testdata,iterations=20,min.subj=10,sim.score=nc.score)
+ccrepe.results
+ccrepe.results.nc.score
 }
 
 \references{

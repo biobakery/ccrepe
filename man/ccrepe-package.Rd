@@ -7,7 +7,7 @@
  for arbitrary similarity scores (including user-defined) applied to compositional data.
 }
 \description{
- ccrepe was developed for use with microbial metagenomic data, which is both sparse and compositional in nature and therefore requires careful statistical analysis using appropriate tools.
+ ccrepe was developed for use with microbial relative abundance data data, which is both sparse and compositional in nature.
 }
 \details{
 \tabular{ll}{
