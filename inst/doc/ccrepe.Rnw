@@ -20,9 +20,7 @@ BiocStyle::latex()
 ccrepe is a package for analysis of sparse compositional data.\newline 
 It allows calculation of the similarity measure nc-score and calculation of compositionality-corrected p-values 
 for arbitrary similarity scores (including user-defined) applied to compositional data.\newline
-The package contains two functions:\newline
-{\bf ccrepe} and {\bf nc.score} \newline
-
+The package contains two functions {\bf ccrepe} and {\bf nc.score} and is maintained by Emma Schwager (emma.schwager@gmail.com) and George Weingart (george.weingart@gmail.com)
 
 %---------------------------------------------------------
 \section{ccrepe} 
@@ -39,11 +37,11 @@ The package contains two functions:\newline
  or for a subset of user-specified ones. \newline
  Q-values are additionally calculated using the Benjamin-Hochberg-Yekutieli procedure (see References).\newline
 \subsection{Arguments}
-{\bf x:}\newline
+{\bf x}\newline
    First dataframe or matrix containing the relative abundances in cavity1 : columns are bugs, rows are samples.
    (Rows should therefore sum to a constant.)\newline 
    The subjectIDs, if present, are assumed to be the row names and NOT the first column of data.\newline\newline
-{\bf y:}\newline
+{\bf y}\newline
    Second dataframe or matrix (optional) containing the relative abundances in cavity2: columns are bugs, rows are samples. \newline
    The subjectIDs, if present, are assumed to be the row names.\newline
    If both x and y are specified, they will be merged by row names.\newline
@@ -68,19 +66,19 @@ The package contains two functions:\newline
   This is to ensure that there are sufficient subjects to perform a bootstrap (default: 20).\newline\newline
 {\bf iterations}\newline
   The number of iterations of bootstrap and permutation (default: 1000).\newline\newline
-{\bf subset.cols.x}\newline\newline
+{\bf subset.cols.x}\newline 
   Subset of columns from x to work on.  (Default: NULL - meaning: Use all columns of x. \newline
   All the columns of x are used for normalization but calculations are performed only with the requested subset (by default, all columns).\newline\newline 
-{\bf subset.cols.y}\newline\newline
+{\bf subset.cols.y}\newline
   Subset of columns from y to work on.  (Default: NULL - meaning: Use all columns of y.  \newline
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset 
   (by default, all columns).  \newline\newline
-{\bf errthresh1}\newline\newline
-	Represents the probability of getting all 0's in a given bootstrapped column for the first dataset.\newline
-	If a bug/feature/column has a number of zeros that makes the probability of obtaining all zeros when sampling
-        with replacement > errthresh, that bug/feature/column will be excluded from the subsequent analysis.\newline
-		This is to ensure that the standard deviation of the bootstrap sample is non-zero. (default= 0.0001)\newline\newline
-{\bf errthresh2}\newline\newline
+{\bf errthresh1}\newline\
+ Represents the probability of getting all 0's in a given bootstrapped column for the first dataset.\newline
+ If a bug/feature/column has a number of zeros that makes the probability of obtaining all zeros when sampling
+ with replacement > errthresh, that bug/feature/column will be excluded from the subsequent analysis.\newline
+This is to ensure that the standard deviation of the bootstrap sample is non-zero. (default= 0.0001)\newline\newline
+{\bf errthresh2}\newline
 	Same as errthresh1 but for the second input (y) (default= 0.0001)\newline\newline
 {\bf verbose}\newline
 Indicator whether the user requested verbose output, which prints periodic progress of the algorithm through the dataset(s),
@@ -92,9 +90,9 @@ Indicator whether the user requested verbose output, which prints periodic progr
 \subsection{Output}
 ccrepe returns a {\bf list} containing the calculation results and the parameters used.\newline\newline  
 {\bf Default parameters shown:}\newline 
-min.subj,errThresh,sim.score,p.values,q.values\newline\newline
+sim.score,p.values,q.values, and z.stat\newline\newline
 {\bf Additional parameters:} (If verbose=TRUE):\newline
-		iterations, subset.cols.x, subset.cols.y,iterations.gap and sim.score.parameters,\newline\newline
+	min.subj, iterations, errthresh1, errthresh2, verbose, iterations.gap , sim.score.parameters \newline\newline
 {\bf sim.score} is a matrix of the simliarity scores for all the requested comparisons. \newline 
 The (i,j)th element of sim.score correponds to the similarity score of column i (or the ith column of subset.cols.1) 
 and column j (or the jth column of subset.cols.1) in one dataset, or
