@@ -209,7 +209,7 @@ min.samples = 0.1)
 \end{Verbatim}
 \subsection{nc.score: Example}		
 \begin{Verbatim}
- testdata<-matrix(c(\newline
+ testdata<-matrix(c(
         0.29787234, 0.2978723, 0.2553191, 0.1489362, 
         0.17073171, 0.3170732, 0.2682927, 0.2439024, 
         0.09302326, 0.3255814, 0.2558140, 0.3255814, 
