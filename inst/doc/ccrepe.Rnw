@@ -177,11 +177,11 @@ The NC-score is an extension to Diamond's checkerboard score (see References) to
 
 \[
 \sum_{i < j}\sum \frac{C_{ij}}{\frac{m(m-1)}{2}}
-\text{where $C_{ij}$ is the number of generalized checkerboard scores when comparing species $i$ and $j$ and $m$ is the total number of species in the community.}
 \]
+where $C_{ij}$ is the number of generalized checkerboard scores when comparing species $i$ and $j$ and $m$ is the total number of species in the community.
 
 \noindent
-and finally normalizes this between -1 and 1 for $n$ bins based on the expected ratio of co-variation to co-exclusion patterns in any given sample.  The adjustment factor is given by:
+The raw NC-score is then normalized to between -1 and 1 for $n$ bins based on the expected ratio of co-variation to co-exclusion patterns in any given sample.  The adjustment factor is given by:
 
 \[
 1.5 \ast \frac{n(n-1)}{n^2 - n + 1},
