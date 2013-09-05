@@ -34,7 +34,7 @@ options(width=78)
 
 \subsection{General functionality}
 
-Compositional data induces spurious correlations between features due to the nonindependence of values that must sum to a fixed total.  CCREPE abrogates this when determining the significance of a similarity measure for each feature pair using two main steps, permutation/renormalization and bootstrapping.  First, given two features to compare, CCREPE generates a null distribution of the similarity expected just due to compositionality by iteratively permuting one feature, renormalizing all samples in the composition to their previous sum, and computing the resulting similarity measures.  Second, CCREPE bootstraps over sample subsets in order to assess confidence in the "true" similarity measure.  Finally, the two resulting distributions are compared using a pooled-variance Z-test to give a compositionality-corrected p-value.  False discovery rate q-values are additionally calculated using the Benjamin-Hochberg-Yekutieli procedure.  For greater detail, see References.
+Compositional data induces spurious correlations between features due to the nonindependence of values that must sum to a fixed total.  CCREPE abrogates this when determining the significance of a similarity measure for each feature pair using two main steps, permutation/renormalization and bootstrapping.  First, given two features to compare, CCREPE generates a null distribution of the similarity expected just due to compositionality by iteratively permuting one feature, renormalizing all samples in the composition to their previous sum, and computing the resulting similarity measures.  Second, CCREPE bootstraps over sample subsets in order to assess confidence in the "true" similarity measure.  Finally, the two resulting distributions are compared using a pooled-variance Z-test to give a compositionality-corrected p-value.  False discovery rate q-values are additionally calculated using the Benjamin-Hochberg-Yekutieli procedure.  For greater detail, see [1,2].
 
 \subsection{Arguments}
 
@@ -141,18 +141,12 @@ ccrepe(
 \subsection{Example}
 
 <<>>=
-test.input <- matrix(c(
- 0.29787234, 0.2978723, 0.2553191, 0.1489362,
- 0.17073171, 0.3170732, 0.2682927, 0.2439024,
- 0.09302326, 0.3255814, 0.2558140, 0.3255814,
- 0.32352941, 0.3235294, 0.1470588, 0.2058824,
- 0.17241379, 0.1724138, 0.4137931, 0.2413793,
- 0.29729730, 0.2162162, 0.2702703, 0.2162162,
- 0.22500000, 0.3250000, 0.2000000, 0.2500000,
- 0.12820513, 0.3589744, 0.2307692, 0.2820513,
- 0.20000000, 0.2250000, 0.2250000, 0.3500000,
- 0.10256410, 0.3076923, 0.1794872, 0.4102564
- ), nrow=10, ncol=4, byrow=TRUE)
+data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
+data[,1] = 2*data[,2] + rnorm(10,0,1)
+data.rowsum <- apply(data,1,sum)
+data.norm <- data/data.rowsum
+apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
+test.input <- data.norm
 
 dimnames(test.input) <- list(c(
  "Sample 1", "Sample 2","Sample 3","Sample 4","Sample 5",
@@ -162,8 +156,11 @@ dimnames(test.input) <- list(c(
 test.output <- ccrepe(x=test.input, iterations=20, min.subj=10)
 @
 <<>>=
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, non-normalized")
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, normalized")
 test.output
 @
+In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\$sim.score and the small q-value in the [1,2] element of test.output\$q.values.
 
 %---------------------------------------------------------
 \section{nc.score} 
@@ -173,20 +170,45 @@ The \Rfunction{nc.score} similarity measure is an N-dimensional extension of the
 
 \subsection{General Funcionality}
 
-The NC-score is an extension to Diamond's checkerboard score (see References) to ordinal data.  The function as implemented here first performs basic quality control filtering of input relative abundance data.  It then transforms relative abundances to ordinal values based on user-provided or default bin thresholds.  It then computes a raw NC-score (analogous to a Pearson $\rho$):
-
+The NC-score is an extension to Diamond's checkerboard score (see [3]) to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
 \[
-\sum_{i < j}\sum \frac{C_{ij}}{\frac{m(m-1)}{2}}
+\left\{
+\left[ \begin{array}{cc}
+    a & b\\
+    c & d\\
+    \end{array} \right]
+\right\}
 \]
-where $C_{ij}$ is the number of generalized checkerboard scores when comparing species $i$ and $j$ and $m$ is the total number of species in the community.
-
-\noindent
-The raw NC-score is then normalized to between -1 and 1 for $n$ bins based on the expected ratio of co-variation to co-exclusion patterns in any given sample.  The adjustment factor is given by:
-
+In the cases that $a < b$ and $c < d$ (or $a > b$ and $c > d$), the submatrix is considered a co-variation pattern; conversely, if $a > b$ and $c < d$ (or $a < b$ and $c > d$) then the submatrix is considered a co-exclusion pattern. The number of co-exclusion patterns for $n$ bins is adjusted based on the expected ratio of co-variaion to co-exclusion patterns in any given sample.  The adjustment factor is given by:
 \[
 1.5 \ast \frac{n(n-1)}{n^2 - n + 1},
 \]
-and the derivation can be found in the References.
+with the complete derivation being left to [4].
+
+\noindent
+The function as implemented here first performs basic quality control filtering of input relative abundance data.  It then transforms relative abundances to ordinal values based on user-provided or default bin thresholds.  It then computes a raw NC-score:
+
+\[
+C_{ij} - 1.5 \ast \frac{n(n-1)}{n^2 - n + 1} \ast D_{ij}
+\]
+where $C_{ij}$ and $D_{ij}$ are the total number of co-variation and co-exclusion patterns, respectively, between species $i$ and $j$ and where $n$ is the number of bins.
+
+\noindent
+The raw NC-score is then normalized to between -1 and 1 for $n$ bins and $s$ samples by dividing by the maximum possible NC-score, which is based on the maximum number of co-variation patterns possible. The normalized NC-score is then analogous to Pearsons $\rho$, where positive values indicate more co-variation than co-exclusion patterns and the magnitude of the score indicates the strength of the association between the species. The derivation of this normalization factor can be found in [4]. The normalization factor is given by:
+\[
+\left(\begin{array}{c} 
+  s\\ 
+  2\\ 
+\end{array} \right) - \left[(s mod n) \ast 
+\left(\begin{array}{c} 
+  \left \lfloor{\frac{s}{n}} \right \rfloor + 1 \\ 
+  2 \\
+\end{array} \right) + \big(n - (s mod n)\big) \ast \left( \begin{array}{c} 
+  \left \lfloor{\frac{s}{n}} \right \rfloor \\ 
+  2 \\
+\end{array} \right)\right].
+\]
+
 
 
 \subsection{Arguments}
@@ -233,22 +255,35 @@ nc.score(
 \subsection{Example}
 
 <<>>=
-test.input <- matrix(c(
- 0.29787234, 0.2978723, 0.2553191, 0.1489362, 
- 0.17073171, 0.3170732, 0.2682927, 0.2439024, 
- 0.09302326, 0.3255814, 0.2558140, 0.3255814, 
- 0.32352941, 0.3235294, 0.1470588, 0.2058824, 
- 0.17241379, 0.1724138, 0.4137931, 0.2413793, 
- 0.29729730, 0.2162162, 0.2702703, 0.2162162, 
- 0.22500000, 0.3250000, 0.2000000, 0.2500000, 
- 0.12820513, 0.3589744, 0.2307692, 0.2820513, 
- 0.20000000, 0.2250000, 0.2250000, 0.3500000, 
- 0.10256410, 0.3076923, 0.1794872, 0.4102564 
- ), nrow=10, ncol=4, byrow = TRUE) 
+data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
+data.rowsum <- apply(data,1,sum)
+data[,1] = 2*data[,2] + rnorm(10,0,1)
+data.norm <- data/data.rowsum
+apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
+test.input <- data.norm
+dimnames(test.input) <- list(c(
+ "Sample 1", "Sample 2","Sample 3","Sample 4","Sample 5",
+ "Sample 6","Sample 7","Sample 8","Sample 9","Sample 10"),
+ c("Feature 1", "Feature 2", "Feature 3","Feature 4"))
+
 test.output <- nc.score(x=test.input)
 @
 <<>>=
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, non-normalized")
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, normalized")
 test.output
 @
+Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.
+
+%---------------------------------------------------------
+\section{References} 
+%---------------------------------------------------------
+
+\begin{enumerate}
+  \item Faust K, Sathirapongsasuti JF, Izard J, Segata N, Gevers D, Raes J, Huttenhower C (2012) ``Microbial Co-occurrence Relationships in the Human Microbiome.'' PLoS Comput Biol 8, e1002606.
+  \item Emma Schwager et al (2014) ``Detecting statistically significant associtations between sparse and high dimensional compositioanl data.''  In progress.
+  \item Diamond JM (1975) Assembly of species communities. In: Cody ML, Diamond JM, editors.  Ecology and Evolution of Communities. Cambridge, MA: Harvard University Press. pp.342-344.
+  \item Bielski C (2013) ``Extending the Checkerboard Score to Ordinal Data: A Methodology for Detecting Species-Level Co-Variation and Co-Exclusion Patterns in the Human Microbiome.''  Master's thesis, Harvard School of Public Health, unpublished.
+\end{enumerate}
 
 \end{document}
