@@ -1,0 +1,10 @@
+CCREPE (Compositionality Corrected by Renormalization and Permutation)
+is a package for analysis of sparse compositional data, such as from
+metagenomic sequencing.  It determines the significance of association
+between features in a composition, using any similarity measure
+(e.g. Pearson correlation, Spearman correlation, etc.)  The package also provides
+a novel similarity measure, the N-dimensional checkerboard score
+(NC-score), particularly appropriate to compositions derived from
+microbial community sequencing data.  This results in p-values and
+false discovery rate q-values corrected for the effects of
+compositionality. 

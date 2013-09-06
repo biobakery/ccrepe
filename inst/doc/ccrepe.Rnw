@@ -1,13 +1,18 @@
-%% \VignetteIndexEntry{CCREPE}
+% \VignetteEngine{knitr::knitr}
+% \VignetteIndexEntry{ccrepe}
 
 \documentclass{article}
 
-<<hack, echo=FALSE>>=
-tex <- "asis"
-@
-<<style, echo=FALSE, results=tex>>=
+%% -------------------------
+%% Pre-amble:
+%% -------------------------
+
+\usepackage[nonamebreak,square]{natbib}
+
+<<style, eval=TRUE, echo=FALSE, results="asis">>=
 BiocStyle::latex()
 @
+
 <<echo=FALSE>>=
 library(ccrepe)
 options(width=78)
@@ -15,6 +20,10 @@ options(width=78)
 
 \title{CCREPE: Compositionality Corrected by Permutation and Renormalization}
 \author{Emma Schwager, George Weingart, Craig Bielski, Curtis Huttenhower}
+
+%% -------------------------
+%% End pre-amble
+%% -------------------------
 
 \begin{document}
 
@@ -34,7 +43,7 @@ options(width=78)
 
 \subsection{General functionality}
 
-Compositional data induces spurious correlations between features due to the nonindependence of values that must sum to a fixed total.  CCREPE abrogates this when determining the significance of a similarity measure for each feature pair using two main steps, permutation/renormalization and bootstrapping.  First, given two features to compare, CCREPE generates a null distribution of the similarity expected just due to compositionality by iteratively permuting one feature, renormalizing all samples in the composition to their previous sum, and computing the resulting similarity measures.  Second, CCREPE bootstraps over sample subsets in order to assess confidence in the "true" similarity measure.  Finally, the two resulting distributions are compared using a pooled-variance Z-test to give a compositionality-corrected p-value.  False discovery rate q-values are additionally calculated using the Benjamin-Hochberg-Yekutieli procedure.  For greater detail, see [1,2].
+Compositional data induces spurious correlations between features due to the nonindependence of values that must sum to a fixed total.  CCREPE abrogates this when determining the significance of a similarity measure for each feature pair using two main steps, permutation/renormalization and bootstrapping.  First, given two features to compare, CCREPE generates a null distribution of the similarity expected just due to compositionality by iteratively permuting one feature, renormalizing all samples in the composition to their previous sum, and computing the resulting similarity measures.  Second, CCREPE bootstraps over sample subsets in order to assess confidence in the "true" similarity measure.  Finally, the two resulting distributions are compared using a pooled-variance Z-test to give a compositionality-corrected p-value.  False discovery rate q-values are additionally calculated using the Benjamin-Hochberg-Yekutieli procedure.  For greater detail, see \citet{faust2012microbial} and \citet{schwager2012unpublished}.
 
 \subsection{Arguments}
 
@@ -155,12 +164,12 @@ dimnames(test.input) <- list(c(
 
 test.output <- ccrepe(x=test.input, iterations=20, min.subj=10)
 @
-<<>>=
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, normalized")
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5>>=
+par(mfrow=c(1,2))
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
 test.output
 @
-In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\$sim.score and the small q-value in the [1,2] element of test.output\$q.values.
 
 %---------------------------------------------------------
 \section{nc.score} 
@@ -170,7 +179,7 @@ The \Rfunction{nc.score} similarity measure is an N-dimensional extension of the
 
 \subsection{General Funcionality}
 
-The NC-score is an extension to Diamond's checkerboard score (see [3]) to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
+The NC-score is an extension to Diamond's checkerboard score (see \citet{cody1975ecology} to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
 \[
 \left\{
 \left[ \begin{array}{cc}
@@ -183,7 +192,7 @@ In the cases that $a < b$ and $c < d$ (or $a > b$ and $c > d$), the submatrix is
 \[
 1.5 \ast \frac{n(n-1)}{n^2 - n + 1},
 \]
-with the complete derivation being left to [4].
+with the complete derivation being left to \citet{bielski2013thesis}.
 
 \noindent
 The function as implemented here first performs basic quality control filtering of input relative abundance data.  It then transforms relative abundances to ordinal values based on user-provided or default bin thresholds.  It then computes a raw NC-score:
@@ -194,7 +203,7 @@ C_{ij} - 1.5 \ast \frac{n(n-1)}{n^2 - n + 1} \ast D_{ij}
 where $C_{ij}$ and $D_{ij}$ are the total number of co-variation and co-exclusion patterns, respectively, between species $i$ and $j$ and where $n$ is the number of bins.
 
 \noindent
-The raw NC-score is then normalized to between -1 and 1 for $n$ bins and $s$ samples by dividing by the maximum possible NC-score, which is based on the maximum number of co-variation patterns possible. The normalized NC-score is then analogous to Pearsons $\rho$, where positive values indicate more co-variation than co-exclusion patterns and the magnitude of the score indicates the strength of the association between the species. The derivation of this normalization factor can be found in [4]. The normalization factor is given by:
+The raw NC-score is then normalized to between -1 and 1 for $n$ bins and $s$ samples by dividing by the maximum possible NC-score, which is based on the maximum number of co-variation patterns possible. The normalized NC-score is then analogous to Pearsons $\rho$, where positive values indicate more co-variation than co-exclusion patterns and the magnitude of the score indicates the strength of the association between the species. The derivation of this normalization factor can be found in \citet{bielski2013thesis}. The normalization factor is given by:
 \[
 \left(\begin{array}{c} 
   s\\ 
@@ -268,22 +277,19 @@ dimnames(test.input) <- list(c(
 
 test.output <- nc.score(x=test.input)
 @
-<<>>=
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Association of Feature 1 and Feature 2, normalized")
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.", fig.height=3>>=
+par(mfrow=c(1, 2))
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
+plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
 test.output
 @
-Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.
+
 
 %---------------------------------------------------------
 \section{References} 
 %---------------------------------------------------------
 
-\begin{enumerate}
-  \item Faust K, Sathirapongsasuti JF, Izard J, Segata N, Gevers D, Raes J, Huttenhower C (2012) ``Microbial Co-occurrence Relationships in the Human Microbiome.'' PLoS Comput Biol 8, e1002606.
-  \item Emma Schwager et al (2014) ``Detecting statistically significant associtations between sparse and high dimensional compositioanl data.''  In progress.
-  \item Diamond JM (1975) Assembly of species communities. In: Cody ML, Diamond JM, editors.  Ecology and Evolution of Communities. Cambridge, MA: Harvard University Press. pp.342-344.
-  \item Bielski C (2013) ``Extending the Checkerboard Score to Ordinal Data: A Methodology for Detecting Species-Level Co-Variation and Co-Exclusion Patterns in the Human Microbiome.''  Master's thesis, Harvard School of Public Health, unpublished.
-\end{enumerate}
+\bibliographystyle{plainnat}
+\bibliography{ccrepe}
 
 \end{document}
