@@ -11,8 +11,7 @@ function(
 	iterations = 1000,					#Reboot iterations - For ccrepe
 	subset.cols.x = NULL,				#Subset of cols from cav1 to iterate on (NULL = ALL) - For ccrepe
 	subset.cols.y = NULL,				#Subset of cols from cav2 to iterate on (NULL = ALL) - For ccrepe
-	errthresh1 = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For first dataset
-	errthresh2 = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For first dataset
+	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For first dataset
 	verbose = FALSE,					#Request for verbose output
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
 	distributions = NA					#Output Distribution file - For ccrepe
@@ -30,8 +29,7 @@ function(
 			iterations=iterations,
 			subset.cols.1=subset.cols.x,
 			subset.cols.2=subset.cols.y,
-			errthresh1=errthresh1,
-			errthresh2=errthresh2,
+			errthresh=errthresh,
 			method=sim.score,
 			method.args=sim.score.args,
 			verbose=verbose,

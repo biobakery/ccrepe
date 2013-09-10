@@ -156,7 +156,7 @@ function(data,N.rand, CA){
 				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
 				n.p   = nrow(data)						#Number of rows in data
 
-				CalcThresholdForError = ((CA$errthresh1)^(1/n.p))*n.p		#If there is not enough data 
+				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
 				if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
 					{	
 						p.value=NA
@@ -188,6 +188,8 @@ function(data,N.rand, CA){
 
 	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
+	CA$q.values[lower.tri(CA$q.values)] = CA$q.values[upper.tri(CA$q.values)]  #Making the q.values matrix symmetrical for the one dataset case
+	
 	for (indx in 1:nrow(data.cor))						#post the q-values
 		{
 			i = data.cor[indx,1]
@@ -400,8 +402,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
 			n.0_2 = sum(data[,n1+k]==0)				#Number of zeros in column n1+k
 			n.p   = nrow(data)						#Number of rows in data
-			CalcThresholdForError1 = ((CA$errthresh1)^(1/n.p))*n.p		#If there is not enough data on col1
-			CalcThresholdForError2 = ((CA$errthresh2)^(1/n.p))*n.p		#If there is not enough data on col1
+			CalcThresholdForError1 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
+			CalcThresholdForError2 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
 		
 	
 			
@@ -572,7 +574,7 @@ function(CA){
 		}	
 		
 
-	CA$retries.max.iterations =  -round(log2(CA$errthresh1)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
+	CA$retries.max.iterations =  -round(log2(CA$errthresh)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
 		
 		
 	return(CA)			 				#Return list of decoded input parameters
@@ -782,8 +784,7 @@ function(CA){
 		CA$sim.score.parameters <- NULL	
 		CA$subset.cols.x <- NULL
 		CA$subset.cols.y <- NULL	
-		CA$errthresh1 <- NULL
-		CA$errthresh2 <- NULL	
+		CA$errthresh <- NULL
 		}
 
 

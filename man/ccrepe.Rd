@@ -25,8 +25,7 @@
  iterations = 1000,
  subset.cols.x = NULL,				 
  subset.cols.y = NULL, 
- errthresh1 = 1e-04,
- errthresh2 = 1e-04,
+ errthresh  = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
  distributions = NA)
@@ -76,15 +75,13 @@
   Subset of columns from y to work on.  (Default: NULL - meaning: Use all columns of y.  
   If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
 }
-  \item{errthresh1}{
+  \item{errthresh}{
 	A numeric value representing the probability of getting all 0's in a given bootstrapped column for the first dataset
 	If a bug/feature/column has a number of zeros that makes the probability of obtaining all zeros when sampling
         with replacement > errthresh, that bug/feature/column will be excluded from the subsequent analysis.  This is 
         to ensure that the standard deviation of the bootstrap sample is non-zero. (default= 0.0001)
 }
-  \item{errthresh2}{
-	Same as errthresh1 but for the second input (y) (default= 0.0001)
-}
+  
   \item{verbose}{
 	Logical: an indicator whether the user requested verbose output, which prints periodic progress of the algorithm through the dataset(s),
         as well as including more detailed output.  (default:FALSE)
