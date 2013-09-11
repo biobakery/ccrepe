@@ -96,9 +96,6 @@ Subset of columns from \Rcode{y} to work on.  The default (\Rcode{NULL}) uses al
 \item[\Rcode{errthresh1}]
 Maximum allowable probability of getting all zeros in a given bootstrapped column for the first dataset \Rcode{x}.  If a feature has a number of zeros that makes the probability of obtaining all zeros when sampling with replacement greater than this value, that feature will be excluded from the subsequent analysis.  This is to ensure that the standard deviation of the bootstrap sample is non-zero. (default: 0.0001).
 
-\item[\Rcode{errthresh2}]
-As \Rcode{errthresh1} but for the second dataset \Rcode{y}.
-
 \item[\Rcode{verbose}]
 If \Rcode{TRUE}, print periodic progress of the algorithm through the dataset(s), as well as including more detailed debugging output.  (default: \Rcode{FALSE}).
 
@@ -141,7 +138,6 @@ ccrepe(
  subset.cols.x = NULL,
  subset.cols.y = NULL,
  errthresh1 = 1e-04,
- errthresh2 = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
  distributions = NA)
@@ -169,7 +165,8 @@ test.output <- ccrepe(x=test.input, iterations=20, min.subj=10)
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5>>=
 par(mfrow=c(1,2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output
 @
 
@@ -187,7 +184,8 @@ test.input <- data.norm
 
 
 data2 <- matrix(rlnorm(105,meanlog=0,sdlog=1),nrow=15,ncol=7)
-aligned.rows <- c(seq(1,4),seq(6,9),11,12)  # The datasets don't have to have subjects line up exactly
+aligned.rows <- c(seq(1,4),seq(6,9),11,12)  # The datasets don't need 
+                                            # to have subjects line up exactly
 data2[aligned.rows,1] <-  2*data[,3] + rnorm(10,0,1)
 data2.rowsum <- apply(data2,1,sum)
 data2.norm <- data2/data2.rowsum
@@ -202,7 +200,8 @@ test.output.two.datasets <- ccrepe(x=test.input, y=test.input.2, iterations=20, 
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5>>=
 par(mfrow=c(1,2))
 plot(data2[aligned.rows,1],data[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",main="Non-normalized")
-plot(data2.norm[aligned.rows,1],data.norm[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",main="Normalized")
+plot(data2.norm[aligned.rows,1],data.norm[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",
+     main="Normalized")
 test.output.two.datasets
 @
 
@@ -225,7 +224,8 @@ test.output.nc.score     <- ccrepe(x=test.input, sim.score=nc.score, iterations=
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values. In this case, however, the sim.score represents the NC-Score between two features rather than the Spearman correlation.", fig.width=7, fig.height=3.5>>=
 par(mfrow=c(1,2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output.nc.score
 @
 
@@ -255,7 +255,8 @@ test.output.sim.score    <- ccrepe(x=test.input, sim.score=my.test.sim.score, it
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. Note that the values of sim.score are all 0.6 and none of the p-values are very small because of the arbitrary definition of the similarity score.", fig.width=7, fig.height=3.5>>=
 par(mfrow=c(1,2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output.sim.score
 @
 
@@ -265,16 +266,14 @@ test.output.sim.score
 
 The \Rfunction{nc.score} similarity measure is an N-dimensional extension of the checkerboard score particularly suited to similarity score calculations between compositions derived from ecological relative abundance measurements.  In such cases, features typically represent species abundances, and the NC-score discretizes these continuous values into one of N bins before computing a normalized similarity of co-occurrence or co-exclusion.  This can be used as a standalone function or with \Rfunction{ccrepe} as above to obtain compositionality-corrected p-values.
 
-\subsection{General Funcionality}
+\subsection{General Functionality}
 
-The NC-score is an extension to Diamond's checkerboard score (see \citet{cody1975ecology} to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
+The NC-score is an extension to Diamond's checkerboard score (see \citet{cody1975ecology}) to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
 \[
-\left\{
 \left[ \begin{array}{cc}
     a & b\\
     c & d\\
     \end{array} \right]
-\right\}
 \]
 In the cases that $a < b$ and $c < d$ (or $a > b$ and $c > d$), the submatrix is considered a co-variation pattern; conversely, if $a > b$ and $c < d$ (or $a < b$ and $c > d$) then the submatrix is considered a co-exclusion pattern. The number of co-exclusion patterns for $n$ bins is adjusted based on the expected ratio of co-variaion to co-exclusion patterns in any given sample.  The adjustment factor is given by:
 \[
@@ -369,7 +368,8 @@ test.output.num    <- nc.score(x=test.input[,1],y=test.input[,2])
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value of the [1,2] element of test.output.matrix (which is identical to test.output.num)", fig.height=3>>=
 par(mfrow=c(1, 2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output.matrix
 test.output.num
 @
@@ -393,7 +393,8 @@ test.output <- nc.score(x=test.input,bins=2)
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.  In this case, the smaller bin number yields a smaller NC-score because of the coarser partitioning of the data.", fig.height=3>>=
 par(mfrow=c(1, 2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output
 @
 
@@ -416,7 +417,8 @@ test.output <- nc.score(x=test.input,bins = c(0.001,0.1,0.25,0.6))
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.  The bin edges specified here represent almost absent ([  0,0.001)), low abundance ([0.001,0.1)), medium abundance ([0.1,0.25)), and high abundance ([0.6,1)).", fig.height=3>>=
 par(mfrow=c(1, 2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
-plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Normalized")
+plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
+     main="Normalized")
 test.output
 @
 
