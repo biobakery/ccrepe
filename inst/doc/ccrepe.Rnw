@@ -199,7 +199,7 @@ dimnames(test.input.2) <- list(paste("Sample",c(seq(1,4),11,seq(5,8),12,9,10,13,
 
 test.output.two.datasets <- ccrepe(x=test.input, y=test.input.2, iterations=20, min.subj=10)
 @
-<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5>>=
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5 >>=
 par(mfrow=c(1,2))
 plot(data2[aligned.rows,1],data[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",main="Non-normalized")
 plot(data2.norm[aligned.rows,1],data.norm[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",main="Normalized")
@@ -296,11 +296,11 @@ The raw NC-score is then normalized to between -1 and 1 for $n$ bins and $s$ sam
 \left(\begin{array}{c} 
   s\\ 
   2\\ 
-\end{array} \right) - \left[(s mod n) \ast 
+\end{array} \right) - \left[ s   (modulo (n)) \ast 
 \left(\begin{array}{c} 
   \left \lfloor{\frac{s}{n}} \right \rfloor + 1 \\ 
   2 \\
-\end{array} \right) + \big(n - (s mod n)\big) \ast \left( \begin{array}{c} 
+\end{array} \right) + \big(n - s    (modulo (n))\big) \ast \left( \begin{array}{c} 
   \left \lfloor{\frac{s}{n}} \right \rfloor \\ 
   2 \\
 \end{array} \right)\right].
