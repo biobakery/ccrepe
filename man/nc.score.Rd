@@ -67,7 +67,7 @@ nc.score(x = NA,
 \examples{	
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10)
 data.rowsum <- apply(data,1,sum)
-data.norm <- data/data.norm
+data.norm <- data/data.rowsum
 testdata <- data.norm
 dimnames(testdata) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
 
