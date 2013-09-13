@@ -3,7 +3,7 @@
 #	Calculate Q values    				                              *
 #**********************************************************************
 {
-	q.values.calc.matrix <- CA$p.values   #Set the default for one and two cases
+	q.values.calc.matrix <- CA$p.values   #Set the default p.values  for one and two dataset cases
 	if  (CA$OneDataset == TRUE)	
 		{q.values.calc.matrix[lower.tri(q.values.calc.matrix)] <- NA}    #If One dataset,  use only the upper part of the matrix
 	non.missing.p.values <- q.values.calc.matrix[which(!is.na(q.values.calc.matrix))]
