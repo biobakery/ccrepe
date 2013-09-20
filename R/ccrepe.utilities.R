@@ -191,7 +191,8 @@ function(data,N.rand, CA){
 
 	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
-	CA$q.values[lower.tri(CA$q.values)] = CA$q.values[upper.tri(CA$q.values)]  #Making the q.values matrix symmetrical for the one dataset case
+ 
+	CA$q.values[lower.tri(CA$q.values)] = t(CA$q.values)[lower.tri(t(CA$q.values))]  #Making the q.values matrix symmetrical for the one dataset case
 	
 	for (indx in 1:nrow(data.cor))						#post the q-values
 		{
