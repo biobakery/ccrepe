@@ -208,7 +208,7 @@ function(data,N.rand, CA){
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
 	#********************************************************************
-	diag(CA$q.values) <- NA											#Set diagonal of p.values to NA 
+	diag(CA$q.values) <- NA											#Set diagonal of q.values to NA 
 	colnames(CA$p.values)<-colnames(CA$data1)						#Set the names of the columns in the p.values matrix
 	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the roes in the p.values matrix
 	colnames(CA$q.values)<-colnames(CA$data1)						#Set the names of the columns in the q.values matrix
@@ -216,7 +216,8 @@ function(data,N.rand, CA){
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
 	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
 	CA$sim.score <- CA$cor											#Rename cor to sim.score
-	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA 
+	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
+        diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
  
@@ -469,8 +470,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$z.stat) <- colnames(CA$data2.norm)		#Post the column names
-	diag(CA$q.values) <- NA									#Set diagonal of q.values to NA 
-	diag(CA$p.values) <- NA									#Set diagonal of p.values to NA 
 	CA$sim.score <- CA$cor									#Rename cor to sim.score
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
