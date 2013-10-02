@@ -129,7 +129,7 @@ function(data,N.rand, CA){
  
 
 	loop.range <- 1:n						#Establish looping range default
-	if ( length(CA$subset.cols.1) > 1 )		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 		{
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
 		}
@@ -366,14 +366,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	loop.range1 <- 1:n1						#Establish looping range default
 	
 	
-	if ( length(CA$subset.cols.1)> 1 )		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
 		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
 		}
 
 	loop.range2 <- 1:n2						#Establish looping range default
 	
-	if ( length(CA$subset.cols.2) > 1 )		#If the User entered a subset of columns
+	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
 		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
 		}
@@ -549,11 +549,11 @@ function(CA){
  
 	if  ( length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1)))				#If NULL- set to default
 		{
-		CA$subset.cols.1 = c(0)					#Set to default
+		CA$subset.cols.1 = NULL					#Set to default
 		}
 	if  ( length(CA$subset.cols.2) == 0 && (is.null(CA$subset.cols.2)))				#If NULL - set to default
 		{
-		CA$subset.cols.2 = c(0)					#Set to default
+		CA$subset.cols.2 = NULL					#Set to default
 		}
 	
   
