@@ -47,10 +47,10 @@ function(data,N.rand, CA){
  
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
-	CA$p.values <-matrix(data=0,nrow=n,ncol=n)	#Build the empty PValues matrix
-	CA$z.stat <-matrix(data=0,nrow=n,ncol=n)	#Build the empty z.stat matrix
+	CA$p.values <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty PValues matrix
+	CA$z.stat <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty z.stat matrix
 	
-	CA$cor <-matrix(data=0,nrow=n,ncol=n)	#Build the empty correlation matrix
+	CA$cor <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty correlation matrix
 	
 	nsubj = nrow(data)				# Number of subjects
 
@@ -359,9 +359,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
-	CA$p.values <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty p.values matrix
-	CA$z.stat  <-matrix(data=0,nrow=n1,ncol=n2)		#Build the empty z.stat matrix
-	CA$cor <-matrix(data=0,nrow=n1,ncol=n2)	#Build the empty correlation matrix
+	CA$p.values <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty p.values matrix
+	CA$z.stat  <-matrix(data=NA,nrow=n1,ncol=n2)		#Build the empty z.stat matrix
+	CA$cor <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
 	loop.range1 <- 1:n1						#Establish looping range default
 	
