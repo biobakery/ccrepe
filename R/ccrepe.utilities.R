@@ -164,6 +164,7 @@ function(data,N.rand, CA){
 					{	
 						p.value=NA
 						cor=NA
+                                                z.stat=NA
 					} else
 					{
 
@@ -414,6 +415,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					{	
 						p.value=NA
 						cor=NA
+                                                z.stat=NA
 					} 
 			else
 					{
