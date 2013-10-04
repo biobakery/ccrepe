@@ -141,7 +141,7 @@ function(data,N.rand, CA){
 		loop.range <- CA$subset.cols.1		#Use the subset of columns
 		}
 
-
+	internal.loop.counter = 0  #Initialize the loop counter
 	for( index1 in 1:(length(loop.range)) )
 	{
 		i = loop.range[index1]
@@ -150,7 +150,15 @@ function(data,N.rand, CA){
 			{	
 				k = loop.range[index2]
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
-				
+			
+				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
+				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+				{
+					print.msg = paste('Completed ', internal.loop.counter, ' internal double iterations')
+					log.processing.progress(CA,print.msg)  #Log progress
+				}
+			
+				 
 				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
@@ -339,7 +347,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# second element of each, etc.
  
  
-	log.processing.progress(CA,"Calculating permutation correlations")  #Log progress
+	log.processing.progress(CA,"Calculating permutation similarity scores")  #Log progress
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
@@ -370,7 +378,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	log.processing.progress(CA,"Calculating boot correlations")  #Log progress
+	log.processing.progress(CA,"Calculating boot similarity scores")  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
 
 	
@@ -401,7 +409,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	
 	
-
+	internal.loop.counter = 0   # Initialize the counter
 	for(index1 in 1:(length(loop.range1)))
 	{
 		i = loop.range1[index1]
@@ -410,6 +418,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 
+				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
+				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+				{
+					print.msg = paste('Completed ', internal.loop.counter, ' internal double iterations')
+					log.processing.progress(CA,print.msg)  #Log progress
+				}
+				
+			
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
 
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
@@ -551,6 +567,7 @@ function(CA){
 #*************************************************************************************
 #*	Decode and validate input parameters                                             *
 #*************************************************************************************
+	
 	CA$Gamma = 0.57721566490153286060651209008240243104215933593992  		#Euler's Gamma
 
 
@@ -595,6 +612,7 @@ function(CA){
 		{
 			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
 		}
+	CA$sim.score.parameters<-list()							#Initialize the parameter list
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
  		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
 		}	
