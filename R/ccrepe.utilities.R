@@ -44,7 +44,6 @@ function(data,N.rand, CA){
 #* 	Function to apply the new method to a dataset                                    *
 #*  As a note, data needs to be a matrix with no missing values                      *
 #*************************************************************************************
- 
 	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty PValues matrix
@@ -74,11 +73,13 @@ function(data,N.rand, CA){
 		}
 
 	for(i in 1:N.rand){
-		if (CA$verbose == TRUE)		#If output is verbose - print the number of iterations
+	
+		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
-			if (i %% CA$iterations.gap == 0)		#print status
-				{cat('Completed ',i,' iterations','\n')}
+			print.msg = paste('Completed ',i,' iterations')
+			log.processing.progress(CA,print.msg)  #Log progress
 			}
+	
    
 		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
 
@@ -97,14 +98,16 @@ function(data,N.rand, CA){
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
 	
-	 
+ 	log.processing.progress(CA,"Building boot data")  #Log progress
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
 
 	###  Using method.calculation  for the one dataset also
+	
+	log.processing.progress(CA,"Getting correlation for bootstrap data")  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
 
-
+	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data = lapply(permutation.matrices,permute,data=data)
 	# The correlation matrices for the bootstrapped data; calculate the correlation for each resampled dataset
@@ -114,16 +117,20 @@ function(data,N.rand, CA){
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
-	
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
 			CA$verbose.requested <- TRUE		#Turn of the verbose flag save variable
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
+	
+	log.processing.progress(CA,"Calculating permutation correlation")  #Log progress
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
+	log.processing.progress(CA,"Calculating p-values")  #Log progress
+
+
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
  
@@ -228,6 +235,8 @@ function(data,N.rand, CA){
 		CA$q.values <- CA$q.values[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
 		CA$sim.score <- CA$sim.score[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
 		}
+		
+
 	return(CA)														# Return the output matrix
 }
 
@@ -244,6 +253,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	n1 = ncol(data1.norm)
 	n2 = ncol(data2.norm)
 
+	log.processing.progress(CA,"Two datasets: Initial merge of the matrices")  #Log progress
 	data = merge_two_matrices(data1.norm,data2.norm)	
 	if(nrow(data) < CA$min.subj ) 	#If not enough data, issue messages in files and stop the run 
 			{
@@ -283,8 +293,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	
 	for(i in 1:N.rand){
+	
+		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+			{
+			print.msg = paste('Completed ',i,' iterations')
+			log.processing.progress(CA,print.msg)  #Log progress
+			}
+		
  
-
 		# Get the rows of the two possible.rows matrices; these correspond to the rows which will be included in the resampled datasets
 		boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
@@ -302,12 +318,13 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
-
+	
+	log.processing.progress(CA,"Generating boot data")  #Log progress
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
  
 
 
-	
+	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
 	permutation.data2 = lapply(permutation.matrices2,permute,data=data2)
@@ -321,6 +338,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
 	# second element of each, etc.
  
+ 
+	log.processing.progress(CA,"Calculating permutation correlations")  #Log progress
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
@@ -346,16 +365,18 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#******************************************************************************** 
 	# For each matrix, check if there is a column that is all zeros 				*
 	# If such matrix is found,  try to reboot it at most 5 times until such matrix  *
-	# is found that does not contail a column with all zeros                        *
+	# is found that does not contain a column with all zeros                        *
 	# The limit of 5 tries is now hard coded and needs to be re-evaluated           *
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	
+	log.processing.progress(CA,"Calculating boot correlations")  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
 
 	
 	# Now calculating the correlations and p-values between the two datasets
+	log.processing.progress(CA,"Calculating p-values")  #Log progress
+
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
@@ -839,4 +860,15 @@ function(nsubj,data){
 		boot.matrix        = possible.rows[boot.rowids,]
 		b1<-resample (data,boot.matrix) 		#b1 is the rebooted matrix that we return
 		return(b1)
+}
+
+log.processing.progress <-
+function(CA,msg){
+#*************************************************************************************
+#* 	Function to report the progress of processing                                    *
+#*  only if verbose flag is on                                                       *
+#*************************************************************************************
+		if (CA$verbose == TRUE  ||  (!is.null(CA$verbose.requested)  && CA$verbose.requested == TRUE ))
+			message(cat(date(),' ==> ',msg))			#Display date and time and progress
+		return (0)
 }
