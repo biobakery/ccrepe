@@ -76,7 +76,7 @@ function(data,N.rand, CA){
 	
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
-			print.msg = paste('Completed ',i,' iterations')
+			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
 	
@@ -104,7 +104,7 @@ function(data,N.rand, CA){
 
 	###  Using method.calculation  for the one dataset also
 	
-	log.processing.progress(CA,"Getting correlation for bootstrap data")  #Log progress
+	log.processing.progress(CA,"Getting similarity score for bootstrap data")  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
@@ -124,7 +124,7 @@ function(data,N.rand, CA){
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
 	
-	log.processing.progress(CA,"Calculating permutation correlation")  #Log progress
+	log.processing.progress(CA,"Calculating permutation similarity score")  #Log progress
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
@@ -154,7 +154,7 @@ function(data,N.rand, CA){
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
 				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 				{
-					print.msg = paste('Completed ', internal.loop.counter, ' internal double iterations')
+					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
 			
@@ -304,7 +304,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
-			print.msg = paste('Completed ',i,' iterations')
+			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
 		
@@ -421,7 +421,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
 				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 				{
-					print.msg = paste('Completed ', internal.loop.counter, ' internal double iterations')
+					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
 				
