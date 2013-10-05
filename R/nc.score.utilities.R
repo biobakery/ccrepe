@@ -138,6 +138,11 @@ function(input.bins, CA)
 	if (length(input.bins) > 1)					#If the user passed a set of bins,  sort them and use them
 		{
 			CA$bins <- sort(input.bins)
+			if (! 0 %in% CA$bins )				#Check if 0 is in the list of the bins the User passed - not there - add it and sort 
+				{ 
+				 CA$bins<-c(CA$bins,0)			#Add 0
+				 CA$bins <- sort(CA$bins)		#And sort it
+				}
 			return(CA)
 		}
 		
@@ -153,6 +158,7 @@ function(input.bins, CA)
 			{warning('Invalid number of bins entered - Using default bins = sqrt(Number of rows) ')}
 
 
+			
 	CA$bins = bins										#Post it to Common Area
 	return(CA)
 }

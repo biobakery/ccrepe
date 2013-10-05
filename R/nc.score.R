@@ -28,7 +28,7 @@ function(
 			CA$x <- x									#Post x to common area
 			CA$y <- y									#Post y to common area
 			CA$verbose <- verbose						#Post the verbose flag
-
+ 
 			CA <- process.input.bins(bins, CA)			#Process bins input request
 			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
 				{
