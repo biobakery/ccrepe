@@ -42,7 +42,7 @@ function(
 				}
 			
 
-			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)					#Invoke the function
+			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized,CA)		#Invoke the function
 			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
 			CA$nc.score.result <- nc.score.result		#Post the result
 			if (CA$verbose == TRUE)
