@@ -25,9 +25,9 @@ function(
 		) 
 		{
 			CA <-list()									#Set the common area
-			missing.subjects <- union(which(is.na(x)),which(is.na(y)))      #Find subjects which are missing in either x or y
-			CA$x <- x[-missing.subjects]					#Post x without missing subjects to common area
-			CA$y <- y[-missing.subjects]					#Post y without missing subjects to common area
+			nonmissing.subjects <- intersect(which(!is.na(x)),which(!is.na(y)))      #Find subjects which are present in both x and y
+			CA$x <- x[nonmissing.subjects]					#Post x without missing subjects to common area
+			CA$y <- y[nonmissing.subjects]					#Post y without missing subjects to common area
 			CA$verbose <- verbose						#Post the verbose flag
  
 			CA <- process.input.bins(bins, CA)			#Process bins input request
