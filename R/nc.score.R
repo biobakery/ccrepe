@@ -25,20 +25,20 @@ function(
 		) 
 		{
 			CA <-list()									#Set the common area
-			CA$x <- x									#Post x to common area
-			CA$y <- y									#Post y to common area
+			missing.subjects <- union(which(is.na(x)),which(is.na(y)))      #Find subjects which are missing in either x or y
+			CA$x <- x[-missing.subjects]					#Post x without missing subjects to common area
+			CA$y <- y[-missing.subjects]					#Post y without missing subjects to common area
 			CA$verbose <- verbose						#Post the verbose flag
  
 			CA <- process.input.bins(bins, CA)			#Process bins input request
 			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
 				{
-					x.discretized = as.matrix(discretize(x,nbins = CA$bins))	#Discretize x
-					y.discretized = as.matrix(discretize(y,nbins = CA$bins))	#Discretize y
-				}
-				else
+					x.discretized = as.matrix(discretize(CA$x,nbins = CA$bins))	#Discretize x
+					y.discretized = as.matrix(discretize(CA$y,nbins = CA$bins))	#Discretize y
+				} else
 				{
-					x.discretized  = as.matrix(findInterval(x,CA$bins))	 #Use the bins provided by the User
-					y.discretized  = as.matrix(findInterval(y,CA$bins))	 #Use the bins provided by the User
+					x.discretized  = as.matrix(findInterval(CA$x,CA$bins))	 #Use the bins provided by the User
+					y.discretized  = as.matrix(findInterval(CA$y,CA$bins))	 #Use the bins provided by the User
 				}
 			
 
