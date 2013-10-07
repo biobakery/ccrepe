@@ -72,8 +72,7 @@ function(data,N.rand, CA){
 		colnames(CA$data1)<-1:ncol(CA$data1) 
 		}
 
-	for(i in 1:N.rand){
-	
+	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
@@ -142,7 +141,7 @@ function(data,N.rand, CA){
 		}
 
 	internal.loop.counter = 0  #Initialize the loop counter
-	for( index1 in 1:(length(loop.range)) )
+	for( index1 in seq_along(loop.range) )
 	{
 		i = loop.range[index1]
 		{
@@ -299,9 +298,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
 		}	
 	
-	
-	for(i in 1:N.rand){
-	
+	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
@@ -410,10 +407,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	
 	internal.loop.counter = 0   # Initialize the counter
-	for(index1 in 1:(length(loop.range1)))
+	for(index1 in seq_along(loop.range1))
 	{
 		i = loop.range1[index1]
-		for(index2 in 1:(length(loop.range2)))
+		for(index2 in seq_along(loop.range2))
 		{
 			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
