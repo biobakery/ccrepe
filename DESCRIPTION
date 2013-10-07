@@ -13,6 +13,6 @@ Description: The CCREPE (Compositionality Corrected by REnormalizaion and PErmut
  nc.score:  Calculates species-level co-variation and co-exclusion patterns based on an extension of the checkerboard score to ordinal data.
 License: MIT | file LICENSE
 VignetteBuilder: knitr
-Suggests: knitr
+Suggests: knitr, BiocStyle
 biocViews: Statistics, Metagenomics, Bioinformatics, Software
 Packaged: 2013-09-18 17:09:17 UTC; eschwager
