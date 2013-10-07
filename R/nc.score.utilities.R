@@ -68,8 +68,8 @@ function(
 				if (length(unique(mx)) >= 2) 							#These are the core calculations 
 					{
 					if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) 
-						{ cosum <- cosum + 1 }
-					if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) 
+					{ cosum <- cosum + 1 }
+				if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) 
 						{ cesum <- cesum + 1 }  
 					}
 
@@ -147,15 +147,20 @@ function(input.bins, CA)
 		}
 		
 	if (class(CA$x) == "numeric") 
-		{bins <- floor(sqrt(length(CA$x)))}								#If a vector - take sqrt of the length	
-		else
-		{bins <- floor(sqrt(nrow(CA$x)))} 					#Set the default number of bins 
+		{
+		bins <- floor(sqrt(length(CA$x)))					#If a vector - take sqrt of the length	
+		} else { 
+		bins <- floor(sqrt(nrow(CA$x))) 					#Set the default number of bins 
+		}
 		
 	if (!is.na(input.bins))								#If User entered number of Bins
 		if (suppressWarnings(!is.na(as.numeric(input.bins))))	#check if the User entered a numeric number of bins
-			{	bins = input.bins	}					#Valid Input from the User - Use it		
-			else
-			{warning('Invalid number of bins entered - Using default bins = sqrt(Number of rows) ')}
+			{	
+			bins = input.bins					#Valid Input from the User - Use it		
+			} else 
+			{
+			warning('Invalid number of bins entered - Using default bins = sqrt(Number of rows) ')
+			}
 
 
 			
@@ -176,6 +181,10 @@ function(data,CA) {
 		{
 			tmp <- cbind(tmp, data[,i])
 			names <- c(names, colnames(data)[i])
+		} else 
+		{
+			warning_msg <- paste(colnames(data)[i],"doesn't pass quality control: try adjusing min.samples or min.abundance")
+			warning(warning_msg)
 		}
 	}
   colnames(tmp) <- names					#Post the column names
