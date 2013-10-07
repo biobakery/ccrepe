@@ -4,7 +4,7 @@ nc.score.helper <- function(data,CA) {
 	#****************************************************************************************
 	mode(data) <- "numeric"
 	CA$nc.score.matrix <- matrix(nrow=ncol(data),ncol=ncol(data))		#Build results area
-	n <- length(unique(c(data)))
+	n <- CA$n.bins
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
 	for(i in 1:(ncol(data))) {    
 		for(j in (i):ncol(data)) {   		
@@ -53,12 +53,13 @@ function(
 #*  	nc.score.helper                                                              *
 #*************************************************************************************
    	x,						#First discretized  input 
-	y)						#Second discretized input 
+	y,						#Second discretized input 
+	CA)						#Common area
 {
 	ijsum <- 0				#Reset ijsum
 	cosum <- 0				#Reset cosum
 	cesum <- 0				#Reset cesum
-	n <- length(unique(c(x)))	#<------ Need to QA and verify this!!! GW
+	n <- CA$n.bins
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
 	for (i in 1:(length(x)-1)) 		#Loop on the entries of x
 		{
@@ -138,10 +139,12 @@ function(input.bins, CA)
 	if (length(input.bins) > 1)					#If the user passed a set of bins,  sort them and use them
 		{
 			CA$bins <- sort(input.bins)
+			CA$n.bins <- length(intersect(which(CA$bins<1),which(CA$bins>0)))
 			if (! 0 %in% CA$bins )				#Check if 0 is in the list of the bins the User passed - not there - add it and sort 
 				{ 
 				 CA$bins<-c(CA$bins,0)			#Add 0
 				 CA$bins <- sort(CA$bins)		#And sort it
+				 CA$n.bins <- length(intersect(which(CA$bins<1),which(CA$bins>0)))  # The number of bins, since 1 and 0 represent the ends
 				}
 			return(CA)
 		}
@@ -165,6 +168,7 @@ function(input.bins, CA)
 
 			
 	CA$bins = bins										#Post it to Common Area
+	CA$n.bins = bins									#Claculate the number of bins
 	return(CA)
 }
 qc_filter <-
