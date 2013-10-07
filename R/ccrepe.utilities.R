@@ -134,21 +134,38 @@ function(data,N.rand, CA){
     n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
  
+	loop.range1 <- 1:n						#Establish looping range default
+	loop.range2 <- 1:n						#Establish looping range default
+	
+	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	    	{
+		loop.range1 <- CA$subset.cols.1		#Use that subset
 
-	loop.range <- 1:n						#Establish looping range default
-	if ( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
-		{
-		loop.range <- CA$subset.cols.1		#Use the subset of columns
+		if( CA$compare.within.x )               #If comparing only within subset.cols.x
+		    	{
+			loop.range2 <- CA$subset.cols.1 #Use subset.cols.x for the inner loop as well
+
+			} else if( length(CA$subset.cols.2)>0 ){	   #If comparing between x and y and the user input subset.cols.y
+
+			loop.range2 <- CA$subset.cols.2 #Use subset.cols.y for the inner loop
+
+			}
 		}
 
+
+	
 	internal.loop.counter = 0  #Initialize the loop counter
-	for( index1 in 1:(length(loop.range)) )
+	outer.loop.indices.completed = c()     #Initialize the list to keep track of already completed outer indices
+
+	for( index1 in seq_len(length(loop.range1)) )
 	{
-		i = loop.range[index1]
+		i = loop.range1[index1]
+		outer.loop.indices.completed = c(outer.loop.indices.completed,i)	# Keep track of which outer loop indices have been accounted for
+		inner.loop.range = setdiff(loop.range2,outer.loop.indices.completed)	# Use as the inner loop only those inner loop indices which haven't been in the outer loop
 		{
-			for(index2 in (index1):length(loop.range))
+			for(index2 in seq_len(length(inner.loop.range)))
 			{	
-				k = loop.range[index2]
+				k = inner.loop.range[index2]
 				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 			
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
