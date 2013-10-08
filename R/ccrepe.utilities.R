@@ -1,4 +1,4 @@
- calculate_q_values <- function(CA)
+calculate_q_values <- function(CA)
 #**********************************************************************
 #	Calculate Q values    				                              *
 #**********************************************************************
@@ -6,22 +6,32 @@
 	q.values.calc.matrix <- CA$p.values   #Set the default p.values  for one and two dataset cases
 	if  (CA$OneDataset == TRUE)	
 		{q.values.calc.matrix[lower.tri(q.values.calc.matrix)] <- NA}    #If One dataset,  use only the upper part of the matrix
-	non.missing.p.values <- q.values.calc.matrix[which(!is.na(q.values.calc.matrix))]
+
+	QValuesArranged <- calculate_q_values_vector(q.values.calc.matrix,CA)$q.values.arranged
+
+	CA$q.values<-q.values.calc.matrix
+	CA$q.values[which(!is.na(q.values.calc.matrix))] = QValuesArranged
+
+	return(CA)
+}
+
+calculate_q_values_vector <- function(p.values.vector,CA){
+
+	p.values <- p.values.vector
+	non.missing.p.values <- p.values[which(!is.na(p.values))]
 	m = length(non.missing.p.values)                                #m is the total number of p-values
 	ln_m = log(m)									#log m
 	ln_m_Plus_Gamma = ln_m + CA$Gamma					
-	SortedVector = sort(q.values.calc.matrix,index.return = TRUE)	#Sort the entire PValues matrix into a vector
+	SortedVector = sort(non.missing.p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
 	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
 	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
 	QValuesArranged = rep(-1,m)
 	QValuesArranged[SortedVector$ix] = QValues
-	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
-	CA$q.values<-q.values.calc.matrix
-	CA$q.values[which(!is.na(q.values.calc.matrix))] = QValuesArranged
-	return(CA)
+	q.values <- p.values
+	q.values[which(!is.na(p.values))] = QValuesArranged
+
+	return(list(q.values.vec = q.values, q.values.arranged = QValuesArranged))
 }
-
-
 
 
 ccrepe_norm <-
@@ -55,8 +65,6 @@ function(data,N.rand, CA){
 
 	# Generating the output data matrix (I chose this form for simplicity; we do want to keep the output object George has made)
 	
-	data.cor = matrix(ncol=5,nrow=(n+1)*(n/2))	#Row Number increased from range(n,2) to n+1*(n/2) because we calc diagonal
-	colnames(data.cor) = c("bug1", "bug2", "cor", "p.value", "q.value")
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
@@ -130,20 +138,20 @@ function(data,N.rand, CA){
 	# Now, actually calculating the correlation p-values within the dataset
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
 
-
-    n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
  
 	loop.range1 <- 1:n						#Establish looping range default
 	loop.range2 <- 1:n						#Establish looping range default
+	max.comparisons <- choose(n,2)					#The default number of comparisons
 	
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
 		loop.range1 <- CA$subset.cols.1		#Use that subset
+		
 
 		if( CA$compare.within.x )               #If comparing only within subset.cols.x
 		    	{
-			loop.range2 <- CA$subset.cols.1 #Use subset.cols.x for the inner loop as well
+			loop.range2 <- CA$subset.cols.1			#Use subset.cols.x for the inner loop as well
 
 			} else if( length(CA$subset.cols.2)>0 ){	   #If comparing between x and y and the user input subset.cols.y
 
@@ -153,9 +161,27 @@ function(data,N.rand, CA){
 		}
 
 
-	
-	internal.loop.counter = 0  #Initialize the loop counter
-	outer.loop.indices.completed = c()     #Initialize the list to keep track of already completed outer indices
+	if( !is.na(CA$concurrent.output) || CA$make.output.table )
+	    {
+	    output.table = data.frame(feature1=rep(NA,max.comparisons), 
+	    		   	      feature2=rep(NA,max.comparisons), 
+				      sim.score=rep(NA,max.comparisons), 
+				      z.stat=rep(NA,max.comparisons),
+				      p.value=rep(NA,max.comparisons), 
+				      q.value=rep(NA,max.comparisons))
+
+	    } else {
+	    output.table = NULL
+	    }
+
+	if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
+	   {
+	   cat(colnames(output.table),sep="\t",file=CA$concurrentFile,append=TRUE)
+	   cat("\n",file=CA$concurrentFile,append=TRUE)
+	   }	
+
+	internal.loop.counter = 0		#Initialize the loop counter
+	outer.loop.indices.completed = c()	#Initialize the list to keep track of already completed outer indices
 
 	for( index1 in seq_len(length(loop.range1)) )
 	{
@@ -215,8 +241,19 @@ function(data,N.rand, CA){
 				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
 				CA$cor[i,k] = cor						#Post it in the cor matrix  
 				CA$cor[k,i] = cor						#Post it in the cor matrix  				
-				n.c = n.c + 1
-				data.cor[n.c,] = c(i,k,cor,p.value,NA)
+
+				
+				if( !is.na(CA$concurrent.output) || CA$make.output.table )
+				    	   {
+					   concurrent.vector <- c(colnames(data)[i],colnames(data)[k],cor,z.stat,p.value,NA)
+					   output.table[internal.loop.counter,] = concurrent.vector
+					   }
+
+				if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
+					   {
+				   	   cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
+					   cat("\n",file=CA$concurrentFile,append=TRUE)
+					   }	
 			}
 		}
 	}
@@ -224,16 +261,30 @@ function(data,N.rand, CA){
 
 	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
+	if( CA$make.output.table )
+	    {
+	    output.table$sim.score <- as.numeric(output.table$sim.score)
+	    output.table$z.stat    <- as.numeric(output.table$z.stat)
+	    output.table$p.value   <- as.numeric(output.table$p.value)
+	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
+	    output.table$q.value <- table.q.values
+	    }
  
 	CA$q.values[lower.tri(CA$q.values)] = t(CA$q.values)[lower.tri(t(CA$q.values))]  #Making the q.values matrix symmetrical for the one dataset case
 	
-	for (indx in 1:nrow(data.cor))						#post the q-values
-		{
-			i = data.cor[indx,1]
-			k = data.cor[indx,2]
-			data.cor[indx,5] = CA$q.values[i,k]
-		}
-	CA$data.cor <- data.cor								# Post it in the common Area
+#	for (indx in 1:nrow(data.cor))						#post the q-values
+#		{
+#			i = data.cor[indx,1]
+#			k = data.cor[indx,2]
+#			data.cor[indx,5] = CA$q.values[i,k]
+#		}
+	if( !is.na(CA$concurrent.output) || CA$make.output.table )
+	    {
+	    CA$output.table <- output.table[1:internal.loop.counter,]		#Post it in the common Area
+	    } else 
+	    {
+	    CA$output.table <- NULL
+	    }
 
 	
 
@@ -292,11 +343,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
 
-	# Generating the output data matrix (I chose this form for simplicity; we do want to keep the output object George has made)
-    bug1 <- rep(NA,n1*n2)
-	bug2 <- rep(NA,n1*n2)
-	cor.meas   <- rep(NA,n1*n2)
-	p.values   <- rep(NA,n1*n2)
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj))
@@ -316,7 +362,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
 		}	
 	
-	
 	for(i in 1:N.rand){
 	
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
@@ -333,12 +378,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		boot.matrix        = possible.rows[boot.rowids,]
 
 		# Add the bootstrap matrices to the appropriate lists  
-		bootstrap.matrices = lappend(bootstrap.matrices,boot.matrix) # Add the bootstrap matrix to the list
+		bootstrap.matrices[[length(bootstrap.matrices)+1]] = boot.matrix
 
-		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
-		permutation.matrices1 = lappend(permutation.matrices1,perm.matrix1)     # Add the new matrix to the list
-		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
-		permutation.matrices2 = lappend(permutation.matrices2,perm.matrix2)     # Add the new matrix to the list
+		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE))	# The matrix has each column be a permutation of the row indices
+		permutation.matrices1[[length(permutation.matrices1)+1]] = perm.matrix1  # Add the new matrix to the list
+		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a  print(i)
+                permutation.matrices2[[length(permutation.matrices2)+1]] = perm.matrix2 # Add the new matrix to the list    
 	}
 
 
@@ -402,7 +447,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
 
-    n.c = 0	# Counter for the number of comparisons (to enter in the output matrix)
 	
 	
 	CA$p.values <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty p.values matrix
@@ -410,7 +454,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$cor <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
 	loop.range1 <- 1:n1						#Establish looping range default
-	
 	
 	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
@@ -424,6 +467,24 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
 		}
 	
+
+	max.comparisons <- n1*n2
+	if( !is.na(CA$concurrent.output) || CA$make.output.table )
+	    {
+	    output.table = data.frame(feature1=rep(NA,max.comparisons), 
+		       		      feature2=rep(NA,max.comparisons), 
+				      sim.score=rep(NA,max.comparisons), 
+				      z.stat=rep(NA,max.comparisons),
+				      p.value=rep(NA,max.comparisons), 
+				      q.value=rep(NA,max.comparisons))
+	    }
+
+	if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
+	   {
+	   cat(colnames(output.table),sep="\t",file=CA$concurrentFile,append=TRUE)
+	   cat("\n",file=CA$concurrentFile,append=TRUE)
+	   }	
+
 	
 	
 	internal.loop.counter = 0   # Initialize the counter
@@ -436,7 +497,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
-				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iter
+#ations gap - print status
 				{
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
@@ -445,7 +507,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
 
-			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs review)
+			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
+#review)
 			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
@@ -455,8 +518,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
 
-			n.c = n.c + 1
-		
 					
 
 			n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
@@ -464,9 +525,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			n.p   = nrow(data)						#Number of rows in data
 			CalcThresholdForError1 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
 			CalcThresholdForError2 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
-		
 	
-			
+
 			if (n.0_1 > CalcThresholdForError1 | n.0_2 > CalcThresholdForError2)
 					{	
 						p.value=NA
@@ -475,24 +535,36 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					} 
 			else
 					{
-						measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method do.call parameter list
-						cor.meas[n.c] <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+						measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method 
+#do.call parameter list
+						cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
 						####################################################
 						#  New p.value calculation                         #
 						####################################################
-						z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
 						p.value <- 2*pnorm(-abs(z.stat))					
 					}
 
 								  
 			CA$p.values[i,k] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[i,k] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[i,k] = cor.meas[n.c]				#Post it in the cor matrix  
-							  
-			p.values[n.c] = p.value
-			bug1[n.c] = colnames(data1)[i]
-			bug2[n.c] = colnames(data2)[k]
+			CA$cor[i,k] = cor					#Post it in the cor matrix  
+						
+
+
+			if( !is.na(CA$concurrent.output) || CA$make.output.table )
+			    {
+			    concurrent.vector <- c(colnames(data1)[i],colnames(data2)[k],cor,z.stat,p.value,NA)	  
+			    output.table[internal.loop.counter,] = concurrent.vector
+			    }
+
+			if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
+			   {
+		   	   cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
+			   cat("\n",file=CA$concurrentFile,append=TRUE)
+			   }	
+
 			
 
 		}
@@ -501,18 +573,30 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 
-	CA$data.cor <- data.frame(bug1,bug2,cor.meas,p.values)
+	if( CA$make.output.table )
+	    {
+	    output.table$sim.score <- as.numeric(output.table$sim.score)
+	    output.table$z.stat    <- as.numeric(output.table$z.stat)
+	    output.table$p.value   <- as.numeric(output.table$p.value)
+	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
+	    output.table$q.value <- table.q.values
+	    }
+
 	
-	for (indx in 1:nrow(CA$data.cor))						#post the q-values
-		{
-			i = CA$data.cor[indx,1]
-			k = CA$data.cor[indx,2]
-			CA$data.cor[indx,5] = CA$q.values[i,k]
-		}
-	colnames(CA$data.cor)[3] <- 'cor'						#Set up the name of the column
-	colnames(CA$data.cor)[5] <- 'q.values'					#Set up the name of the column
+#	for (indx in 1:nrow(CA$data.cor))						#post the q-values
+#		{
+#			i = CA$data.cor[indx,1]
+#			k = CA$data.cor[indx,2]
+#			CA$data.cor[indx,5] = CA$q.values[i,k]
+#		}
 
-
+	if( !is.na(CA$concurrent.output) || CA$make.output.table )
+	    {
+	    CA$output.table <- output.table[1:internal.loop.counter,]
+	    } else
+	    {
+	    CA$output.table <- NULL
+	    }
 	
 	#********************************************************************
 	#*  Final Edits before exiting                                      *
@@ -616,6 +700,22 @@ function(CA){
 		{
 		CA$outdistFile = file(CA$outdist,open='at')		#Open outdist file
 		}
+
+	if    (!is.na(CA$concurrent.output))							#If the user passed a file - open it
+		{
+		CA$concurrentFile = file(CA$concurrent.output,open='at')		#Open the concurrent output file
+		}
+
+	if ( CA$compare.within.x !=  TRUE  & 	CA$compare.within.x !=  FALSE )	#compare.within.x must be either true or false
+		{
+		CA$compare.within.x =  TRUE									#True - is the default
+		}
+
+	if ( CA$make.output.table !=  TRUE  & 	CA$make.output.table !=  FALSE )	#make.output.table flag must be either true or false
+		{
+		CA$make.output.table =  FALSE									#False - is the defauls
+		}
+
 
 	if ( CA$verbose !=  TRUE  & 	CA$verbose !=  FALSE )	#Verbose Flag has to be either true or false, otherwise - we set it to false
 		{
@@ -802,6 +902,13 @@ function(CA){
 		close(CA$outdistFile)										#Close outdist file	
 		CA$outdistFile <- NULL										#And remove it from the common area
 		}
+
+	if   (!is.na(CA$concurrent.output))										#If user requested to print the distributions
+		{
+		close(CA$concurrentFile)										#Close outdist file	
+		CA$concurrentFile <- NULL										#And remove it from the common area
+		}
+
 	if (CA$verbose.requested == TRUE)								#Check if the User requested verbose
 		{															#We might have turned it off before calling CA$method	
 		CA$verbose = TRUE	
@@ -816,7 +923,6 @@ function(CA){
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
 	CA$Gamma <- NULL 
-	CA$data.cor <- NULL 
 	CA$retries.max.iterations <- NULL
 	CA$subset.cols.x <-CA$subset.cols.1
 	CA$subset.cols.y <-CA$subset.cols.2
@@ -842,11 +948,17 @@ function(CA){
 		CA$method.args <- NULL										 		
 		CA$verbose <- NULL													 
 		CA$iterations.gap <- NULL	
+		CA$compare.within.x <- NULL
 		CA$sim.score.parameters <- NULL	
 		CA$subset.cols.x <- NULL
 		CA$subset.cols.y <- NULL	
 		CA$errthresh <- NULL
 		}
+
+	if( !CA$make.output.table )
+	    {
+	    CA$output.table <- NULL
+	    }
 
 
 	return(CA)
