@@ -82,10 +82,28 @@ function(
 	colnames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the col names
 	CA$x.discretized <- NULL		#Not needed anymore
 	CA$x <- NULL					#Not Needed anymore
+	
 	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
+	if (length(CA$columns.not.passing.qc) > 0)  #If there were columns that did not pass QA, we need to add corr cols with NA
+		{
+			for (indx in 1:length(CA$columns.not.passing.qc))
+				{
+					CA$nc.score.matrix <- insertCol( CA$nc.score.matrix, CA$columns.not.passing.qc[indx], v = NA )
+				}
+				
+			for (indx in 1:length(CA$columns.not.passing.qc))
+				{
+					CA$nc.score.matrix <- insertRow( CA$nc.score.matrix, CA$columns.not.passing.qc[indx], v = NA )
+				}
+		}
+ 
+	CA$input.total.cols <- NULL		#Not needed anymore
+	CA$columns.not.passing.qc <- NULL  #Not needed anymore
+	
 	if (!CA$verbose == TRUE)		#If abbreviated output
 		{
 		CA <- CA$nc.score.matrix	#just post the resulting matrix
 		}
+
 return(CA)
 }
