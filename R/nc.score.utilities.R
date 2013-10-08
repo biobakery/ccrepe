@@ -29,6 +29,7 @@ nc.score.helper <- function(data,CA) {
 		CA$nc.score.matrix[j,i] <- ijsum				#Post it to the matrix
 		}
 	}
+
   return(CA$nc.score.matrix)							#Return the calculated results matrix
 }
 nc.score.renormalize <-
@@ -108,13 +109,12 @@ function(
 	#*********************************************************
 	#* Filter                                                *
 	#*********************************************************
-	x <-qc_filter(x,CA)										#filter by abundance throsholds
-	x <-na.omit(x)											#remove NAs
+	CA$x <- x												#Post x in the common area
+	CA <-qc_filter(x,CA)										#filter by abundance thresholds
+	x <-na.omit(CA$x)											#remove NAs
 	if (is.null(rownames(x))) {rownames(x)<-seq(1:nrow(x))} #If there are no row names - plug them in
-	
 	CA$x <-  x 												#Post it to common Area
- 
-	CA$x.discretized <- matrix(nrow=nrow(CA$x),ncol=ncol(CA$x))			#Build x Discretized empty Matrix			
+ 	CA$x.discretized <- matrix(nrow=nrow(CA$x),ncol=ncol(CA$x))			#Build x Discretized empty Matrix			
 	#****************************************************************************************
 	#*   Process Bins  passed by the user  or set default                                   *
 	#****************************************************************************************
@@ -173,6 +173,9 @@ function(data,CA) {
 #********************************************************************************************
 	tmp <- {}
 	names <- {}
+	
+	CA$input.total.cols <- ncol(data)			#number of cols in the input
+	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
 
 	for (i in 1:ncol(data)) 
 	{
@@ -182,11 +185,14 @@ function(data,CA) {
 			names <- c(names, colnames(data)[i])
 		} else 
 		{
+			CA$columns.not.passing.qc <- c(CA$columns.not.passing.qc,i)		#Add the number of the col that did not pass
 			warning_msg <- paste(colnames(data)[i],"doesn't pass quality control: try adjusing min.samples or min.abundance")
 			warning(warning_msg)
 		}
 	}
+  
   colnames(tmp) <- names					#Post the column names
   rownames(tmp) <- rownames(data)			#Post the data row names
-  return(tmp)
+  CA$x <- tmp								#Post in the common area
+  return(CA)								#Return the common Area
 }
