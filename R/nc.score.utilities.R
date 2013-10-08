@@ -6,6 +6,7 @@ nc.score.helper <- function(data,CA) {
 	CA$nc.score.matrix <- matrix(nrow=ncol(data),ncol=ncol(data))		#Build results area
 	n <- CA$n.bins
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
+
 	for(i in 1:(ncol(data))) {    
 		for(j in (i):ncol(data)) {   		
 			ijsum <- 0
@@ -60,22 +61,16 @@ function(
 	cosum <- 0				#Reset cosum
 	cesum <- 0				#Reset cesum
 	n <- CA$n.bins
-	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
-	for (i in 1:(length(x)-1)) 		#Loop on the entries of x
-		{
-		for (j in (i+1):(length(y))) #Loop on the entries of y	
-			{
-				mx <- (c(x[i], y[i], x[j], y[j]))	#  
-				if (length(unique(mx)) >= 2) 							#These are the core calculations 
-					{
-					if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) 
-					{ cosum <- cosum + 1 }
-				if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) 
-						{ cesum <- cesum + 1 }  
-					}
-
-			}
-		}
+	adj <- ((1.5)*n*(n-1)/(n^2-n+1))    
+	#**************************************************************
+	# Vectorized the calculations                                 *
+	#**************************************************************
+	i0 <- seq_len(length(x) - 1)
+    j0 <- Map(seq, i0 + 1, length(y))
+    i <- rep(i0, sapply(j0, length))
+    j <- unlist(j0)
+    cosum <- sum(((x[i]<x[j])&(y[i]<y[j])) | ((x[i]>x[j])&(y[i]>y[j])))
+    cesum <- sum(((x[i]>x[j])&(x[j]<y[j])& (y[j]>y[i])&(y[i]<x[i])) |   ((x[i]<x[j])&(x[j]>y[j])& (y[j]<y[i])&(y[i]>x[i])))
 	cesum_adj <- cesum * adj			
 	ijsum <- (cosum - cesum_adj)
 	return(ijsum)				
