@@ -71,7 +71,14 @@ function(data,N.rand, CA){
 		{
 		colnames(CA$data1)<-1:ncol(CA$data1) 
 		}
+	
+	#**************************************************************
+	#*  Pre allocate                                              *
+	#**************************************************************
+	permutation.matrices  = vector("list", N.rand)		#Pre allocate the permutation matrices
+	bootstrap.matrices = vector("list", N.rand)		#Pre allocate
 
+	
 	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
@@ -88,12 +95,13 @@ function(data,N.rand, CA){
 		boot.matrix = possible.rows[boot.rowids,] 
 
 		# Add the bootstrap matrix to the list                   
-		bootstrap.matrices = lappend(bootstrap.matrices,boot.matrix) 
+		bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
 
 		perm.matrix = replicate(n,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
-		permutation.matrices = lappend(permutation.matrices,perm.matrix)     # Add the new matrix to the list
-	}
  
+		permutation.matrices [[i]] = perm.matrix		#Populate the permutation matrix
+	}
+
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
 	
@@ -298,6 +306,13 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
 		}	
 	
+	#*****************************************************
+	#*  Pre Allocate Matrices                            *
+	#*****************************************************
+	bootstrap.matrices = vector("list", N.rand)		
+	permutation.matrices1 = vector("list", N.rand)	
+	permutation.matrices2 = vector("list", N.rand)	
+	
 	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
@@ -313,14 +328,13 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		boot.matrix        = possible.rows[boot.rowids,]
 
 		# Add the bootstrap matrices to the appropriate lists  
-		bootstrap.matrices = lappend(bootstrap.matrices,boot.matrix) # Add the bootstrap matrix to the list
-
+			
+		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
 		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
-		permutation.matrices1 = lappend(permutation.matrices1,perm.matrix1)     # Add the new matrix to the list
+		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
 		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
-		permutation.matrices2 = lappend(permutation.matrices2,perm.matrix2)     # Add the new matrix to the list
+		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
 	}
-
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	
