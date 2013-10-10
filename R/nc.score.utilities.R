@@ -6,32 +6,38 @@ nc.score.helper <- function(data,CA) {
 	CA$nc.score.matrix <- matrix(nrow=ncol(data),ncol=ncol(data))		#Build results area
 	n <- CA$n.bins
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
-
-	for(i in 1:(ncol(data))) {    
-		for(j in (i):ncol(data)) {   		
-			ijsum <- 0
-			cosum <- 0
-			cesum <- 0
-			for (m in 1:(nrow(data))) {   
-				for (n in (m):nrow(data)) {  	  
-					mx <- (c(data[m,i], data[m,j], data[n,i], data[n,i]))
-         			if (length(unique(mx)) >= 2) {
-						if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) {
-							cosum <- cosum + 1 }
-						if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) {
-							cesum <- cesum + 1 }  
-					}
-				}
-			}
-		cesum_adj <- cesum * adj
-		ijsum <- (cosum - cesum_adj)
-		CA$nc.score.matrix[i,j] <- ijsum				#Post it to the matrix
-		CA$nc.score.matrix[j,i] <- ijsum				#Post it to the matrix
+	
+	#***********************************************************
+	#*  Vectorizing the calculations                           *
+	#*  Calculating  looking at the matrix as a collection     *
+	#*   of n_columns column vectors and performing the        *
+	#*   calculations for the appropriate columns              *
+	#***********************************************************
+	
+	
+	for( i in 1:(ncol(data)) ) 
+	{  
+		for( j in (i):(ncol(data)) ) 
+		{  
+			x <- data[,i]
+			y <- data[,j]
+			ri0 <- seq_len(length(x))
+			rj0 <- Map(seq, ri0, length(y))
+			ri <- rep(ri0, sapply(rj0, length))
+			rj <- unlist(rj0)
+			cosum <- sum(((x[ri]<x[rj])&(y[ri]<y[rj])) | ((x[ri]>x[rj])&(y[ri]>y[rj])))
+			cesum <- sum(((x[ri]>x[rj])&(x[rj]<y[rj])& (y[rj]>y[ri])&(y[ri]<x[ri])) | ((x[ri]<x[rj])&(x[rj]>y[rj])& (y[rj]<y[ri])&(y[ri]>x[ri])))
+			cesum_adj <- cesum * adj			
+			ijsum <- (cosum - cesum_adj)
+			CA$nc.score.matrix[i,j] <- ijsum				#Post it to the matrix
+			CA$nc.score.matrix[j,i] <- ijsum				#Post it to the matrix
 		}
 	}
-
-  return(CA$nc.score.matrix)							#Return the calculated results matrix
+	return(CA$nc.score.matrix)
 }
+
+
+
 nc.score.renormalize <-
 function(
 #*************************************************************************************
@@ -79,7 +85,7 @@ function(
 preprocess_nc_score_input <-
 function(
 #********************************************************************************************
-#*  	Preprocess input and build the common area                                          *
+#*  	Pre process input and build the common area                                         *
 #********************************************************************************************
 			x, 										#First Input
 			input.bins,
