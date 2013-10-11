@@ -86,15 +86,24 @@ function(
 	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
 	if (length(CA$columns.not.passing.qc) > 0)  #If there were columns that did not pass QA, we need to add corr cols with NA
 		{
+			original.nc.score.dim <- ncol(CA$nc.score.matrix)  #Columns in the original matrix
+			na.c <-  rep(NA, original.nc.score.dim)   	#A vector of NAs to be inserted
+			rebuilt.matrix <- CA$nc.score.matrix					#Allocate the rebuilt matrix
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
-					CA$nc.score.matrix <- insertCol( CA$nc.score.matrix, CA$columns.not.passing.qc[indx], v = NA )
+					left.part <- rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1]		#Left part of the rebuilt matrix
+					right.part <- rebuilt.matrix[,CA$columns.not.passing.qc [indx]:ncol(rebuilt.matrix)]		#Right part of the rebuilt matrix
+					rebuilt.matrix <- cbind(left.part,na.c,right.part)		#Insert column of NAs
 				}
-				
+
+			na.r <- 	rep(NA, ncol(rebuilt.matrix))   	#A vector of NAs to be inserted as a row
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
-					CA$nc.score.matrix <- insertRow( CA$nc.score.matrix, CA$columns.not.passing.qc[indx], v = NA )
+				upper.part <- rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,]		#Upper part of the rebuilt matrix
+				lower.part <- rebuilt.matrix[CA$columns.not.passing.qc [indx]:nrow(rebuilt.matrix),]		#Right part of the rebuilt matrix
+				rebuilt.matrix <- rbind(upper.part,na.r,lower.part)		#Insert row of NAs
 				}
+			CA$nc.score.matrix <- rebuilt.matrix				#Post the matrix
 		}
  
 	CA$input.total.cols <- NULL		#Not needed anymore
