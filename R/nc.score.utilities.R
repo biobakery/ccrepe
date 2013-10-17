@@ -14,8 +14,8 @@ nc.score.helper <- function(data,CA) {
 	#*   calculations for the appropriate columns              *
 	#***********************************************************
 	
-	
-	for( i in 1:(ncol(data)) ) 
+
+	for( i in seq_len(ncol(data)) ) 
 	{  
 		for( j in (i):(ncol(data)) ) 
 		{  
@@ -183,7 +183,9 @@ function(data,CA) {
 	CA$input.total.cols <- ncol(data)			#number of cols in the input
 	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
 
-	for (i in 1:ncol(data)) 
+	
+
+	for (i in seq_len(ncol(data))) 
 	{
 		if (length(which(data[,i] >= CA$min.abundance)) >= CA$min.samples*nrow(data))
 		{
