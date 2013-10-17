@@ -294,11 +294,14 @@ function(data,N.rand, CA){
 	#********************************************************************
 	diag(CA$q.values) <- NA											#Set diagonal of q.values to NA 
 	colnames(CA$p.values)<-colnames(CA$data1)						#Set the names of the columns in the p.values matrix
-	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the roes in the p.values matrix
+	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the rows in the p.values matrix
 	colnames(CA$q.values)<-colnames(CA$data1)						#Set the names of the columns in the q.values matrix
-	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the roes in the q.values matrix
+	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the rows in the q.values matrix
 	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
-	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the roes in the q.values matrix
+	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the rows in the q.values matrix
+	colnames(CA$z.stat) <- colnames(CA$data1)						#Set the names of the cols in the z.stat matrix
+	rownames(CA$z.stat) <- colnames(CA$data1)						#Set the names of the rows in the z.stat matrix
+
 	CA$sim.score <- CA$cor											#Rename cor to sim.score
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
         diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
