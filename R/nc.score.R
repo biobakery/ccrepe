@@ -64,7 +64,10 @@ function(
 
     x.discretized <- CA$x.discretized				#Get it from Common Area
  
-	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
+ 
+ 
+ 
+	for (i in seq_len(ncol(x)))												#Loop on the columns of the first matrix
 		{
 			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
 				{
@@ -89,6 +92,8 @@ function(
 			original.nc.score.dim <- ncol(CA$nc.score.matrix)  #Columns in the original matrix
 			na.c <-  rep(NA, original.nc.score.dim)   	#A vector of NAs to be inserted
 			rebuilt.matrix <- CA$nc.score.matrix					#Allocate the rebuilt matrix
+
+			
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
 					left.part <- rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1]		#Left part of the rebuilt matrix
