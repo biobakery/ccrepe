@@ -64,8 +64,7 @@ function(
 
     x.discretized <- CA$x.discretized				#Get it from Common Area
  
-	for (i in 1:ncol(x))												#Loop on the columns of the first matrix
-		{
+	for(i in seq_len(ncol(x)))		{
 			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
 				{
 					x.discretized[,i] = discretize(x[,i],nbins=CA$bins)[,1]	#Bins is a number; Discretize it and post the value in the discretized matrix
