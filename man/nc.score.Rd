@@ -46,7 +46,7 @@ nc.score(x = NA,
   A numeric value specifying the minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
 }
   \item{min.samples}{
-  An integer specifying the minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
+  An fraction specifying the minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples. Default=0.1
 }
 }
 \value{ 
