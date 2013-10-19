@@ -28,6 +28,7 @@ function(
 			CA$x <- x[nonmissing.subjects]					#Post x without missing subjects to common area
 			CA$y <- y[nonmissing.subjects]					#Post y without missing subjects to common area
 			CA$verbose <- verbose						#Post the verbose flag
+
  
 			CA <- process.input.bins(bins, CA)			#Process bins input request
 			if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
@@ -53,6 +54,7 @@ function(
 	#************************************************************************
 	#*        It is a dataframe or a matrix                                 *
 	#************************************************************************
+
 	CA = preprocess_nc_score_input (
 			x, 										#First Input
 			bins,									#Bins
@@ -63,7 +65,7 @@ function(
 	CA$verbose <- verbose							#Post the verbose flag
 
     x.discretized <- CA$x.discretized				#Get it from Common Area
- 
+
  
  
  
@@ -87,29 +89,31 @@ function(
 	CA$x <- NULL					#Not Needed anymore
 	
 	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
+
+	
+
 	if (length(CA$columns.not.passing.qc) > 0)  #If there were columns that did not pass QA, we need to add corr cols with NA
 		{
 			original.nc.score.dim <- ncol(CA$nc.score.matrix)  #Columns in the original matrix
-			na.c <-  rep(NA, original.nc.score.dim)   	#A vector of NAs to be inserted
 			rebuilt.matrix <- CA$nc.score.matrix					#Allocate the rebuilt matrix
 
 			
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
-					left.part <- rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1]		#Left part of the rebuilt matrix
-					right.part <- rebuilt.matrix[,CA$columns.not.passing.qc [indx]:ncol(rebuilt.matrix)]		#Right part of the rebuilt matrix
-					rebuilt.matrix <- cbind(left.part,na.c,right.part)		#Insert column of NAs
+ 					rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
+							rep(NA, original.nc.score.dim),
+							rebuilt.matrix[,CA$columns.not.passing.qc [indx]:ncol(rebuilt.matrix)])		#Right part of the rebuilt matrix						
 				}
 
-			na.r <- 	rep(NA, ncol(rebuilt.matrix))   	#A vector of NAs to be inserted as a row
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
-				upper.part <- rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,]		#Upper part of the rebuilt matrix
-				lower.part <- rebuilt.matrix[CA$columns.not.passing.qc [indx]:nrow(rebuilt.matrix),]		#Right part of the rebuilt matrix
-				rebuilt.matrix <- rbind(upper.part,na.r,lower.part)		#Insert row of NAs
+				rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
+							rep(NA, ncol(rebuilt.matrix)),
+							rebuilt.matrix[CA$columns.not.passing.qc [indx]:nrow(rebuilt.matrix),])		 	##Lower Part of the rebuilt mtrix
 				}
 			CA$nc.score.matrix <- rebuilt.matrix				#Post the matrix
 		}
+ 
  
 	CA$input.total.cols <- NULL		#Not needed anymore
 	CA$columns.not.passing.qc <- NULL  #Not needed anymore
@@ -118,6 +122,5 @@ function(
 		{
 		CA <- CA$nc.score.matrix	#just post the resulting matrix
 		}
-
 return(CA)
 }
