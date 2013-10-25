@@ -96,21 +96,36 @@ function(
 		{
 			original.nc.score.dim <- ncol(CA$nc.score.matrix)  #Columns in the original matrix
 			rebuilt.matrix <- CA$nc.score.matrix					#Allocate the rebuilt matrix
-
 			
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
- 					rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
-							rep(NA, original.nc.score.dim),
-							rebuilt.matrix[,CA$columns.not.passing.qc [indx]:ncol(rebuilt.matrix)])		#Right part of the rebuilt matrix						
+					if (CA$columns.not.passing.qc [indx] -1 <  ncol(rebuilt.matrix) )
+						{
+							rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
+								rep(NA, original.nc.score.dim),   #Insert NA's
+								rebuilt.matrix[,CA$columns.not.passing.qc [indx]:ncol(rebuilt.matrix)])		#Right part of the rebuilt matrix
+						}
+					else
+						{
+							rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
+								rep(NA, original.nc.score.dim))		#Insert NA's
+						}
 				}
 
 			for (indx in 1:length(CA$columns.not.passing.qc))
 				{
-				rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
-							rep(NA, ncol(rebuilt.matrix)),
-							rebuilt.matrix[CA$columns.not.passing.qc [indx]:nrow(rebuilt.matrix),])		 	##Lower Part of the rebuilt mtrix
-				}
+					if (CA$columns.not.passing.qc [indx] -1 <  nrow(rebuilt.matrix) )
+							{
+							rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
+								rep(NA, ncol(rebuilt.matrix)),   #Insert NA's
+								rebuilt.matrix[CA$columns.not.passing.qc [indx]:nrow(rebuilt.matrix),])		 	##Lower Part of the rebuilt matrix
+							}
+					else
+							{
+							rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
+								rep(NA, ncol(rebuilt.matrix)))   #Insert NA's
+							}
+				}				
 			CA$nc.score.matrix <- rebuilt.matrix				#Post the matrix
 		}
  

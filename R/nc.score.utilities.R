@@ -194,7 +194,7 @@ function(data,CA) {
 		} else 
 		{
 			CA$columns.not.passing.qc <- c(CA$columns.not.passing.qc,i)		#Add the number of the col that did not pass
-			warning_msg <- paste(colnames(data)[i],"doesn't pass quality control: try adjusing min.samples or min.abundance")
+			warning_msg <- paste("Column ",i,":  ",colnames(data)[i]," - doesn't pass quality control: try adjusting min.samples or min.abundance")
 			warning(warning_msg)
 		}
 	}
