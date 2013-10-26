@@ -179,6 +179,7 @@ function(data,CA) {
 #********************************************************************************************
 	tmp <- {}
 	names <- {}
+	CA$names.of.cols.failing.qc <- {} 			#Names of the cols failing QC
 	
 	CA$input.total.cols <- ncol(data)			#number of cols in the input
 	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
@@ -193,6 +194,7 @@ function(data,CA) {
 			names <- c(names, colnames(data)[i])
 		} else 
 		{
+			CA$names.of.cols.failing.qc<-c(CA$names.of.cols.failing.qc, colnames(data)[i])
 			CA$columns.not.passing.qc <- c(CA$columns.not.passing.qc,i)		#Add the number of the col that did not pass
 			warning_msg <- paste("Column ",i,":  ",colnames(data)[i]," - doesn't pass quality control: try adjusting min.samples or min.abundance")
 			warning(warning_msg)

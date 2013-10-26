@@ -85,8 +85,7 @@ function(
  	CA$nc.score.matrix <- nc.score.renormalize (x.discretized, NA, CA$nc.score.matrix)  #Normalize the results 
 	rownames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the row names
 	colnames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the col names
-	CA$x.discretized <- NULL		#Not needed anymore
-	CA$x <- NULL					#Not Needed anymore
+
 	
 	diag(CA$nc.score.matrix)<-NA	#We are setting the diagonal entries in the matrix to NA
 
@@ -96,9 +95,11 @@ function(
 		{
 			original.nc.score.dim <- ncol(CA$nc.score.matrix)  #Columns in the original matrix
 			rebuilt.matrix <- CA$nc.score.matrix					#Allocate the rebuilt matrix
+
 			
 			for (indx in 1:length(CA$columns.not.passing.qc))
-				{
+				{   
+
 					if (CA$columns.not.passing.qc [indx] -1 <  ncol(rebuilt.matrix) )
 						{
 							rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
@@ -110,6 +111,14 @@ function(
 							rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
 								rep(NA, original.nc.score.dim))		#Insert NA's
 						}
+
+					#*************************************************************** 
+					# If there was a column name for the sparse column - insert it *
+					#*************************************************************** 
+					if (indx <= length(CA$names.of.cols.failing.qc))
+						{
+						colnames(rebuilt.matrix) [CA$columns.not.passing.qc][indx]<-CA$names.of.cols.failing.qc[indx] #If there was a column name for the sparse col, insert it
+						}				
 				}
 
 			for (indx in 1:length(CA$columns.not.passing.qc))
@@ -125,11 +134,19 @@ function(
 							rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
 								rep(NA, ncol(rebuilt.matrix)))   #Insert NA's
 							}
-				}				
+					#************************************************************************* 
+					# If there was a column name for the sparse column - insert the row name *
+					#************************************************************************* 
+					if (indx <= length(CA$names.of.cols.failing.qc))
+						{
+						rownames(rebuilt.matrix) [CA$columns.not.passing.qc][indx]<-CA$names.of.cols.failing.qc[indx] #If there was a column name for the sparse col, insert it
+						}			
+				}	
 			CA$nc.score.matrix <- rebuilt.matrix				#Post the matrix
 		}
  
- 
+ 	CA$x.discretized <- NULL		#Not needed anymore
+	CA$x <- NULL					#Not Needed anymore
 	CA$input.total.cols <- NULL		#Not needed anymore
 	CA$columns.not.passing.qc <- NULL  #Not needed anymore
 	
