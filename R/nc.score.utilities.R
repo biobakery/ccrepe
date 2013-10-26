@@ -174,6 +174,7 @@ function(data,CA) {
 	tmp <- {}
 	names <- {}
 	CA$names.of.cols.failing.qc <- {} 			#Names of the cols failing QC
+	CA$original.column.names <- colnames(data)	#These are the original column names
 	
 	CA$input.total.cols <- ncol(data)			#number of cols in the input
 	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
