@@ -111,14 +111,6 @@ function(
 							rebuilt.matrix <- cbind(rebuilt.matrix[,1:CA$columns.not.passing.qc [indx] -1],		#Left part of the rebuilt matrix
 								rep(NA, original.nc.score.dim))		#Insert NA's
 						}
-
-					#*************************************************************** 
-					# If there was a column name for the sparse column - insert it *
-					#*************************************************************** 
-					if (indx <= length(CA$names.of.cols.failing.qc))
-						{
-						colnames(rebuilt.matrix) [CA$columns.not.passing.qc][indx]<-CA$names.of.cols.failing.qc[indx] #If there was a column name for the sparse col, insert it
-						}				
 				}
 
 			for (indx in 1:length(CA$columns.not.passing.qc))
@@ -134,14 +126,10 @@ function(
 							rebuilt.matrix <- rbind(rebuilt.matrix[1:CA$columns.not.passing.qc [indx] -1,],				#Upper part of the rebuilt matrix
 								rep(NA, ncol(rebuilt.matrix)))   #Insert NA's
 							}
-					#************************************************************************* 
-					# If there was a column name for the sparse column - insert the row name *
-					#************************************************************************* 
-					if (indx <= length(CA$names.of.cols.failing.qc))
-						{
-						rownames(rebuilt.matrix) [CA$columns.not.passing.qc][indx]<-CA$names.of.cols.failing.qc[indx] #If there was a column name for the sparse col, insert it
-						}			
-				}	
+				}
+
+			colnames(rebuilt.matrix)<- CA$original.column.names   #Post the original column names into the column names of rebuilt matrix
+			rownames(rebuilt.matrix)<- CA$original.column.names   #Post the original column names into the row names
 			CA$nc.score.matrix <- rebuilt.matrix				#Post the matrix
 		}
  
@@ -149,6 +137,8 @@ function(
 	CA$x <- NULL					#Not Needed anymore
 	CA$input.total.cols <- NULL		#Not needed anymore
 	CA$columns.not.passing.qc <- NULL  #Not needed anymore
+	CA$original.column.names <- NULL  #Not needed anymore
+	CA$names.of.cols.failing.qc <- NULL  # Not needed anymore
 	
 	if (!CA$verbose == TRUE)		#If abbreviated output
 		{
