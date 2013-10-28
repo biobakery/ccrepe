@@ -42,8 +42,7 @@ function(
 				}
 			
 
-			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized,CA)		#Invoke the function
-			nc.score.result = nc.score.renormalize (x.discretized, y.discretized, nc.score.result)  #Normalize the results 
+			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)		#Invoke the function
 			CA$nc.score.result <- nc.score.result		#Post the result
 			if (CA$verbose == TRUE)
 				{return(CA)}
@@ -82,7 +81,6 @@ function(
 		}
 
  	CA$nc.score.matrix <-nc.score.helper(x.discretized,CA)	#Post it in the results area
- 	CA$nc.score.matrix <- nc.score.renormalize (x.discretized, NA, CA$nc.score.matrix)  #Normalize the results 
 	rownames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the row names
 	colnames(CA$nc.score.matrix)  <- colnames(CA$x)	#Post the col names
 
