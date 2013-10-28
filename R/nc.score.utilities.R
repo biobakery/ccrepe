@@ -4,8 +4,6 @@ nc.score.helper <- function(data,CA) {
 	#****************************************************************************************
 	mode(data) <- "numeric"
 	CA$nc.score.matrix <- matrix(nrow=ncol(data),ncol=ncol(data))		#Build results area
-	n <- CA$n.bins
-	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
 	
 	#***********************************************************
 	#*  Vectorizing the calculations                           *
@@ -18,9 +16,11 @@ nc.score.helper <- function(data,CA) {
 	for( i in seq_len(ncol(data)) ) 
 	{  
 		for( j in (i):(ncol(data)) ) 
-		{  
-			x <- data[,i]
+		{
+                        x <- data[,i]
 			y <- data[,j]
+                        n.bins <- length(unique(c(x,y)))
+                        adj <- ((1.5)*n.bins*(n.bins-1)/(n.bins^2-n.bins+1))
 			ri0 <- seq_len(length(x))
 			rj0 <- Map(seq, ri0, length(y))
 			ri <- rep(ri0, sapply(rj0, length))
@@ -29,8 +29,9 @@ nc.score.helper <- function(data,CA) {
 			cesum <- sum(((x[ri]>x[rj])&(x[rj]<y[rj])& (y[rj]>y[ri])&(y[ri]<x[ri])) | ((x[ri]<x[rj])&(x[rj]>y[rj])& (y[rj]<y[ri])&(y[ri]>x[ri])))
 			cesum_adj <- cesum * adj			
 			ijsum <- (cosum - cesum_adj)
-			CA$nc.score.matrix[i,j] <- ijsum				#Post it to the matrix
-			CA$nc.score.matrix[j,i] <- ijsum				#Post it to the matrix
+                        score <- nc.score.renormalize(x,y,ijsum)                        #Normalize the result
+			CA$nc.score.matrix[i,j] <- score				#Post it to the matrix
+			CA$nc.score.matrix[j,i] <- score				#Post it to the matrix
 		}
 	}
 	return(CA$nc.score.matrix)
@@ -61,13 +62,12 @@ function(
 #*  	nc.score.helper                                                              *
 #*************************************************************************************
    	x,						#First discretized  input 
-	y,						#Second discretized input 
-	CA)						#Common area
+	y)						#Second discretized input 
 {
 	ijsum <- 0				#Reset ijsum
 	cosum <- 0				#Reset cosum
 	cesum <- 0				#Reset cesum
-	n <- CA$n.bins
+	n <- length(unique(c(x,y)))
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))    
 	#**************************************************************
 	# Vectorized the calculations                                 *
@@ -80,7 +80,8 @@ function(
     cesum <- sum(((x[i]>x[j])&(x[j]<y[j])& (y[j]>y[i])&(y[i]<x[i])) |   ((x[i]<x[j])&(x[j]>y[j])& (y[j]<y[i])&(y[i]>x[i])))
 	cesum_adj <- cesum * adj			
 	ijsum <- (cosum - cesum_adj)
-	return(ijsum)				
+        score <- nc.score.renormalize(x,y,ijsum)
+	return(score)				
 }
 preprocess_nc_score_input <-
 function(
