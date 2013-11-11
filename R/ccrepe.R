@@ -14,7 +14,10 @@ function(
 	errthresh = 0.0001, 				#Threshold error if there is enough data to calculate cor an pval for certain i and k - For first dataset
 	verbose = FALSE,					#Request for verbose output
 	iterations.gap = 100,				#If output is verbose - after how many iterations issue a status message?
-	distributions = NA					#Output Distribution file - For ccrepe
+	distributions = NA,					#Output Distribution file - For ccrepe
+	compare.within.x=TRUE,				#Boolean of whether to do comparisons within subset.cols.x or between subset.cols.x and subset.cols.y
+	concurrent.output = NA,				#If specified, file for concurrent output of the table
+	make.output.table = FALSE			#Whether to have the output in table format
 	)					
 
 {
@@ -29,12 +32,15 @@ function(
 			iterations=iterations,
 			subset.cols.1=subset.cols.x,
 			subset.cols.2=subset.cols.y,
+			compare.within.x=compare.within.x,
 			errthresh=errthresh,
 			method=sim.score,
 			method.args=sim.score.args,
 			verbose=verbose,
 			iterations.gap=iterations.gap,
-			outdist=distributions)
+			outdist=distributions,
+			concurrent.output=concurrent.output,
+			make.output.table=make.output.table)
 
 			
 	CA <- ccrepe.calculations(CA)

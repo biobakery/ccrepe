@@ -43,6 +43,7 @@ function(
 			
 
 			nc.score.result = nc.score.vectors.helper(x.discretized,y.discretized)		#Invoke the function
+
 			CA$nc.score.result <- nc.score.result		#Post the result
 			if (CA$verbose == TRUE)
 				{return(CA)}
@@ -142,5 +143,6 @@ function(
 		{
 		CA <- CA$nc.score.matrix	#just post the resulting matrix
 		}
+
 return(CA)
 }

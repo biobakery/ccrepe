@@ -62,12 +62,15 @@ function(
 #*  	nc.score.helper                                                              *
 #*************************************************************************************
    	x,						#First discretized  input 
-	y)						#Second discretized input 
+	y,						#Second discretized input 
+	CA)						#Common area
 {
 	ijsum <- 0				#Reset ijsum
 	cosum <- 0				#Reset cosum
 	cesum <- 0				#Reset cesum
+
 	n <- length(unique(c(x,y)))
+
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))    
 	#**************************************************************
 	# Vectorized the calculations                                 *
@@ -182,6 +185,7 @@ function(data,CA) {
 	names <- {}
 	CA$names.of.cols.failing.qc <- {} 			#Names of the cols failing QC
 	CA$original.column.names <- colnames(data)	#These are the original column names
+
 	
 	CA$input.total.cols <- ncol(data)			#number of cols in the input
 	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
@@ -196,6 +200,7 @@ function(data,CA) {
 			names <- c(names, colnames(data)[i])
 		} else 
 		{
+
 			CA$names.of.cols.failing.qc<-c(CA$names.of.cols.failing.qc, colnames(data)[i])
 			CA$columns.not.passing.qc <- c(CA$columns.not.passing.qc,i)		#Add the number of the col that did not pass
 			warning_msg <- paste("Column ",i,":  ",colnames(data)[i]," - doesn't pass quality control: try adjusting min.samples or min.abundance")
