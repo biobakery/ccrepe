@@ -926,6 +926,12 @@ function(CA){
 		CA$concurrentFile <- NULL										#And remove it from the common area
 		}
 
+	if( !CA$make.output.table )
+	    {
+	    CA$output.table <- NULL
+	    }
+
+
 	if (CA$verbose.requested == TRUE)								#Check if the User requested verbose
 		{															#We might have turned it off before calling CA$method	
 		CA$verbose = TRUE	
@@ -939,6 +945,7 @@ function(CA){
 	CA$method.args<- NULL 										
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
+	CA$concurrent.output <- NULL
 	CA$Gamma <- NULL 
 	CA$retries.max.iterations <- NULL
 	CA$subset.cols.x <-CA$subset.cols.1
@@ -970,12 +977,9 @@ function(CA){
 		CA$subset.cols.x <- NULL
 		CA$subset.cols.y <- NULL	
 		CA$errthresh <- NULL
+		CA$make.output.table <- NULL
 		}
 
-	if( !CA$make.output.table )
-	    {
-	    CA$output.table <- NULL
-	    }
 
 
 	return(CA)
