@@ -364,6 +364,21 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
 
+        # Subset of columns for the bootstrapped dataset
+        col.subset.boot <- 1:(n1+n2)
+	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	    	{
+		col.subset <- CA$subset.cols.1
+
+                if(length(CA$subset.cols.2) > 0)
+                       {
+                       col.subset <- c(col.subset,n1+CA$subset.cols.2))
+                       }
+                } 
+
+        # Subset of columns for the permutation datasets
+        
+
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj))
@@ -437,7 +452,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# second element of each, etc.
  
  
-	log.processing.progress(CA,"Calculating permutation similarity scores")  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity scores: col.subset =",col.subset))  #Log progress
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
@@ -452,6 +467,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1,
 		            startcol=(n1+1),
 		            endcol=(n1+n2), 				 
+                            col.subset = col.subset
 					MoreArgs = list(my.method=CA$method,
 					method.args=CA$method.args,
 					outdist=CA$outdist,
@@ -468,8 +484,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	log.processing.progress(CA,"Calculating boot similarity scores")  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
+	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",col.subset))  #Log progress
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset.boot )		 ###Function to check is all cols are zeros and apply cor
 
 	
 	# Now calculating the correlations and p-values between the two datasets
@@ -485,14 +501,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
-		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
+		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use the subset of columns
 		}
 
 	loop.range2 <- 1:n2						#Establish looping range default
 	
 	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
-		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
+		loop.range2 <- which(col.subset %in% (n2 + CA$subset.cols.2))		#Use the subset of columns
 		}
 	
 
@@ -773,7 +789,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,col.subset  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -783,7 +799,7 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist
 #******************************************************************************************
 {
   	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
-	measure.function.parm.list <- append(list(x=mat), method.args)	
+	measure.function.parm.list <- append(list(x=mat[,col.subset]), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
 	return(sub_mat_C)
