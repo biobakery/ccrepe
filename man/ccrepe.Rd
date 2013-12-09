@@ -28,7 +28,10 @@
  errthresh  = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
- distributions = NA)
+ distributions = NA,
+ compare.within.x = TRUE,
+ concurrent.output = NA,
+ make.output.table = FALSE)
  
 }
 \arguments{
@@ -92,6 +95,20 @@
   \item{distributions}{
 	Output Distribution file  (default:NA).
 }
+  \item{compare.within.x}{
+        A boolean value indicating whether to do comparisons given by
+	taking all subsets of size 2 from subset.cols.x or to do
+	comparisons given by taking all possible combinations of
+	subset.cols.x or subset.cols.y. If TRUE but subset.cols.y=NA,
+	returns all comparisons involving any features in subset.cols.x
+}
+\item{concurrent.output}{
+       Optional output file to which each comparison will be written as
+	it is calculated.
+}
+\item{make.output.table}{
+  A boolean value indicating whether to include table-formatted output.
+}      
 }
  
 \value{
@@ -107,13 +124,20 @@
 	\item{p.values}{A  matrix of the p-values for all the requested comparisons.  The (i,j)th element of p.values
         corresponds to the p-value of the (i,j)th element of sim.score.}
 	\item{q.values}{A matrix of the Benjamini-Hochberg-Yekutieli FDR corrected p-values.  The (i,j)th element
-        of q.values corresponds to the q-value fo the (i,j)th element of sim.score.}
+        of q.values corresponds to the q-value fo the (i,j)th element of
+	sim.score.}
+        \item{output.table}{(Only if make.output.table=TRUE) A table
+	where each row is one comparision.  Each row contains the
+	features being compared with their similarity scores,
+	z-statistics, p-values and q-values}
         Additional parameters if verbose=TRUE:
 	\item{iterations}{Description Above}
 	\item{subset.cols.x}{Description Above}
 	\item{subset.cols.y}{Description Above}
 	\item{iterations.gap}{Description Above}
 	\item{sim.score.parameters}{Description Above}
+	\item{compare.within.x}{Description Above}
+	\item{make.output.table}{Description Above}
 
 }
 \author{
