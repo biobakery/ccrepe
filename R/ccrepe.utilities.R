@@ -244,7 +244,7 @@ function(data,N.rand, CA){
 					} else
 					{
 
-					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
+					measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
 					####################################################
@@ -253,12 +253,12 @@ function(data,N.rand, CA){
 					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
 					p.value <- 2*pnorm(-abs(z.stat))					
 					}
-				CA$z.stat[i,k] = z.stat					#Post z.stat in output matrix	
-				CA$z.stat[k,i] = z.stat					#Post z.stat in output matrix					
-				CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
-				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
-				CA$cor[i,k] = cor						#Post it in the cor matrix  
-				CA$cor[k,i] = cor						#Post it in the cor matrix  				
+				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
+				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
+				CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix  
+				CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix  
+				CA$cor[col.subset[i],col.subset[k]] = cor						#Post it in the cor matrix  
+				CA$cor[col.subset[k],col.subset[i]] = cor						#Post it in the cor matrix  				
 
 				
 				if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -365,7 +365,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	nsubj2 = nrow(data2)
 
         # Subset of columns for the bootstrapped dataset
-        col.subset.boot <- 1:(n1+n2)
+        col.subset <- 1:(n1+n2)
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
 		col.subset <- CA$subset.cols.1
@@ -485,7 +485,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#********************************************************************************
 	
 	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",col.subset))  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset.boot )		 ###Function to check is all cols are zeros and apply cor
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 
 	
 	# Now calculating the correlations and p-values between the two datasets
@@ -579,7 +579,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					} 
 			else
 					{
-						measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method 
+						measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method 
 #do.call parameter list
 						cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
@@ -591,9 +591,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					}
 
 								  
-			CA$p.values[i,k] = p.value				#Post it in the p.values matrix  
-			CA$z.stat[i,k] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[i,k] = cor					#Post it in the cor matrix  
+			CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p.values matrix  
+			CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post it in the z.stat matrix 
+			CA$cor[col.subset[i],col.subset[k]] = cor					#Post it in the cor matrix  
 						
 
 
