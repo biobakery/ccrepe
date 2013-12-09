@@ -63,8 +63,18 @@ function(data,N.rand, CA){
 	
 	nsubj = nrow(data)				# Number of subjects
 
-	# Generating the output data matrix (I chose this form for simplicity; we do want to keep the output object George has made)
-	
+        # The subset of columns for which to calculate the similarity scores
+        col.subset <- 1:n
+	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	    	{
+		col.subset <- CA$subset.cols.1
+
+                if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
+                       {
+                       col.subset <- unique(c(col.subset,CA$subset.cols.2))
+                       }
+                } 
+		
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
@@ -119,8 +129,8 @@ function(data,N.rand, CA){
 
 	###  Using method.calculation  for the one dataset also
 	
-	log.processing.progress(CA,"Getting similarity score for bootstrap data")  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
+	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",col.subset))  #Log progress
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -128,7 +138,8 @@ function(data,N.rand, CA){
 	# The correlation matrices for the bootstrapped data; calculate the correlation for each resampled dataset
 
 	# The normalized permutation data; the permutation data needs to be renormalized, but not the bootstrap data
-	permutation.norm = lapply(permutation.data,ccrepe_norm)
+	permutation.norm.raw = lapply(permutation.data,ccrepe_norm)
+        permutation.norm     = lapply(permutation.data,function(mat) mat[,col.subset])
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
@@ -139,7 +150,7 @@ function(data,N.rand, CA){
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
 	
-	log.processing.progress(CA,"Calculating permutation similarity score")  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity score: col.subset =",col.subset))  #Log progress
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
@@ -147,22 +158,22 @@ function(data,N.rand, CA){
 
 	
  
-	loop.range1 <- 1:n						#Establish looping range default
-	loop.range2 <- 1:n						#Establish looping range default
-	max.comparisons <- choose(n,2)					#The default number of comparisons
+	loop.range1 <- col.subset						#Establish looping range default
+	loop.range2 <- col.subset						#Establish looping range default
+	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
 	
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
-		loop.range1 <- CA$subset.cols.1		#Use that subset
+		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use that subset
 		
 
 		if( CA$compare.within.x )               #If comparing only within subset.cols.x
 		    	{
-			loop.range2 <- CA$subset.cols.1			#Use subset.cols.x for the inner loop as well
+			loop.range2 <- which(col.subset %in% CA$subset.cols.1)			#Use subset.cols.x for the inner loop as well
 
 			} else if( length(CA$subset.cols.2)>0 ){	   #If comparing between x and y and the user input subset.cols.y
 
-			loop.range2 <- CA$subset.cols.2 #Use subset.cols.y for the inner loop
+			loop.range2 <- which(col.subset %in% CA$subset.cols.2) #Use subset.cols.y for the inner loop
 
 			}
 		}
@@ -988,7 +999,7 @@ function(CA){
 
 
 method.calculation <-
-function(b,nsubj,data,CA){
+function(b,nsubj,data,CA,col.subset){
 #*************************************************************************************
 #* 	Function to calculate cor  and check that total in cols is not zero              *
 #*************************************************************************************
@@ -1012,7 +1023,7 @@ function(b,nsubj,data,CA){
 			}
 		}
 	
-	measure.function.parm.list <- append(list(x=b), CA$method.args)	#Build the measure function parameter list
+	measure.function.parm.list <- append(list(x=b[,col.subset]), CA$method.args)	#Build the measure function parameter list
 	boot.cor <-do.call(CA$method,measure.function.parm.list)	#Invoke the measuring function		
 	return(boot.cor)				
 	}
