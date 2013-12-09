@@ -129,7 +129,7 @@ function(data,N.rand, CA){
 
 	###  Using method.calculation  for the one dataset also
 	
-	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",col.subset))  #Log progress
+	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
@@ -150,7 +150,7 @@ function(data,N.rand, CA){
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
 	
-	log.processing.progress(CA,paste("Calculating permutation similarity score: col.subset =",col.subset))  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity score: col.subset =",toString(col.subset)))  #Log progress
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
@@ -366,13 +366,17 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
         # Subset of columns for the bootstrapped dataset
         col.subset <- 1:(n1+n2)
+        n1.subset <- n1
+	n2.subset <- n2
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
 		col.subset <- CA$subset.cols.1
+                n1.subset  <- length(CA$subset.cols.1)
 
                 if(length(CA$subset.cols.2) > 0)
                        {
                        col.subset <- c(col.subset,n1+CA$subset.cols.2)
+		       n2.subset <- length(CA$subset.cols.2)
                        }
                 } 
 
@@ -452,7 +456,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# second element of each, etc.
  
  
-	log.processing.progress(CA,paste("Calculating permutation similarity scores: col.subset =",col.subset))  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity scores: col.subset =",toString(col.subset)))  #Log progress
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
@@ -464,17 +468,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            mat1=permutation.norm1,
 		            mat2=permutation.norm2,
 		            startrow=1,
-		            endrow=n1,
-		            startcol=(n1+1),
-		            endcol=(n1+n2), 				 
-                            col.subset = col.subset,
-					MoreArgs = list(my.method=CA$method,
+		            endrow=n1.subset,
+		            startcol=(n1.subset+1),
+		            endcol=length(col.subset), 				 
+                	    		MoreArgs = list(col.subset = col.subset,
+					my.method=CA$method,
 					method.args=CA$method.args,
 					outdist=CA$outdist,
 					outdistFile=CA$outdistFile),
 		            SIMPLIFY=FALSE)
 		
-			
 
 	#******************************************************************************** 
 	# For each matrix, check if there is a column that is all zeros 				*
@@ -484,9 +487,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",col.subset))  #Log progress
+	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
 	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
-
 	
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
@@ -508,9 +510,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
-		loop.range2 <- which(col.subset %in% (n2 + CA$subset.cols.2))		#Use the subset of columns
+		loop.range2 <- which(col.subset %in% (n1 + CA$subset.cols.2)) - n1.subset		#Use the subset of columns
 		}
-	
+
 
 	max.comparisons <- n1*n2
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -529,8 +531,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	   cat("\n",file=CA$concurrentFile,append=TRUE)
 	   }	
 
-	
-	
 	internal.loop.counter = 0   # Initialize the counter
 	for(index1 in seq_along(loop.range1))
 	{
@@ -548,9 +548,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
 				
-			
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
-
+			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
 #review)
 			
@@ -562,10 +560,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
 
-					
-
-			n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
-			n.0_2 = sum(data[,n1+k]==0)				#Number of zeros in column n1+k
+			n.0_1 = sum(data[,col.subset[i]]==0)				#Number of zeros in column i
+			n.0_2 = sum(data[,(col.subset[n1.subset+k]-n1)]==0)				#Number of zeros in column n1+k
 			n.p   = nrow(data)						#Number of rows in data
 			CalcThresholdForError1 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
 			CalcThresholdForError2 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
@@ -579,7 +575,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					} 
 			else
 					{
-						measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method 
+						measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method 
 #do.call parameter list
 						cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
@@ -591,11 +587,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					}
 
 								  
-			CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p.values matrix  
-			CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[col.subset[i],col.subset[k]] = cor					#Post it in the cor matrix  
-						
-
+			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1] = p.value				#Post it in the p.values matrix  
+			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1] = z.stat					#Post it in the z.stat matrix 
+			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1] = cor					#Post it in the cor matrix  
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
@@ -614,6 +608,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		}
 	}
 	
+
 
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 
@@ -789,7 +784,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,col.subset,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,col.subset,my.method,method.args,outdist,outdistFile,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -798,8 +793,8 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist
 # The method and the method parameters are passed via the list
 #******************************************************************************************
 {
-  	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
-	measure.function.parm.list <- append(list(x=mat[,col.subset]), method.args)	
+  	mat <- merge_two_matrices(mat1,mat2)[,col.subset]	            #Merge the two matrices
+	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
 	return(sub_mat_C)
