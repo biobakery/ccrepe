@@ -372,7 +372,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
                 if(length(CA$subset.cols.2) > 0)
                        {
-                       col.subset <- c(col.subset,n1+CA$subset.cols.2))
+                       col.subset <- c(col.subset,n1+CA$subset.cols.2)
                        }
                 } 
 
@@ -467,7 +467,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1,
 		            startcol=(n1+1),
 		            endcol=(n1+n2), 				 
-                            col.subset = col.subset
+                            col.subset = col.subset,
 					MoreArgs = list(my.method=CA$method,
 					method.args=CA$method.args,
 					outdist=CA$outdist,
@@ -789,7 +789,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,col.subset  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,col.subset,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
