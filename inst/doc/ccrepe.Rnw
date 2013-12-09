@@ -105,6 +105,15 @@ If \Rcode{verbose=TRUE}, the number of iterations between issuing status message
 \item[\Rcode{distributions}]
 Optional output file for detailed log (if given) of all intermediate permutation and renormalization distributions.
 
+\item[\Rcode{compare.within.x}]
+  A boolean value indicating whether to do comparisons given by taking all subsets of size 2 from \Rcode{subset.cols.x} or to do comparisons given by taking all possible combinations of \Rcode{subset.cols.x} or \Rcode{subset.cols.y}.  If \Rcode{TRUE} but \Rcode{subset.cols.y=NA}, returns all comparisons involving any features in \Rcode{subset.cols.x}.
+  
+\item[\Rcode{concurrent.output}]
+    Optional output file to which each comparison will be written as it is calculated.
+    
+\item[\Rcode{make.output.table}]
+      A boolean value indicating whether to include table-formatted output.
+
 \end{description}
 
 \subsection{Output}
@@ -140,7 +149,10 @@ ccrepe(
  errthresh1 = 1e-04,
  verbose = FALSE,
  iterations.gap = 100,
- distributions = NA)
+ distributions = NA,
+ compare.within.x = TRUE,
+ concurrent.output = NA,
+ make.output.table = FALSE)
 @
 
 \subsection{Example 1}
@@ -259,6 +271,27 @@ plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
      main="Normalized")
 test.output.sim.score
 @
+
+\subsection{Example 5}
+
+An example of how to use \Rfunction{ccrepe} when specifying column subsets.
+
+<<<>>=
+data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
+data.rowsum <- apply(data,1,sum)
+data.norm <- data/data.rowsum
+apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
+test.input <- data.norm
+
+dimnames(test.input) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
+
+test.output.1.3     <- ccrepe(x=test.input, iterations=20, min.subj=10, subset.cols.x=c(1,3))
+test.output.1       <- ccrepe(x=test.input, iterations=20, min.subj=10, subset.cols.x=c(1), compare.within.x=FALSE)
+test.output.12.3    <- ccrepe(x=test.input, iterations=20, min.subj=10, subset.cols.x=c(1,2),subset.cols.y=c(3), compare.within.x=FALSE)
+test.output.1.3$sim.score
+test.output.1$sim.score
+test.output.12.3$sim.score
+@ 
 
 %---------------------------------------------------------
 \section{nc.score} 

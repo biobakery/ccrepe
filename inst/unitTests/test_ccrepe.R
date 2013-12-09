@@ -63,10 +63,10 @@ test.ccrepe <- function()
 	checkEqualsNumeric(-0.3809524, nc.score( x=c(3, 1, 1, 3 ,2 ,3, 3 ,1 ,2, 1),  y= c(1 ,2,3 ,3, 1 ,1, 3 ,3, 1, 2)), tolerance = 0.0001)
 
 	nc.score.results <-nc.score( x=testdata)
-	nc.score.predicted.results <-matrix(c(NA, -0.3397683, -0.2972973, -0.7451737,
-			0.3397683 ,        NA ,-0.2972973,  0.3204633,
-			 -0.2972973, -0.2972973, NA, -0.2972973,
-			-0.7451737,  0.3204633, -0.2972973, NA),
+	nc.score.predicted.results <-matrix(c(NA, -0.3809524, -0.3333333, -0.8354978,
+			-0.3809524 , NA ,-0.3333333,  0.3593074,
+			-0.3333333, -0.3333333, NA, -0.3333333,
+			-0.8354978,  0.3593074, -0.3333333,  NA),
 			nrow=4,ncol=4,byrow = TRUE)
  
 	checkEqualsNumeric(nc.score.predicted.results,nc.score.results, tolerance = tol)

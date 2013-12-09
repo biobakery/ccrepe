@@ -63,8 +63,18 @@ function(data,N.rand, CA){
 	
 	nsubj = nrow(data)				# Number of subjects
 
-	# Generating the output data matrix (I chose this form for simplicity; we do want to keep the output object George has made)
-	
+        # The subset of columns for which to calculate the similarity scores
+        col.subset <- 1:n
+	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	    	{
+		col.subset <- CA$subset.cols.1
+
+                if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
+                       {
+                       col.subset <- unique(c(col.subset,CA$subset.cols.2))
+                       }
+                } 
+		
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
@@ -79,9 +89,15 @@ function(data,N.rand, CA){
 		{
 		colnames(CA$data1)<-1:ncol(CA$data1) 
 		}
-
-	for(i in 1:N.rand){
 	
+	#**************************************************************
+	#*  Pre allocate                                              *
+	#**************************************************************
+	permutation.matrices  = vector("list", N.rand)		#Pre allocate the permutation matrices
+	bootstrap.matrices = vector("list", N.rand)		#Pre allocate
+
+	
+	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
@@ -97,12 +113,13 @@ function(data,N.rand, CA){
 		boot.matrix = possible.rows[boot.rowids,] 
 
 		# Add the bootstrap matrix to the list                   
-		bootstrap.matrices = lappend(bootstrap.matrices,boot.matrix) 
+		bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
 
 		perm.matrix = replicate(n,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
-		permutation.matrices = lappend(permutation.matrices,perm.matrix)     # Add the new matrix to the list
-	}
  
+		permutation.matrices [[i]] = perm.matrix		#Populate the permutation matrix
+	}
+
 	# The bootstrapped data; resample the data using each bootstrap matrix
 
 	
@@ -112,8 +129,8 @@ function(data,N.rand, CA){
 
 	###  Using method.calculation  for the one dataset also
 	
-	log.processing.progress(CA,"Getting similarity score for bootstrap data")  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
+	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -121,7 +138,8 @@ function(data,N.rand, CA){
 	# The correlation matrices for the bootstrapped data; calculate the correlation for each resampled dataset
 
 	# The normalized permutation data; the permutation data needs to be renormalized, but not the bootstrap data
-	permutation.norm = lapply(permutation.data,ccrepe_norm)
+	permutation.norm.raw = lapply(permutation.data,ccrepe_norm)
+        permutation.norm     = lapply(permutation.data,function(mat) mat[,col.subset])
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
@@ -132,7 +150,7 @@ function(data,N.rand, CA){
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
 	
-	log.processing.progress(CA,"Calculating permutation similarity score")  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity score: col.subset =",toString(col.subset)))  #Log progress
 	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
 	 
 	# Now, actually calculating the correlation p-values within the dataset
@@ -140,22 +158,22 @@ function(data,N.rand, CA){
 
 	
  
-	loop.range1 <- 1:n						#Establish looping range default
-	loop.range2 <- 1:n						#Establish looping range default
-	max.comparisons <- choose(n,2)					#The default number of comparisons
+	loop.range1 <- col.subset						#Establish looping range default
+	loop.range2 <- col.subset						#Establish looping range default
+	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
 	
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
-		loop.range1 <- CA$subset.cols.1		#Use that subset
+		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use that subset
 		
 
 		if( CA$compare.within.x )               #If comparing only within subset.cols.x
 		    	{
-			loop.range2 <- CA$subset.cols.1			#Use subset.cols.x for the inner loop as well
+			loop.range2 <- which(col.subset %in% CA$subset.cols.1)			#Use subset.cols.x for the inner loop as well
 
 			} else if( length(CA$subset.cols.2)>0 ){	   #If comparing between x and y and the user input subset.cols.y
 
-			loop.range2 <- CA$subset.cols.2 #Use subset.cols.y for the inner loop
+			loop.range2 <- which(col.subset %in% CA$subset.cols.2) #Use subset.cols.y for the inner loop
 
 			}
 		}
@@ -226,7 +244,7 @@ function(data,N.rand, CA){
 					} else
 					{
 
-					measure.parameter.list <- append(list(x=data[,i],y=data[,k]), CA$sim.score.parameters)  #build the method do.call parameter list
+					measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
 					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
 					####################################################
@@ -235,12 +253,12 @@ function(data,N.rand, CA){
 					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
 					p.value <- 2*pnorm(-abs(z.stat))					
 					}
-				CA$z.stat[i,k] = z.stat					#Post z.stat in output matrix	
-				CA$z.stat[k,i] = z.stat					#Post z.stat in output matrix					
-				CA$p.values[i,k] = p.value				#Post it in the p-values matrix  
-				CA$p.values[k,i] = p.value				#Post it in the p-values matrix  
-				CA$cor[i,k] = cor						#Post it in the cor matrix  
-				CA$cor[k,i] = cor						#Post it in the cor matrix  				
+				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
+				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
+				CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix  
+				CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix  
+				CA$cor[col.subset[i],col.subset[k]] = cor						#Post it in the cor matrix  
+				CA$cor[col.subset[k],col.subset[i]] = cor						#Post it in the cor matrix  				
 
 				
 				if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -346,6 +364,25 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
 
+        # Subset of columns for the bootstrapped dataset
+        col.subset <- 1:(n1+n2)
+        n1.subset <- n1
+	n2.subset <- n2
+	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	    	{
+		col.subset <- CA$subset.cols.1
+                n1.subset  <- length(CA$subset.cols.1)
+
+                if(length(CA$subset.cols.2) > 0)
+                       {
+                       col.subset <- c(col.subset,n1+CA$subset.cols.2)
+		       n2.subset <- length(CA$subset.cols.2)
+                       }
+                } 
+
+        # Subset of columns for the permutation datasets
+        
+
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj))
@@ -365,8 +402,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
 		}	
 	
-	for(i in 1:N.rand){
-	
+	#*****************************************************
+	#*  Pre Allocate Matrices                            *
+	#*****************************************************
+	bootstrap.matrices = vector("list", N.rand)		
+	permutation.matrices1 = vector("list", N.rand)	
+	permutation.matrices2 = vector("list", N.rand)	
+
+	for(i in seq_len(N.rand)){
+
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
@@ -381,14 +425,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		boot.matrix        = possible.rows[boot.rowids,]
 
 		# Add the bootstrap matrices to the appropriate lists  
-		bootstrap.matrices[[length(bootstrap.matrices)+1]] = boot.matrix
+			
+		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
+		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
+		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
 
-		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE))	# The matrix has each column be a permutation of the row indices
-		permutation.matrices1[[length(permutation.matrices1)+1]] = perm.matrix1  # Add the new matrix to the list
-		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a  print(i)
-                permutation.matrices2[[length(permutation.matrices2)+1]] = perm.matrix2 # Add the new matrix to the list    
 	}
-
 
 	# The bootstrapped data; resample the data using each bootstrap matrix
 	
@@ -412,7 +456,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# second element of each, etc.
  
  
-	log.processing.progress(CA,"Calculating permutation similarity scores")  #Log progress
+	log.processing.progress(CA,paste("Calculating permutation similarity scores: col.subset =",toString(col.subset)))  #Log progress
 	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
 	if (CA$verbose == TRUE)
 		{
@@ -424,16 +468,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            mat1=permutation.norm1,
 		            mat2=permutation.norm2,
 		            startrow=1,
-		            endrow=n1,
-		            startcol=(n1+1),
-		            endcol=(n1+n2), 				 
-					MoreArgs = list(my.method=CA$method,
+		            endrow=n1.subset,
+		            startcol=(n1.subset+1),
+		            endcol=length(col.subset), 				 
+                	    		MoreArgs = list(col.subset = col.subset,
+					my.method=CA$method,
 					method.args=CA$method.args,
 					outdist=CA$outdist,
 					outdistFile=CA$outdistFile),
 		            SIMPLIFY=FALSE)
 		
-			
 
 	#******************************************************************************** 
 	# For each matrix, check if there is a column that is all zeros 				*
@@ -443,9 +487,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
-	log.processing.progress(CA,"Calculating boot similarity scores")  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA )		 ###Function to check is all cols are zeros and apply cor
-
+	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
+	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 	
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
@@ -460,16 +503,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
-		loop.range1 <- CA$subset.cols.1		#Use the subset of columns
+		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use the subset of columns
 		}
 
 	loop.range2 <- 1:n2						#Establish looping range default
 	
 	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
-		loop.range2 <- CA$subset.cols.2		#Use the subset of columns
+		loop.range2 <- which(col.subset %in% (n1 + CA$subset.cols.2)) - n1.subset		#Use the subset of columns
 		}
-	
+
 
 	max.comparisons <- n1*n2
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -488,13 +531,11 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	   cat("\n",file=CA$concurrentFile,append=TRUE)
 	   }	
 
-	
-	
 	internal.loop.counter = 0   # Initialize the counter
-	for(index1 in 1:(length(loop.range1)))
+	for(index1 in seq_along(loop.range1))
 	{
 		i = loop.range1[index1]
-		for(index2 in 1:(length(loop.range2)))
+		for(index2 in seq_along(loop.range2))
 		{
 			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
@@ -507,9 +548,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
 				
-			
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1+k))
-
+			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
 #review)
 			
@@ -521,10 +560,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
 
-					
-
-			n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
-			n.0_2 = sum(data[,n1+k]==0)				#Number of zeros in column n1+k
+			n.0_1 = sum(data[,col.subset[i]]==0)				#Number of zeros in column i
+			n.0_2 = sum(data[,(col.subset[n1.subset+k]-n1)]==0)				#Number of zeros in column n1+k
 			n.p   = nrow(data)						#Number of rows in data
 			CalcThresholdForError1 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
 			CalcThresholdForError2 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
@@ -538,7 +575,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					} 
 			else
 					{
-						measure.parameter.list <- append(list(x=data[,i],y=data[,n1+k]), CA$sim.score.parameters)  #build the method 
+						measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method 
 #do.call parameter list
 						cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
@@ -550,11 +587,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					}
 
 								  
-			CA$p.values[i,k] = p.value				#Post it in the p.values matrix  
-			CA$z.stat[i,k] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[i,k] = cor					#Post it in the cor matrix  
-						
-
+			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1] = p.value				#Post it in the p.values matrix  
+			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1] = z.stat					#Post it in the z.stat matrix 
+			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1] = cor					#Post it in the cor matrix  
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
@@ -573,6 +608,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		}
 	}
 	
+
 
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 
@@ -748,7 +784,7 @@ function(CA){
 
 
 extractCor <-
-function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist,outdistFile,  ...)
+function(mat1,mat2,startrow,endrow,startcol,endcol,col.subset,my.method,method.args,outdist,outdistFile,  ...)
 #******************************************************************************************
 # A function to calculate the correlation of the two matrices by merging them,            *
 #     calculating the correlation of the merged matrix, and extracting the appropriate    *
@@ -757,7 +793,7 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,my.method,method.args,outdist
 # The method and the method parameters are passed via the list
 #******************************************************************************************
 {
-  	mat <- merge_two_matrices(mat1,mat2)	            #Merge the two matrices
+  	mat <- merge_two_matrices(mat1,mat2)[,col.subset]	            #Merge the two matrices
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
 	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
@@ -912,6 +948,12 @@ function(CA){
 		CA$concurrentFile <- NULL										#And remove it from the common area
 		}
 
+	if( !CA$make.output.table )
+	    {
+	    CA$output.table <- NULL
+	    }
+
+
 	if (CA$verbose.requested == TRUE)								#Check if the User requested verbose
 		{															#We might have turned it off before calling CA$method	
 		CA$verbose = TRUE	
@@ -925,6 +967,7 @@ function(CA){
 	CA$method.args<- NULL 										
 	CA$OneDataset <- NULL													
 	CA$outdist <- NULL	
+	CA$concurrent.output <- NULL
 	CA$Gamma <- NULL 
 	CA$retries.max.iterations <- NULL
 	CA$subset.cols.x <-CA$subset.cols.1
@@ -956,12 +999,9 @@ function(CA){
 		CA$subset.cols.x <- NULL
 		CA$subset.cols.y <- NULL	
 		CA$errthresh <- NULL
+		CA$make.output.table <- NULL
 		}
 
-	if( !CA$make.output.table )
-	    {
-	    CA$output.table <- NULL
-	    }
 
 
 	return(CA)
@@ -970,7 +1010,7 @@ function(CA){
 
 
 method.calculation <-
-function(b,nsubj,data,CA){
+function(b,nsubj,data,CA,col.subset){
 #*************************************************************************************
 #* 	Function to calculate cor  and check that total in cols is not zero              *
 #*************************************************************************************
@@ -994,7 +1034,7 @@ function(b,nsubj,data,CA){
 			}
 		}
 	
-	measure.function.parm.list <- append(list(x=b), CA$method.args)	#Build the measure function parameter list
+	measure.function.parm.list <- append(list(x=b[,col.subset]), CA$method.args)	#Build the measure function parameter list
 	boot.cor <-do.call(CA$method,measure.function.parm.list)	#Invoke the measuring function		
 	return(boot.cor)				
 	}

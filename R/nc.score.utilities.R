@@ -4,34 +4,41 @@ nc.score.helper <- function(data,CA) {
 	#****************************************************************************************
 	mode(data) <- "numeric"
 	CA$nc.score.matrix <- matrix(nrow=ncol(data),ncol=ncol(data))		#Build results area
-	n <- CA$n.bins
-	adj <- ((1.5)*n*(n-1)/(n^2-n+1))
+	
+	#***********************************************************
+	#*  Vectorizing the calculations                           *
+	#*  Calculating  looking at the matrix as a collection     *
+	#*   of n_columns column vectors and performing the        *
+	#*   calculations for the appropriate columns              *
+	#***********************************************************
+	
 
-	for(i in 1:(ncol(data))) {    
-		for(j in (i):ncol(data)) {   		
-			ijsum <- 0
-			cosum <- 0
-			cesum <- 0
-			for (m in 1:(nrow(data))) {   
-				for (n in (m):nrow(data)) {  	  
-					mx <- (c(data[m,i], data[m,j], data[n,i], data[n,i]))
-         			if (length(unique(mx)) >= 2) {
-						if (((mx[1]<mx[3])&(mx[2]<mx[4])) | ((mx[1]>mx[3])&(mx[2]>mx[4]))) {
-							cosum <- cosum + 1 }
-						if (((mx[1]>mx[3])&(mx[3]<mx[4])&(mx[4]>mx[2])&(mx[2]<mx[1])) | ((mx[1]<mx[3])&(mx[3]>mx[4])&(mx[4]<mx[2])&(mx[2]>mx[1]))) {
-							cesum <- cesum + 1 }  
-					}
-				}
-			}
-		cesum_adj <- cesum * adj
-		ijsum <- (cosum - cesum_adj)
-		CA$nc.score.matrix[i,j] <- ijsum				#Post it to the matrix
-		CA$nc.score.matrix[j,i] <- ijsum				#Post it to the matrix
+	for( i in seq_len(ncol(data)) ) 
+	{  
+		for( j in (i):(ncol(data)) ) 
+		{
+                        x <- data[,i]
+			y <- data[,j]
+                        n.bins <- length(unique(c(x,y)))
+                        adj <- ((1.5)*n.bins*(n.bins-1)/(n.bins^2-n.bins+1))
+			ri0 <- seq_len(length(x))
+			rj0 <- Map(seq, ri0, length(y))
+			ri <- rep(ri0, sapply(rj0, length))
+			rj <- unlist(rj0)
+			cosum <- sum(((x[ri]<x[rj])&(y[ri]<y[rj])) | ((x[ri]>x[rj])&(y[ri]>y[rj])))
+			cesum <- sum(((x[ri]>x[rj])&(x[rj]<y[rj])& (y[rj]>y[ri])&(y[ri]<x[ri])) | ((x[ri]<x[rj])&(x[rj]>y[rj])& (y[rj]<y[ri])&(y[ri]>x[ri])))
+			cesum_adj <- cesum * adj			
+			ijsum <- (cosum - cesum_adj)
+                        score <- nc.score.renormalize(x,y,ijsum)                        #Normalize the result
+			CA$nc.score.matrix[i,j] <- score				#Post it to the matrix
+			CA$nc.score.matrix[j,i] <- score				#Post it to the matrix
 		}
 	}
-
-  return(CA$nc.score.matrix)							#Return the calculated results matrix
+	return(CA$nc.score.matrix)
 }
+
+
+
 nc.score.renormalize <-
 function(
 #*************************************************************************************
@@ -61,7 +68,9 @@ function(
 	ijsum <- 0				#Reset ijsum
 	cosum <- 0				#Reset cosum
 	cesum <- 0				#Reset cesum
-	n <- CA$n.bins
+
+	n <- length(unique(c(x,y)))
+
 	adj <- ((1.5)*n*(n-1)/(n^2-n+1))    
 	#**************************************************************
 	# Vectorized the calculations                                 *
@@ -74,12 +83,13 @@ function(
     cesum <- sum(((x[i]>x[j])&(x[j]<y[j])& (y[j]>y[i])&(y[i]<x[i])) |   ((x[i]<x[j])&(x[j]>y[j])& (y[j]<y[i])&(y[i]>x[i])))
 	cesum_adj <- cesum * adj			
 	ijsum <- (cosum - cesum_adj)
-	return(ijsum)				
+        score <- nc.score.renormalize(x,y,ijsum)
+	return(score)				
 }
 preprocess_nc_score_input <-
 function(
 #********************************************************************************************
-#*  	Preprocess input and build the common area                                          *
+#*  	Pre process input and build the common area                                         *
 #********************************************************************************************
 			x, 										#First Input
 			input.bins,
@@ -179,7 +189,9 @@ function(data,CA) {
 	CA$input.total.cols <- ncol(data)			#number of cols in the input
 	CA$columns.not.passing.qc = vector()		#define a vector to contain the seq number of cols that did not pass qc
 
-	for (i in 1:ncol(data)) 
+	
+
+	for (i in seq_len(ncol(data))) 
 	{
 		if (length(which(data[,i] >= CA$min.abundance)) >= CA$min.samples*nrow(data))
 		{
