@@ -796,7 +796,13 @@ function(mat1,mat2,startrow,endrow,startcol,endcol,col.subset,my.method,method.a
   	mat <- merge_two_matrices(mat1,mat2)[,col.subset]	            #Merge the two matrices
 	measure.function.parm.list <- append(list(x=mat), method.args)	
 	mat_C <-do.call(my.method,measure.function.parm.list)	#Invoke the measuring fnction
-	sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
+        if(length(startrow:endrow)==1){
+            sub_mat_C <- matrix(mat_C[startrow:endrow,startcol:endcol],nrow=1)
+        } else if(length(startcol:endcol)==1){
+            sub_mat_C <- matrix(mat_C[startrow:endrow,startcol:endcol],ncol=1)
+        } else {
+            sub_mat_C <- mat_C[startrow:endrow, startcol:endcol] # Extract the appropriate submatrix
+        }
 	return(sub_mat_C)
 }
 
