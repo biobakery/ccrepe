@@ -114,6 +114,9 @@ Optional output file for detailed log (if given) of all intermediate permutation
 \item[\Rcode{make.output.table}]
       A boolean value indicating whether to include table-formatted output.
 
+\item[\Rcode{bootstrap}]
+A boolean value.  If \Rcode{TRUE}, will compare the permutation/renormalization distribution to the bootstrap distribution.  If \Rcode{FALSE}, compares the observed correlation to the permutation/renormalization distribution and returns the ``permutation'' p-value.
+
 \end{description}
 
 \subsection{Output}
@@ -130,7 +133,10 @@ Optional output file for detailed log (if given) of all intermediate permutation
 \Rclass{matrix} of the corrected p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
 
 \item[\Rcode{q.values}]
-\Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+\Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values (q-values).  The (\Rcode{i},\Rcode{j})th element corresponds to the q-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+
+\item[\Rcode{z.stat}]
+\Rclass{matrix} of the z-statistics used in generating the p-values for all requested comparisons.  The (\Rcode{i}, \Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i}, \Rcode{j})th element of \Rcode{p.values}.  This option is not printed if \Rcode{bootstrp = FALSE}, because in this case z-statistics are not calculated.
 
 \end{description}
 
@@ -152,7 +158,8 @@ ccrepe(
  distributions = NA,
  compare.within.x = TRUE,
  concurrent.output = NA,
- make.output.table = FALSE)
+ make.output.table = FALSE,
+ bootstrap=FALSE)
 @
 
 \subsection{Example 1}
