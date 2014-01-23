@@ -65,16 +65,13 @@ function(data,N.rand, CA){
 
         # The subset of columns for which to calculate the similarity scores
         col.subset <- 1:n
-	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
-	    	{
-		col.subset <- CA$subset.cols.1
-
-                if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
-                       {
-                       col.subset <- unique(c(col.subset,CA$subset.cols.2))
-                       }
-                } 
-		
+        if( length(CA$subset.cols.1) > 0 && CA$compare.within.x )               #If the User entered a subset of columns
+                    {
+                    col.subset <- CA$subset.cols.1
+                    } else if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
+                    {
+                        col.subset <- unique(c(col.subset,CA$subset.cols.2))
+                    }
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
