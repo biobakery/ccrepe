@@ -135,7 +135,9 @@
 	sim.score.}
         \item{z.stat}{A matrix of the z-statistics for all the
 	requestedcomparisons.  the (i,j)th element corresponds to the
-	z-statistic which gave rise to the (i,j)th p-value.}
+	z-statistic which gave rise to the (i,j)th p-value.  This is not
+	output if the boostrap option is FALSE, because in this case no
+	z-statistics are calculated.}
         \item{output.table}{(Only if make.output.table=TRUE) A table
 	where each row is one comparision.  Each row contains the
 	features being compared with their similarity scores,
