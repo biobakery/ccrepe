@@ -126,6 +126,9 @@
 	\item{q.values}{A matrix of the Benjamini-Hochberg-Yekutieli FDR corrected p-values.  The (i,j)th element
         of q.values corresponds to the q-value fo the (i,j)th element of
 	sim.score.}
+        \item{z.stat}{A matrix of the z-statistics for all the
+	  requested comparisons.  The (i,j)th element corresponds	
+	  to the z-statistic which gave rise to the (i,j)th p-value.}
         \item{output.table}{(Only if make.output.table=TRUE) A table
 	where each row is one comparision.  Each row contains the
 	features being compared with their similarity scores,
