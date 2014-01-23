@@ -73,4 +73,99 @@ test.ccrepe <- function()
  
 	
 }
+
+context("Permutation p-values")
+
+test_that("Renormalization gives normalized data without missing", {
+    data <- matrix(1:10,nrow=2,byrow=TRUE)
+    data.norm <- ccrepe_norm(data)
+
+    expect_that( is.matrix(data.norm), is_true())
+    expect_that( apply(data.norm,1,sum), equals(c(1,1)) )
+    expect_that( data.norm, equals( matrix(c(1/15,2/15,3/15,4/15,5/15,6/40,7/40,8/40,9/40,0.25),
+                                           byrow=TRUE,
+                                           nrow=2) ) )
+})
+
+test_that("Renormalization works with missing data", {
+    data <- matrix(1:10,nrow=2,byrow=TRUE)
+    data[1,2] = NA
+    data.norm <- ccrepe_norm(data)
+
+    expect_that( data.norm[1,], equals(rep(0,ncol(data))) )
+})
+
+
+test_that("Permutation of one matrix permutes the data by columns", {
+    data <- matrix(1:12, ncol=3)
+    permute.id.matrix <- matrix(c(4,3,2,1,2,1,4,3,2,3,1,4),ncol=3)
+    data.permute <- permute(data,permute.id.matrix)
+
+    expect_that( is.matrix(data.permute), is_true() )
+    expect_that( data.permute, equals(matrix(c(4,3,2,1,6,5,8,7,10,11,9,12),ncol=3)) )
+})
+
+v_dist.na   <- c(3.4,2,NA,2,4.6,0,10,2,8,NA,-2,0,NA)
+v_dist      <- c(3.4,2,2,4.6,0,10,2,8,-2,0)
+v_dist.null <- NA
+obs.value1 <- 3.4             # high p-value, in dist
+obs.value2 <- 10              # low p-value, in dist
+obs.value3 <- 4               # high p-value, not in dist
+obs.value4 <- -5              # low p-value, not in dist
+dist.value1 <- 2              # repeated value
+dist.value2 <- 0              # repeated value
+
+test_that("get_count returns a correct value with no missing", {
+
+    count1 <- get_count(dist.value1, v_dist)
+    count2 <- get_count(dist.value2, v_dist)
+    count3 <- get_count(obs.value3, v_dist)
+    count4 <- get_count(obs.value1, v_dist)
+
+    expect_that( count1, equals(3) )
+    expect_that( count2, equals(2) )
+    expect_that( count3, equals(0) )
+    expect_that( count4, equals(1) )
+})
+
+test_that("get_perm_p.value works with no missing", {
+
+    p.value1 <- get_perm_p.value(v_dist,obs.value1)
+    p.value2 <- get_perm_p.value(v_dist,obs.value2)
+    p.value3 <- get_perm_p.value(v_dist,obs.value3)
+    p.value4 <- get_perm_p.value(v_dist,obs.value4)
+
+    expect_that( p.value1, equals(1) )
+    expect_that( p.value2, equals(.1) )
+    expect_that( p.value3, equals(.9) )
+    expect_that( p.value4, equals(0) )
+})
+
+test_that("get_perm_p.value works with missing", {
+
+    p.value1 <- get_perm_p.value(v_dist.na,obs.value1)
+    p.value2 <- get_perm_p.value(v_dist.na,obs.value2)
+    p.value3 <- get_perm_p.value(v_dist.na,obs.value3)
+    p.value4 <- get_perm_p.value(v_dist.na,obs.value4)
+
+    expect_that( p.value1, equals(1) )
+    expect_that( p.value2, equals(.1) )
+    expect_that( p.value3, equals(.9) )
+    expect_that( p.value4, equals(0) )
+})
+
+test_that("get_perm_p.value returns missing if only missing in v_dist", {
+
+    p.value <- get_perm_p.value(v_dist.null,obs.value1)
+
+    expect_that( is.na(p.value), is_true() )
+})
+
+test_that("get_perm_p.value returns missing if obs.value is missing", {
+
+    p.value <- get_perm_p.value(v_dist, NA)
+
+    expect_that( is.na(p.value), is_true() )
+})
+
  
