@@ -136,8 +136,7 @@ A boolean value.  If \Rcode{TRUE}, will compare the permutation/renormalization 
 \Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values (q-values).  The (\Rcode{i},\Rcode{j})th element corresponds to the q-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
 
 \item[\Rcode{z.stat}]
-\Rclass{matrix} of the z-statistics used in generating the p-values for all requested comparisons.  The (\Rcode{i}, \Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i}, \Rcode{j})th element of \Rcode{p.values}.  This option is not printed if \Rcode{bootstrp = FALSE}, because in this case z-statistics are not calculated.
-
+      \Rclass{matrix}of the z-statistics used in generating the p-values for all requested comparisons.  The(\Rcode{i}, \Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i}, \Rcode{j})th element of \Rcode{p.values}.  This option is not printed if \Rcode{bootstrap = FALSE}, because in this case z-statistics are not calculated.
 \end{description}
 
 \subsection{Usage}	
