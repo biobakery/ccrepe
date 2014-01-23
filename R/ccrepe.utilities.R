@@ -22,7 +22,7 @@ get_perm_p.value <- function(v_dist,obs.value)
           dist_count <- unlist(
               lapply(
                   as.list( v_dist.unique ),
-                  get_count,v_dist=v_dist.present,verbose=verbose ) )      # Get the counts of all the unique values
+                  get_count,v_dist=v_dist.present ) )      # Get the counts of all the unique values
           dist_prob  <- dist_count/length(v_dist.present)                      # Convert the counts to probabilities
 
           dist_include = abs(v_dist.unique - dist_mean) >= abs(obs.value - dist_mean) # Whether or not to count the p-value
