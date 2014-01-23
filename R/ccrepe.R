@@ -17,7 +17,8 @@ function(
 	distributions = NA,					#Output Distribution file - For ccrepe
 	compare.within.x=TRUE,				#Boolean of whether to do comparisons within subset.cols.x or between subset.cols.x and subset.cols.y
 	concurrent.output = NA,				#If specified, file for concurrent output of the table
-	make.output.table = FALSE			#Whether to have the output in table format
+	make.output.table = FALSE,			#Whether to have the output in table format
+        bootstrap = TRUE                                #Whether to compare the permutation/renormalization to the bootstrap distribution or not
 	)					
 
 {
@@ -40,7 +41,8 @@ function(
 			iterations.gap=iterations.gap,
 			outdist=distributions,
 			concurrent.output=concurrent.output,
-			make.output.table=make.output.table)
+			make.output.table=make.output.table,
+                        bootstrap = bootstrap)
 
 			
 	CA <- ccrepe.calculations(CA)
