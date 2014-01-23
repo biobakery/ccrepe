@@ -1006,7 +1006,12 @@ function(CA){
 #* 	Function to clean the Common Area After processing                               *
 #*  Common Area is passed to the User as results                                     *
 #*************************************************************************************
-	if   (!is.na(CA$outdist))										#If user requested to print the distributions
+
+        if( !CA$bootstrap )
+            {
+                CA$z.stat <- NULL
+            }
+        if   (!is.na(CA$outdist))										#If user requested to print the distributions
 		{
 		close(CA$outdistFile)										#Close outdist file	
 		CA$outdistFile <- NULL										#And remove it from the common area
