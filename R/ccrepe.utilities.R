@@ -760,6 +760,11 @@ function(CA){
 		{
 		CA$verbose =  FALSE									#False - is the default
 		}
+
+        if( CA$bootstrap != TRUE & CA$bootstrap != FALSE )
+            {
+                CA$bootstrap = FALSE
+            }
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
