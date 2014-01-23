@@ -619,7 +619,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
                                 bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
 #review)
                             } else {
-                                boostrap.dist <- rep(NA, length(permutation.cor))
+                                bootstrap.dist <- rep(NA, length(permutation.cor))
                             }
 
 			
