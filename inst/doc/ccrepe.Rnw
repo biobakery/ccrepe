@@ -130,7 +130,10 @@ Optional output file for detailed log (if given) of all intermediate permutation
 \Rclass{matrix} of the corrected p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
 
 \item[\Rcode{q.values}]
-\Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+  \Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values (q-values).  The (\Rcode{i},\Rcode{j})th element corresponds to the q-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+  
+\item[\Rcode{z.stat}]
+    \Rclass{matrix}of the z-statistics used in generating the p-values for all requested comparisons.  The(\Rcode{i}, \Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i}, \Rcode{j})th element of \Rcode{p.values}.  This option is not printed if \Rcode{bootstrap = FALSE}, because in this case z-statistics are not calculated.
 
 \end{description}
 
