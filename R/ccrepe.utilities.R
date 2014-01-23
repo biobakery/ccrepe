@@ -306,6 +306,7 @@ function(data,N.rand, CA){
                                                 p.value <- 2*pnorm(-abs(z.stat))					
                                             } else
                                             {
+                                                z.stat <- NA
                                                 p.value <- get_perm_p.value(v_dist = permutation.dist,obs.value = cor)
 
                                             }
