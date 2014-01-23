@@ -135,7 +135,7 @@ function(data,N.rand, CA){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
-                        if(CA$bootstrap)
+                        if(!CA$bootstrap)
                             {
                                 print.msg = paste('Sampled',i,"permutation datasets")
                             }
