@@ -10,12 +10,11 @@
 \usepackage[nonamebreak,square]{natbib}
 
 <<style, eval=TRUE, echo=FALSE, results="asis">>=
-BiocStyle::latex()
+BiocStyle::latex(width=78, use.unsrturl=FALSE)
 @
 
 <<echo=FALSE>>=
 library(ccrepe)
-options(width=78)
 @
 
 \title{CCREPE: Compositionality Corrected by Permutation and Renormalization}
