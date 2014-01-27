@@ -21,39 +21,39 @@ test.ccrepe <- function()
 	#* ccrepe tests against testdata                           *
 	#***********************************************************
 	ccrepe.results <-  ccrepe  (x=testdata,   min.subj=10)
-	tol = 0.15 
-	p.values.results <- matrix(c(NA ,0.87723131, 0.5625562, 0.09091441,
-							0.87723131, NA, 0.4573508, 0.07103074,
-							0.56255622, 0.45735082,        NA, 0.90373585,
-							0.09091441, 0.07103074, 0.9037359,         NA),
-								nrow=4,ncol=4,byrow = TRUE)
-	
-	q.values.results <- matrix(c(NA, 2.472189, 2.066321, 0.8325509,
-								2.4721889, NA, 2.273340, 1.1677655,	
-								2.0663210, 2.273340,  NA, 2.2336444,
-								0.8325509, 1.167766, 2.233644,  NA), 
-								nrow=4,ncol=4,byrow = TRUE)
-								
-	sim.score.results <- matrix(c(1.0000000, -0.3454545, -0.1636364, -0.7818182,
-								-0.3454545,  1.0000000, -0.4424242,  0.2727273,
-								-0.1636364, -0.4424242 , 1.0000000, -0.2727273,
-								-0.7818182,  0.2727273, -0.2727273,  1.0000000),
-								nrow=4,ncol=4,byrow = TRUE)
-				
-	z.stat.results <-matrix(c(   NA,  0.1544800,  0.5790488, -1.6905938,
-								0.1544800,   NA, -0.7432162,  1.8052809,
-								0.5790488, -0.7432162,         NA,  0.1209434,
-								-1.6905938,  1.8052809,  0.1209434,         NA),
-								nrow=4,ncol=4,byrow = TRUE)							
+	tol = 0.45 
 
+       p.values.results <- matrix(c(NA, 0.3324646, 0.6685583, 0.007359154,
+       0.332464551,        NA, 0.2071963, 0.443274564,
+       0.668558279, 0.2071963,        NA, 0.497675143,
+       0.007359154, 0.4432746, 0.4976751,          NA),
+       nrow=4,ncol=4,byrow = TRUE)
+
+        q.values.results <- matrix(c(NA, 1.718329, 1.633598, 0.08497719,
+       1.71832910,       NA, 1.344712 ,1.53208068,
+       1.63359791, 1.344712,       NA, 1.23571379,
+       0.08497719, 1.532081, 1.235714 ,        NA ),
+        nrow=4,ncol=4,byrow = TRUE)
+
+       sim.score.results <- matrix(c(NA, -0.3454545, -0.1636364, -0.7818182,
+       -0.3454545,         NA, -0.4424242,  0.2727273,
+       -0.1636364, -0.4424242,         NA, -0.2727273,
+       -0.7818182,  0.2727273, -0.2727273,         NA
+       ),
+       nrow=4,ncol=4,byrow = TRUE)
+
+       z.stat.results <-matrix(c( NA, -0.9102826, -0.3994251, -2.7489595,
+       -0.9102826,         NA, -1.3129154,  0.7872228,
+       -0.3994251, -1.3129154,         NA, -0.7811972,
+       -2.7489595,  0.7872228, -0.7811972 ,        NA
+       ),
+       nrow=4,ncol=4,byrow = TRUE)
 
 	checkEqualsNumeric(p.values.results,ccrepe.results$p.values, tolerance = tol)
 	checkEqualsNumeric(q.values.results,ccrepe.results$q.values, tolerance = tol)
 	checkEqualsNumeric(sim.score.results,ccrepe.results$sim.score, tolerance = tol)
 	checkEqualsNumeric(z.stat.results,ccrepe.results$z.stat, tolerance = tol)
 	
-	
-
 	
 	
 	
