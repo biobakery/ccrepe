@@ -672,7 +672,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(colnames(data1)[i],colnames(data2)[k],cor,z.stat,p.value,NA)	  
+			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1],cor,z.stat,p.value,NA)	  
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -744,6 +744,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
+        CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
 	return(CA)			# Return the output matrix
 }
 
