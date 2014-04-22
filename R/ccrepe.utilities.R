@@ -248,7 +248,7 @@ function(data,N.rand, CA){
 					#  New p.value calculation                         #
 					####################################################
 					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-					p.value <- 2*pnorm(-abs(z.stat))					
+					p.value <- 2*pt(-abs(z.stat),df=nsubj-1)					
 					}
 				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
 				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
@@ -581,7 +581,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 						#  New p.value calculation                         #
 						####################################################
 					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-						p.value <- 2*pnorm(-abs(z.stat))					
+						p.value <- 2*pt(-abs(z.stat),df=nsubj-1)					
 					}
 
 								  
