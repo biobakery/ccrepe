@@ -31,7 +31,8 @@
  distributions = NA,
  compare.within.x = TRUE,
  concurrent.output = NA,
- make.output.table = FALSE)
+ make.output.table = FALSE,
+ bootstrap = TRUE)
  
 }
 \arguments{
@@ -108,7 +109,13 @@
 }
 \item{make.output.table}{
   A boolean value indicating whether to include table-formatted output.
-}      
+}
+\item{bootstrap}{
+  A boolean value: if TRUE, the
+	permutation/renormalization null distribution is compared with
+	the bootstrap distribution; if FALSE, the null distribution is
+	compared with the observed correlation.
+}
 }
  
 \value{
@@ -127,8 +134,10 @@
         of q.values corresponds to the q-value fo the (i,j)th element of
 	sim.score.}
         \item{z.stat}{A matrix of the z-statistics for all the
-	  requested comparisons.  The (i,j)th element corresponds	
-	  to the z-statistic which gave rise to the (i,j)th p-value.}
+	requestedcomparisons.  the (i,j)th element corresponds to the
+	z-statistic which gave rise to the (i,j)th p-value.  This is not
+	output if the boostrap option is FALSE, because in this case no
+	z-statistics are calculated.}
         \item{output.table}{(Only if make.output.table=TRUE) A table
 	where each row is one comparision.  Each row contains the
 	features being compared with their similarity scores,
@@ -141,6 +150,7 @@
 	\item{sim.score.parameters}{Description Above}
 	\item{compare.within.x}{Description Above}
 	\item{make.output.table}{Description Above}
+	\item{bootstrap}{Description Above}
 
 }
 \author{
