@@ -1,3 +1,36 @@
+get_count <- function(dist.value,v_dist)
+#**********************************************************************
+#	Get the number of times an element appears in a list          *
+#**********************************************************************
+{
+
+          return(sum(v_dist==dist.value))
+}
+
+get_perm_p.value <- function(v_dist,obs.value)
+#**********************************************************************
+#	Get the permutation-only p-value fromthe permutation distribution          *
+#**********************************************************************
+{
+          v_dist.present <- v_dist[which(!is.na(v_dist))]
+
+          if(length(v_dist.present)==0) return(NA)
+
+          dist_mean     = mean(v_dist.present)
+          v_dist.unique = unique(v_dist.present)
+
+          dist_count <- unlist(
+              lapply(
+                  as.list( v_dist.unique ),
+                  get_count,v_dist=v_dist.present ) )      # Get the counts of all the unique values
+          dist_prob  <- dist_count/length(v_dist.present)                      # Convert the counts to probabilities
+
+          dist_include = abs(v_dist.unique - dist_mean) >= abs(obs.value - dist_mean) # Whether or not to count the p-value
+
+          p.value = sum(dist_prob*dist_include)
+          return(p.value)
+}
+
 calculate_q_values <- function(CA)
 #**********************************************************************
 #	Calculate Q values    				                              *
@@ -65,22 +98,21 @@ function(data,N.rand, CA){
 
         # The subset of columns for which to calculate the similarity scores
         col.subset <- 1:n
-        if( length(CA$subset.cols.1) > 0 && CA$compare.within.x )               #If the User entered a subset of columns
-                    {
-                    col.subset <- CA$subset.cols.1
-                    } else if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
-                    {
-                        col.subset <- unique(c(col.subset,CA$subset.cols.2))
-                    }
+	if( length(CA$subset.cols.1) > 0 && CA$compare.within.x )		#If the User entered a subset of columns
+	    	{
+		col.subset <- CA$subset.cols.1
+                } else if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
+                {
+                       col.subset <- unique(c(col.subset,CA$subset.cols.2))
+                }
+		
 
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
-	possible.rows = diag(rep(1,nsubj)) 
+	if(CA$bootstrap)
+            {
+            possible.rows = diag(rep(1,nsubj))
+            }
 
-	#Generating the bootstrap and permutation matrices
-	bootstrap.matrices = list()    # The list of matrices of possible bootstrap rows (each matrix multiplies by the data to give a resampled dataset)
-	permutation.matrices = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
-	
-	
 
 	if (length(colnames(CA$data1)) == 0)		#If no colum names - force them to be the column number
 		{
@@ -91,43 +123,56 @@ function(data,N.rand, CA){
 	#*  Pre allocate                                              *
 	#**************************************************************
 	permutation.matrices  = vector("list", N.rand)		#Pre allocate the permutation matrices
-	bootstrap.matrices = vector("list", N.rand)		#Pre allocate
+	if(CA$bootstrap)
+            {
+            bootstrap.matrices = vector("list", N.rand)		#Pre allocate
+            }
 
 	
 	for(i in seq_len(N.rand)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
+                        if(!CA$bootstrap)
+                            {
+                                print.msg = paste('Sampled',i,"permutation datasets")
+                            }
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
 	
-   
-		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
+                if(CA$bootstrap)
+                    {
+                                        # Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
+                        boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
-		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
+                                        # Generate the bootstrap matrix by getting the appropriate rows from the possible bootstrap rows
+                        boot.matrix = possible.rows[boot.rowids,]
 
-		# Generate the bootstrap matrix by getting the appropriate rows from the possible bootstrap rows
-		boot.matrix = possible.rows[boot.rowids,] 
+                                        # Add the bootstrap matrix to the list
+                        bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
 
-		# Add the bootstrap matrix to the list                   
-		bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
+                    }
 
 		perm.matrix = replicate(n,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
  
 		permutation.matrices [[i]] = perm.matrix		#Populate the permutation matrix
 	}
 
-	# The bootstrapped data; resample the data using each bootstrap matrix
+        if(CA$bootstrap)
+            {
+                                        # The bootstrapped data; resample the data using each bootstrap matrix
 
-	
- 	log.processing.progress(CA,"Building boot data")  #Log progress
-	boot.data = lapply(bootstrap.matrices,resample,data=data)
-	
 
-	###  Using method.calculation  for the one dataset also
-	
-	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
+                log.processing.progress(CA,"Building boot data")  #Log progress
+                boot.data = lapply(bootstrap.matrices,resample,data=data)
+
+
+                ###  Using method.calculation  for the one dataset also
+
+                log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
+                boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
+            }
+
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -217,7 +262,13 @@ function(data,N.rand, CA){
 				}
 			
 				 
-				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
+				if(CA$bootstrap)
+                                    {
+                                        bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
+                                    } else
+                                    {
+                                        bootstrap.dist <- rep(NA,length(permutation.cor))
+                                    }
           
 				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 				permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
@@ -247,8 +298,17 @@ function(data,N.rand, CA){
 					####################################################
 					#  New p.value calculation                         #
 					####################################################
-					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-					p.value <- 2*pnorm(-abs(z.stat))					
+                                        if(CA$bootstrap)
+                                            {
+                                                z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                                                p.value <- 2*pnorm(-abs(z.stat))					
+                                            } else
+                                            {
+                                                z.stat <- NA
+                                                p.value <- get_perm_p.value(v_dist = permutation.dist,obs.value = cor)
+
+                                            }
+
 					}
 				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
 				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
@@ -384,12 +444,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj))
 
-	#Generating the bootstrap and permutation matrices
-	bootstrap.matrices   = list()  # The list of matrices of possible bootstrap rows (each matrix multiplies by the data to give a resampled dataset)
-	permutation.matrices1 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
-	permutation.matrices2 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
-
-
 	if (length(colnames(CA$data1.norm)) == 0)		#If no colum names - force them to be the column number
 		{
 		colnames(CA$data1.norm)<-1:ncol(CA$data1.norm) 
@@ -402,7 +456,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#*****************************************************
 	#*  Pre Allocate Matrices                            *
 	#*****************************************************
-	bootstrap.matrices = vector("list", N.rand)		
+	if(CA$bootstrap)
+            {
+                bootstrap.matrices = vector("list", N.rand)		
+            }
 	permutation.matrices1 = vector("list", N.rand)	
 	permutation.matrices2 = vector("list", N.rand)	
 
@@ -411,19 +468,27 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
+                        if(!CA$bootstrap)
+                            {
+                                print.msg = paste("Sampled",i,"permutation datasets")
+                            }
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
-		
- 
-		# Get the rows of the two possible.rows matrices; these correspond to the rows which will be included in the resampled datasets
-		boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
-		# Generate the bootstrap matrices by getting the appropriate rows from the possible bootstrap rows
-		boot.matrix        = possible.rows[boot.rowids,]
+                if(CA$bootstrap)
+                    {
 
-		# Add the bootstrap matrices to the appropriate lists  
-			
-		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
+                                        # Get the rows of the two possible.rows matrices; these correspond to the rows which will be included in the resampled datasets
+                        boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
+
+                                        # Generate the bootstrap matrices by getting the appropriate rows from the possible bootstrap rows
+                        boot.matrix        = possible.rows[boot.rowids,]
+
+                                        # Add the bootstrap matrices to the appropriate lists
+
+                        bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
+                     }
+                
 		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
 		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
 		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
@@ -431,13 +496,25 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	}
 
-	# The bootstrapped data; resample the data using each bootstrap matrix
-	
-	log.processing.progress(CA,"Generating boot data")  #Log progress
-	boot.data = lapply(bootstrap.matrices,resample,data=data)
- 
+        if(CA$bootstrap)
+            {
+                                        # The bootstrapped data; resample the data using each bootstrap matrix
 
+                log.processing.progress(CA,"Generating boot data")  #Log progress
+                boot.data = lapply(bootstrap.matrices,resample,data=data)
+                
+                #********************************************************************************
+                # For each matrix, check if there is a column that is all zeros 				*
+                # If such matrix is found,  try to reboot it at most 5 times until such matrix  *
+        	# is found that does not contain a column with all zeros                        *
+        	# The limit of 5 tries is now hard coded and needs to be re-evaluated           *
+        	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
+        	#********************************************************************************
 
+                log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
+                boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
+            }
+        
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
 	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
@@ -476,16 +553,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            SIMPLIFY=FALSE)
 		
 
-	#******************************************************************************** 
-	# For each matrix, check if there is a column that is all zeros 				*
-	# If such matrix is found,  try to reboot it at most 5 times until such matrix  *
-	# is found that does not contain a column with all zeros                        *
-	# The limit of 5 tries is now hard coded and needs to be re-evaluated           *
-	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
-	#********************************************************************************
 	
-	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 	
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
@@ -544,10 +612,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
-				
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
-			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
+
+                        if(CA$bootstrap)
+                            {
+                                bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
+                                bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
 #review)
+                            } else {
+                                bootstrap.dist <- rep(NA, length(permutation.cor))
+                            }
+
 			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
@@ -579,8 +653,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 						####################################################
 						#  New p.value calculation                         #
 						####################################################
-					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-						p.value <- 2*pnorm(-abs(z.stat))					
+
+                                                if(CA$bootstrap)
+                                                    {
+                                                        z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                                                        p.value <- 2*pnorm(-abs(z.stat))					
+                                                    } else {
+                                                        z.stat <- NA
+                                                        p.value <- get_perm_p.value(v_dist = permutation.dist,obs.value = cor)
+                                                    }
+
 					}
 
 								  
@@ -590,7 +672,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(colnames(data1)[i],colnames(data2)[k],cor,z.stat,p.value,NA)	  
+			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1],cor,z.stat,p.value,NA)	  
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -662,6 +744,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
+        CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
 	return(CA)			# Return the output matrix
 }
 
@@ -757,6 +840,11 @@ function(CA){
 		{
 		CA$verbose =  FALSE									#False - is the default
 		}
+
+        if( CA$bootstrap != TRUE & CA$bootstrap != FALSE )
+            {
+                CA$bootstrap = FALSE
+            }
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
@@ -939,7 +1027,12 @@ function(CA){
 #* 	Function to clean the Common Area After processing                               *
 #*  Common Area is passed to the User as results                                     *
 #*************************************************************************************
-	if   (!is.na(CA$outdist))										#If user requested to print the distributions
+
+        if( !CA$bootstrap )
+            {
+                CA$z.stat <- NULL
+            }
+        if   (!is.na(CA$outdist))										#If user requested to print the distributions
 		{
 		close(CA$outdistFile)										#Close outdist file	
 		CA$outdistFile <- NULL										#And remove it from the common area
@@ -1003,6 +1096,7 @@ function(CA){
 		CA$subset.cols.y <- NULL	
 		CA$errthresh <- NULL
 		CA$make.output.table <- NULL
+                CA$bootstrap <- NULL
 		}
 
 
