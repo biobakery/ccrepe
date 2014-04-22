@@ -131,6 +131,9 @@ Optional output file for detailed log (if given) of all intermediate permutation
 \item[\Rcode{q.values}]
 \Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
 
+\item[\Rcode{z.stat}]
+  \Rclass{matrix} of the z-statistics used in generating the p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i},\Rcode{j})th element of \Rcode{p.values}.
+
 \end{description}
 
 \subsection{Usage}	
