@@ -58,7 +58,7 @@ function(data,N.rand, CA){
 	
 	CA$p.values <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty PValues matrix
 	CA$z.stat <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty z.stat matrix
-        CA$test   <- "t.test,df=n-1"
+        CA$test   <- "z.test,var=boot_var + perm_var"
 	
 	CA$cor <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty correlation matrix
 	
@@ -348,7 +348,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	# Get number of bugs, subjects for each dataset
 	n1 = ncol(data1.norm)
 	n2 = ncol(data2.norm)
-        CA$test <- "t.test,df=n-1"
+        CA$test <- "z.test,var=boot_var + perm_var"
 
 	log.processing.progress(CA,"Two datasets: Initial merge of the matrices")  #Log progress
 	data = merge_two_matrices(data1.norm,data2.norm)	
