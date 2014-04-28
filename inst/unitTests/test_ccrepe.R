@@ -1,3 +1,4 @@
+library(testthat)
 find_expr <- function(name, env = parent.frame()) {
       subs <- do.call("substitute", list(as.name(name), env))
         paste0(deparse(subs, width.cutoff = 500), collapse = "\n")
@@ -43,31 +44,31 @@ dimnames(testdata) = list(
                                         #***********************************************************
 context("CCREPE")
 ccrepe.results <-  ccrepe  (x=testdata,   min.subj=10)
-tol = 0.15
-p.values.results <- matrix(c(NA ,0.87723131, 0.5625562, 0.09091441,
-                             0.87723131, NA, 0.4573508, 0.07103074,
-                             0.56255622, 0.45735082,        NA, 0.90373585,
-                             0.09091441, 0.07103074, 0.9037359,         NA),
-                           nrow=4,ncol=4,byrow = TRUE)
+tol = 0.20
+p.values.results <- matrix(c(NA, 0.3971393, 0.6186410, 0.004664526,
+ 				0.397139327,        NA, 0.1705455, 0.463121507,
+ 				0.618641016, 0.1705455,        NA, 0.484022610,
+ 				0.004664526, 0.4631215, 0.4840226,          NA),
+                             nrow=4,ncol=4,byrow = TRUE)
 
-q.values.results <- matrix(c(NA, 2.472189, 2.066321, 0.8325509,
-                             2.4721889, NA, 2.273340, 1.1677655,
-                             2.0663210, 2.273340,  NA, 2.2336444,
-                             0.8325509, 1.167766, 2.233644,  NA),
-                           nrow=4,ncol=4,byrow = TRUE)
+q.values.results <- matrix(c(NA, 1.881626, 1.465545, 0.06630087,
+				1.88162638,       NA, 1.212054, 1.64568500,
+				1.46554518, 1.212054,       NA, 1.37596503,
+				0.06630087, 1.645685, 1.375965,         NA),
+                             nrow=4,ncol=4,byrow = TRUE)
 
-sim.score.results <- matrix(c(1.0000000, -0.3454545, -0.1636364, -0.7818182,
-                              -0.3454545,  1.0000000, -0.4424242,  0.2727273,
-                              -0.1636364, -0.4424242 , 1.0000000, -0.2727273,
-                              -0.7818182,  0.2727273, -0.2727273,  1.0000000),
+
+sim.score.results <- matrix(c( NA, -0.3454545, -0.1636364, -0.7818182,
+				-0.3454545,         NA, -0.4424242,  0.2727273,
+				-0.1636364, -0.4424242,         NA, -0.2727273,
+				-0.7818182,  0.2727273, -0.2727273,         NA),
                             nrow=4,ncol=4,byrow = TRUE)
 
-z.stat.results <-matrix(c(   NA,  0.1544800,  0.5790488, -1.6905938,
-                          0.1544800,   NA, -0.7432162,  1.8052809,
-                          0.5790488, -0.7432162,         NA,  0.1209434,
-                          -1.6905938,  1.8052809,  0.1209434,         NA),
+z.stat.results <-matrix(c(  NA, -0.8467413, -0.4977773, -2.8293322,
+				-0.8467413,         NA, -1.3704533,  0.7337166,
+ 				-0.4977773, -1.3704533,         NA, -0.6998474,
+				 -2.8293322,  0.7337166, -0.6998474,         NA),
                         nrow=4,ncol=4,byrow = TRUE)
-
 
 expect_that(p.values.results,is_approximately(ccrepe.results$p.values, tol))
 expect_that(q.values.results,is_approximately(ccrepe.results$q.values,tol))
