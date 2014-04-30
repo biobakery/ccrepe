@@ -136,7 +136,7 @@ function(data,N.rand, CA){
 
 	# The normalized permutation data; the permutation data needs to be renormalized, but not the bootstrap data
 	permutation.norm.raw = lapply(permutation.data,ccrepe_norm)
-        permutation.norm     = lapply(permutation.data,function(mat) mat[,col.subset])
+        permutation.norm     = lapply(permutation.norm.raw,function(mat) mat[,col.subset])
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
