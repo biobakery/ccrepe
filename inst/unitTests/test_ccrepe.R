@@ -45,16 +45,16 @@ dimnames(testdata) = list(
 context("CCREPE")
 ccrepe.results <-  ccrepe  (x=testdata,   min.subj=10)
 tol = 0.20
-p.values.results <- matrix(c(NA, 0.3971393, 0.6186410, 0.004664526,
- 				0.397139327,        NA, 0.1705455, 0.463121507,
- 				0.618641016, 0.1705455,        NA, 0.484022610,
- 				0.004664526, 0.4631215, 0.4840226,          NA),
+p.values.results <- matrix(c(NA, 0.90522544, 0.5846931, 0.12392810,
+							0.9052254,         NA, 0.4900243, 0.08656847,
+							0.5846931, 0.49002431 ,       NA, 0.93236893,
+							0.1239281, 0.08656847, 0.9323689,         NA),
                              nrow=4,ncol=4,byrow = TRUE)
-
-q.values.results <- matrix(c(NA, 1.881626, 1.465545, 0.06630087,
-				1.88162638,       NA, 1.212054, 1.64568500,
-				1.46554518, 1.212054,       NA, 1.37596503,
-				0.06630087, 1.645685, 1.375965,         NA),
+     
+q.values.results <- matrix(c( NA, 2.573348, 2.077685, 0.8807478,
+				2.5733479 ,      NA ,2.321711 ,1.2304713,
+				2.0776852, 2.321711 ,      NA ,2.2087588,
+				0.8807478, 1.230471 ,2.208759 ,       NA),
                              nrow=4,ncol=4,byrow = TRUE)
 
 
@@ -64,11 +64,15 @@ sim.score.results <- matrix(c( NA, -0.3454545, -0.1636364, -0.7818182,
 				-0.7818182,  0.2727273, -0.2727273,         NA),
                             nrow=4,ncol=4,byrow = TRUE)
 
-z.stat.results <-matrix(c(  NA, -0.8467413, -0.4977773, -2.8293322,
-				-0.8467413,         NA, -1.3704533,  0.7337166,
- 				-0.4977773, -1.3704533,         NA, -0.6998474,
-				 -2.8293322,  0.7337166, -0.6998474,         NA),
+z.stat.results <-matrix(c(  NA,  0.1190630,  0.54654243, -1.53849307,
+				0.1190630 ,        NA ,-0.69027017,  1.71378363,
+				0.5465424 ,-0.6902702    ,      NA , 0.08486473,
+				-1.5384931 , 1.7137836 , 0.08486473 ,         NA),
                         nrow=4,ncol=4,byrow = TRUE)
+   
+
+
+
 
 expect_that(p.values.results,is_approximately(ccrepe.results$p.values, tol))
 expect_that(q.values.results,is_approximately(ccrepe.results$q.values,tol))
