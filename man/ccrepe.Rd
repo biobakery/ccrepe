@@ -61,7 +61,6 @@
 	A list of arguments for the measurement function.
 	For example:  In the case of cor, the following would be acceptable:
 	sim.score.args = list(method='spearman',use='complete.obs'	).\cr	
-        Note that this is the default behavior.
 }
   \item{min.subj}{
   Minimum number of subjects that must be measured in a bug/feature/column in order to apply the similarity measure

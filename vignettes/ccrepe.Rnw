@@ -75,13 +75,11 @@ A user-defined similarity measure should mimic the interface of \Rfunction{cor}:
 \end{enumerate}
 
 \item[\Rcode{sim.score.args}]
-An optional list of arguments for the measurement function.  When given, they are passed to the \Rcode{sim.score} function directly.  For example, in the case of cor, the following would be acceptable:
+An optional list of arguments for the measurement function.  When given, they are passed to the \Rcode{sim.score} function directly.  For example, in the case of \Rcode{cor}, the following would be acceptable:
 
 <<eval=FALSE>>=
 sim.score.args = list(method="spearman", use="complete.obs")
 @
-
-Note that this example corresponds to the default behavior.
 
 \item[\Rcode{min.subj}]
 Minimum number (count) of samples that must be nonzero in order to apply the similarity measure.  This is to ensure that there are sufficient samples to perform a bootstrap (default: 20).

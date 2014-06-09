@@ -771,10 +771,10 @@ function(CA){
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
 
-	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
-		{
-			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
-		}
+#	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
+#		{
+#			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
+#		}
 	CA$sim.score.parameters<-list()							#Initialize the parameter list
 	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
  		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
