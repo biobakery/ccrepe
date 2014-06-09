@@ -106,7 +106,7 @@ If \Rcode{verbose=TRUE}, the number of iterations between issuing status message
 Optional output file for detailed log (if given) of all intermediate permutation and renormalization distributions.
 
 \item[\Rcode{compare.within.x}]
-  A boolean value indicating whether to do comparisons given by taking all subsets of size 2 from \Rcode{subset.cols.x} or to do comparisons given by taking all possible combinations of \Rcode{subset.cols.x} or \Rcode{subset.cols.y}.  If \Rcode{TRUE} but \Rcode{subset.cols.y=NA}, returns all comparisons involving any features in \Rcode{subset.cols.x}.
+  A boolean value indicating whether to do comparisons given by taking all subsets of size 2 from \Rcode{subset.cols.x} or to do comparisons given by taking all possible combinations of \Rcode{subset.cols.x} and \Rcode{subset.cols.y}.  If \Rcode{TRUE} but \Rcode{subset.cols.y=NA}, returns all comparisons involving any features in \Rcode{subset.cols.x}.  This argument is only used when \Rcode{y=NA}.
   
 \item[\Rcode{concurrent.output}]
     Optional output file to which each comparison will be written as it is calculated.
