@@ -100,7 +100,7 @@
 	taking all subsets of size 2 from subset.cols.x or to do
 	comparisons given by taking all possible combinations of
 	subset.cols.x or subset.cols.y. If TRUE but subset.cols.y=NA,
-	returns all comparisons involving any features in subset.cols.x
+	returns all comparisons involving any features in subset.cols.x.  This argument is only used when y=NA.
 }
 \item{concurrent.output}{
        Optional output file to which each comparison will be written as
