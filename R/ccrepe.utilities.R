@@ -81,6 +81,22 @@ function(data,N.rand, CA){
                         col.subset <- unique(c(col.subset,CA$subset.cols.2))
                     }
 
+        # Remove features with too many zeros from the subsets of interest
+        num.feature.zeros <- apply(data,2,function(col) sum(col==0))
+        CalcThresholdForError = ((CA$errthresh)^(1/nsubj))*nsubj		#If there is not enough data
+        zero_features <- which(num.feature.zeros > CalcThresholdForError)
+        if(length(zero_features)>0){
+            ErrMsg = paste0(
+                "Feature(s) ",
+                toString(intersect(zero_features,col.subset)),
+                " have more zeros than the threshold of ",
+                trunc(CalcThresholdForError),
+                " zeros.  Excluding from output (will still be used in normalizing.)"
+                )
+            warning(ErrMsg)
+            col.subset <- setdiff(col.subset,zero_features)
+        }
+
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
 
@@ -163,8 +179,8 @@ function(data,N.rand, CA){
 
 	
  
-	loop.range1 <- col.subset						#Establish looping range default
-	loop.range2 <- col.subset						#Establish looping range default
+	loop.range1 <- which( col.subset %in% 1:n)						#Establish looping range default
+	loop.range2 <- which( col.subset %in% 1:n )						#Establish looping range default
 	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
 	
 	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
@@ -180,9 +196,9 @@ function(data,N.rand, CA){
 
 			loop.range2 <- which(col.subset %in% CA$subset.cols.2) #Use subset.cols.y for the inner loop
 
-			}
+			} 
 		}
-
+	
 
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
@@ -235,29 +251,15 @@ function(data,N.rand, CA){
 					{
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
-					
-				n.0_1 = sum(data[,i]==0)				#Number of zeros in column i
-				n.0_2 = sum(data[,k]==0)				#Number of zeros in column k
-				n.p   = nrow(data)						#Number of rows in data
+                                measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
+                                cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
-				CalcThresholdForError = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data 
-				if (n.0_1 > CalcThresholdForError | n.0_2 > CalcThresholdForError)
-					{	
-						p.value=NA
-						cor=NA
-                                                z.stat=NA
-					} else
-					{
-
-					measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
-					cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
-
-					####################################################
-					#  New p.value calculation                         #
-					####################################################
-					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-					p.value <- 2*pnorm(-abs(z.stat))					
-					}
+                                ####################################################
+			        #  New p.value calculation                         #
+				##################################################
+                                z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                                p.value <- 2*pnorm(-abs(z.stat))
+                                
 				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
 				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
 				CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix  
@@ -384,8 +386,29 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
                        col.subset <- c(col.subset,n1+CA$subset.cols.2)
 		       n2.subset <- length(CA$subset.cols.2)
                        }
-                } 
-
+                }
+        
+        # Remove features with too many zeros from the subsets of interest
+        num.feature.zeros <- apply(data,2,function(col) sum(col==0))
+        CalcThresholdForError = ((CA$errthresh)^(1/nsubj))*nsubj		#If there is not enough data
+        zero_features <- which(num.feature.zeros > CalcThresholdForError)
+        if(length(zero_features)>0){
+            zero_features_data1 <- zero_features[which(zero_features <= n1)]
+            zero_features_data2 <- zero_features[which(zero_features > n1)] - n1
+            ErrMsg = paste0(
+                "Feature(s) ",
+                toString(intersect(zero_features_data1,col.subset)),
+                " in dataset 1 and feature(s) ",
+                toString(intersect(zero_features_data2,col.subset-n1)),
+                " in dataset 2 have more zeros than the threshold of ",
+                trunc(CalcThresholdForError),
+                " zeros.  Excluding from output (will still be used in normalizing.)"
+                )
+            warning(ErrMsg)
+            col.subset <- setdiff(col.subset,zero_features)
+            n1.subset <- sum(col.subset <= n1)
+            n2.subset <- sum(col.subset > n1)
+        }
         # Subset of columns for the permutation datasets
         
 
@@ -505,20 +528,19 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$z.stat  <-matrix(data=NA,nrow=n1,ncol=n2)		#Build the empty z.stat matrix
 	CA$cor <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
-	loop.range1 <- 1:n1						#Establish looping range default
+	loop.range1 <- which(col.subset %in% 1:n1)						#Establish looping range default
 	
 	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
 		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use the subset of columns
 		}
 
-	loop.range2 <- 1:n2						#Establish looping range default
+	loop.range2 <- which( col.subset %in% (n1 + 1:n2)) - n1.subset						#Establish looping range default
 	
 	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
 		loop.range2 <- which(col.subset %in% (n1 + CA$subset.cols.2)) - n1.subset		#Use the subset of columns
 		}
-
 
 	max.comparisons <- n1*n2
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -565,33 +587,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 					{
 					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
 					}
-
-			n.0_1 = sum(data[,col.subset[i]]==0)				#Number of zeros in column i
-			n.0_2 = sum(data[,(col.subset[n1.subset+k]-n1)]==0)				#Number of zeros in column n1+k
-			n.p   = nrow(data)						#Number of rows in data
-			CalcThresholdForError1 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
-			CalcThresholdForError2 = ((CA$errthresh)^(1/n.p))*n.p		#If there is not enough data on col1
-	
-
-			if (n.0_1 > CalcThresholdForError1 | n.0_2 > CalcThresholdForError2)
-					{	
-						p.value=NA
-						cor=NA
-                                                z.stat=NA
-					} 
-			else
-					{
-						measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method 
-#do.call parameter list
-						cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
-
-						####################################################
-						#  New p.value calculation                         #
-						####################################################
-					z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-						p.value <- 2*pnorm(-abs(z.stat))					
-					}
-
+                        measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
+                                        #do.call parameter list
+                        cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                        
+			####################################################
+                        #  New p.value calculation                         #
+                        ####################################################
+                        z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                        p.value <- 2*pnorm(-abs(z.stat))
 								  
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1] = z.stat					#Post it in the z.stat matrix 
@@ -1027,7 +1031,7 @@ function(b,nsubj,data,CA,col.subset){
 #*************************************************************************************
 #* 	Function to calculate cor  and check that total in cols is not zero              *
 #*************************************************************************************
-	check.col.sums <- colSums(b)==0
+	check.col.sums <- colSums(b[,col.subset])==0
 	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeros - try to reboot data 5 times
 		{
 		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
@@ -1035,7 +1039,7 @@ function(b,nsubj,data,CA,col.subset){
 			{
 			cnt.tries <- cnt.tries+1			#Increase the counter
 			b1 = try.reboot.again (nsubj,data)	#Try to reboot again
-			check.col.sums <- colSums(b1)==0	#Are there columns with all zeros in the new rebooted matrix?
+			check.col.sums <- colSums(b1[,col.subset])==0	#Are there columns with all zeros in the new rebooted matrix?
 			if (!length(check.col.sums[check.col.sums==TRUE])) #If there is no column that is all zeros - post the result to continue processing
 				{b <- b1}						#Post the result
 			}
