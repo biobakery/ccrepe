@@ -106,11 +106,6 @@ function(data,N.rand, CA){
 	
 	
 
-	if (length(colnames(CA$data1)) == 0)		#If no colum names - force them to be the column number
-		{
-		colnames(CA$data1)<-1:ncol(CA$data1) 
-		}
-	
 	#**************************************************************
 	#*  Pre allocate                                              *
 	#**************************************************************
@@ -227,61 +222,59 @@ function(data,N.rand, CA){
 		i = loop.range1[index1]
 		outer.loop.indices.completed = c(outer.loop.indices.completed,i)	# Keep track of which outer loop indices have been accounted for
 		inner.loop.range = setdiff(loop.range2,outer.loop.indices.completed)	# Use as the inner loop only those inner loop indices which haven't been in the outer loop
-		{
-			for(index2 in seq_len(length(inner.loop.range)))
-			{	
-				k = inner.loop.range[index2]
-				# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
-			
-				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
-				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
-				{
-					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
-					log.processing.progress(CA,print.msg)  #Log progress
-				}
-			
-				 
-				bootstrap.dist = unlist(lapply(boot.cor,'[',i,k)) 
-          
-				# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
-				permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
-				
-				
-				if    (!is.na(CA$outdist))						#If user requested to print the distributions
-					{
-					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
-					}
-                                measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
-                                cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                for(index2 in seq_len(length(inner.loop.range)))
+                    {
+                        k = inner.loop.range[index2]
+                                        # Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 
-                                ####################################################
-			        #  New p.value calculation                         #
-				##################################################
-                                z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-                                p.value <- 2*pnorm(-abs(z.stat))
-                                
-				CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix	
-				CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix					
-				CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix  
-				CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix  
-				CA$cor[col.subset[i],col.subset[k]] = cor						#Post it in the cor matrix  
-				CA$cor[col.subset[k],col.subset[i]] = cor						#Post it in the cor matrix  				
+                        internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
+                        if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+                            {
+                                print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
+                                log.processing.progress(CA,print.msg)  #Log progress
+                            }
 
-				
-				if( !is.na(CA$concurrent.output) || CA$make.output.table )
-				    	   {
-					   concurrent.vector <- c(colnames(data)[i],colnames(data)[k],cor,z.stat,p.value,NA)
-					   output.table[internal.loop.counter,] = concurrent.vector
-					   }
 
-				if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
-					   {
-				   	   cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
-					   cat("\n",file=CA$concurrentFile,append=TRUE)
-					   }	
-			}
-		}
-	}
+                        bootstrap.dist = unlist(lapply(boot.cor,'[',i,k))
+
+                                        # Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
+                        permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
+
+
+                        if    (!is.na(CA$outdist))						#If user requested to print the distributions
+                            {
+                                RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
+                            }
+                        measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
+                        cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+
+                        ####################################################
+                        #  New p.value calculation                         #
+                        ##################################################
+                        z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                        p.value <- 2*pnorm(-abs(z.stat))
+
+                        CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix
+                        CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix
+                        CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix
+                        CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix
+                        CA$cor[col.subset[i],col.subset[k]] = cor						#Post it in the cor matrix
+                        CA$cor[col.subset[k],col.subset[i]] = cor						#Post it in the cor matrix
+
+
+                        if( !is.na(CA$concurrent.output) || CA$make.output.table )
+                            {
+                                concurrent.vector <- c(colnames(data)[i],colnames(data)[k],cor,z.stat,p.value,NA)
+                                output.table[internal.loop.counter,] = concurrent.vector
+                            }
+
+                        if ( !is.na(CA$concurrent.output) )						#If user requested to print the output
+                            {
+                                cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
+                                cat("\n",file=CA$concurrentFile,append=TRUE)
+                            }
+                    }
+            }
 	
 
 	
@@ -318,14 +311,14 @@ function(data,N.rand, CA){
 	#*  Final Edits before exiting                                      *
 	#********************************************************************
 	diag(CA$q.values) <- NA											#Set diagonal of q.values to NA 
-	colnames(CA$p.values)<-colnames(CA$data1)						#Set the names of the columns in the p.values matrix
-	rownames(CA$p.values)<-colnames(CA$data1)						#Set the names of the rows in the p.values matrix
-	colnames(CA$q.values)<-colnames(CA$data1)						#Set the names of the columns in the q.values matrix
-	rownames(CA$q.values)<-colnames(CA$data1)						#Set the names of the rows in the q.values matrix
-	colnames(CA$cor)<-colnames(CA$data1)							#Set the names of the columns in the q.values matrix
-	rownames(CA$cor)<-colnames(CA$data1)							#Set the names of the rows in the q.values matrix
-	colnames(CA$z.stat) <- colnames(CA$data1)						#Set the names of the cols in the z.stat matrix
-	rownames(CA$z.stat) <- colnames(CA$data1)						#Set the names of the rows in the z.stat matrix
+	colnames(CA$p.values)<-colnames(CA$data1.norm)						#Set the names of the columns in the p.values matrix
+	rownames(CA$p.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the p.values matrix
+	colnames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the columns in the q.values matrix
+	rownames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the q.values matrix
+	colnames(CA$cor)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
+	rownames(CA$cor)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
+	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
+	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
 
 	CA$sim.score <- CA$cor											#Rename cor to sim.score
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
@@ -422,15 +415,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	permutation.matrices2 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
 
 
-	if (length(colnames(CA$data1.norm)) == 0)		#If no colum names - force them to be the column number
-		{
-		colnames(CA$data1.norm)<-1:ncol(CA$data1.norm) 
-		}
-	if (length(colnames(CA$data2.norm)) == 0)		#If no colum names - force them to be the column number
-		{
-		colnames(CA$data2.norm)<-1:ncol(CA$data2.norm) 
-		}	
-	
 	#*****************************************************
 	#*  Pre Allocate Matrices                            *
 	#*****************************************************
@@ -693,16 +677,14 @@ function(CA)
 	Output <-list()
  
 	CA <- DecodeInputCAArguments(CA)							#Decode Input Parameters
+        CA <- preprocess_data(CA)
 
 	if (CA$OneDataset == TRUE)
 		{
-		mydata.norm = preprocess_data(CA$data1,CA)						#Preprocess the data 
-		CA  = ccrepe_process_one_dataset(mydata.norm,CA$iterations, CA)  				#Invoke the new function 
+		CA  = ccrepe_process_one_dataset(CA$data1.norm,CA$iterations, CA)  				#Invoke the new function 
 		}
 	else
 		{
-		CA$data1.norm = preprocess_data(CA$data1,CA)					#Preprocess data1 
-		CA$data2.norm = preprocess_data(CA$data2,CA)					#Preprocess data2
 		CA = ccrepe_process_two_datasets  (CA$data1.norm ,CA$data2.norm ,CA$iterations, CA)
 		}
 	return ( CA )
@@ -873,24 +855,166 @@ function(data,permute.id.matrix){
 
 
 
-
+filter_dataset <-
+function(X){
+    missing_rows <- which(
+        apply(
+            X,
+            1,
+            function(row){
+                sum(is.na(row))
+            }
+            ) > 0
+        )
+    if(length(missing_rows)>0){
+        X_no_missing <- X[-missing_rows,]
+    } else {
+        X_no_missing <- X
+    }
+    all_zero_rows <- which(
+        apply(
+            X_no_missing,
+            1,
+            function(row){
+                sum(row==0)/length(row)
+            }
+            )==1
+        )
+    all_zero_cols <- which(
+        apply(
+            X_no_missing,
+            2,
+            function(col){
+                sum(col==0)/length(col)
+            }
+            )==1
+        )
+    if(length(all_zero_rows)>0 && length(all_zero_cols)>0){
+        X_filtered <- X_no_missing[-all_zero_rows,-all_zero_cols]
+    } else if( length(all_zero_rows) > 0 ){
+        X_filtered <- X_no_missing[-all_zero_rows,]
+    } else if( length(all_zero_cols) > 0 ){
+        X_filtered <- X_no_missing[,-all_zero_cols]
+    } else {
+        X_filtered <- X_no_missing
+    }
+    
+    return(
+        list(
+            X_filtered    = X_filtered,
+            all_zero_rows = all_zero_rows,
+            all_zero_cols = all_zero_cols,
+            missing_rows  = missing_rows
+            )
+        )
+}
 
 
 preprocess_data <-
-function(X,CA)
+function(CA)
 #**********************************************************************
 #	Preprocess input data 				                              *
 #**********************************************************************
-{	
-		MyDataFrame<-na.omit(X	)									
-		mydata <- MyDataFrame[rowSums(MyDataFrame != 0) != 0, ] 	#Remove rows that are all zero to prevent NaNs
-		if(nrow(mydata) < CA$min.subj && CA$OneDataset == TRUE ) 	#If not enough data, issue messages in files and stop the run 
-			{
-			ErrMsg = paste('Not enough data - found ',nrow(mydata),' rows of data - Less than  ',CA$min.subj, ' (=min.subj) - Run Stopped')  #Error 
-			stop(ErrMsg)
-			}
-		ProcessedX = mydata/rowSums(mydata)
-	return(ProcessedX)
+{
+    filtered_data1 <- filter_dataset(CA$data1)
+
+    if(length(filtered_data1$missing_rows)>0){
+        ErrMsg = paste(
+            "Excluding row(s)",
+            toString(filtered_data1$missing_rows),
+            "from x because they have missing values."
+            )
+        warning(ErrMsg)
+    }
+
+    if(length(filtered_data1$all_zero_rows)>0){
+        ErrMsg = paste(
+            "Excluding row(s)",
+            toString(filtered_data1$all_zero_rows),
+            "from x because they are entirely zero."
+            )
+        warning(ErrMsg)
+    }
+
+    if(length(filtered_data1$all_zero_cols)>0){
+        ErrMsg = paste(
+            "Excluding feature(s)",
+            toString(filtered_data1$all_zero_cols),
+            "from x because they are entirely zero."
+            )
+        warning(ErrMsg)
+    }
+
+    if(CA$OneDataset){
+        if(nrow(filtered_data1$X_filtered) < CA$min.subj )
+            {
+                ErrMsg = paste0(
+                    'Not enough data - found ',
+                    nrow(filtered_data1$X_filtered),
+                    ' rows of data - Less than  ',
+                    CA$min.subj,
+                    ' (=min.subj) - Run Stopped'
+                    )
+                stop(ErrMsg)
+            }
+
+        CA$data1.norm = filtered_data1$X_filtered/rowSums(filtered_data1$X_filtered)
+        if( is.null( colnames(CA$data1.norm) ) ){
+            if( length(filtered_data1$all_zero_cols) > 0 ){
+                colnames(CA$data1.norm) <- seq_len(ncol(CA$data1))[-filtered_data1$all_zero_cols]
+            } else {
+                colnames(CA$data1.norm) <- seq_len(ncol(CA$data1))
+            }
+        }
+    } else {
+        filtered_data2 <- filter_dataset(CA$data2)
+        
+        if(length(filtered_data2$missing_rows)>0){
+            ErrMsg = paste(
+                "Excluding row(s)",
+                toString(filtered_data2$missing_rows),
+                "from y because they have missing values."
+                )
+            warning(ErrMsg)
+        }
+        
+        if(length(filtered_data2$all_zero_rows)>0){
+            ErrMsg = paste(
+                "Excluding row(s)",
+                toString(filtered_data2$all_zero_rows),
+                "from y because they are entirely zero."
+                )
+            warning(ErrMsg)
+        }
+        if(length(filtered_data2$all_zero_cols)>0){
+            ErrMsg = paste(
+                "Excluding feature(s)",
+                toString(filtered_data2$all_zero_cols),
+                "from y because they are entirely zero."
+                )
+            warning(ErrMsg)
+        }
+
+        CA$data1.norm = filtered_data1$X_filtered/rowSums(filtered_data1$X_filtered)
+        if( is.null( colnames(CA$data1.norm) ) ){
+            if( length(filtered_data1$all_zero_cols) > 0 ){
+                colnames(CA$data1.norm) <- paste0(seq_len(ncol(CA$data1))[-filtered_data1$all_zero_cols],".X")
+            } else {
+                colnames(CA$data1.norm) <- paste0(seq_len(ncol(CA$data1)),".X")
+            }
+        }
+        
+        CA$data2.norm = filtered_data2$X_filtered/rowSums(filtered_data2$X_filtered)
+        if( is.null( colnames(CA$data2.norm) ) ){
+            if( length(filtered_data2$all_zero_cols) > 0 ){
+                colnames(CA$data2.norm) <- paste0(seq_len(ncol(CA$data2))[-filtered_data2$all_zero_cols],".Y")
+            } else {
+                colnames(CA$data2.norm) <- paste0(seq_len(ncol(CA$data2)),".Y")
+            }
+        }
+    }
+    return(CA)
+
 }
 
 
