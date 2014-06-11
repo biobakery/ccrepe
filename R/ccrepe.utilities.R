@@ -262,7 +262,7 @@ function(data,N.rand, CA){
 
                         if( !is.na(CA$concurrent.output) || CA$make.output.table )
                             {
-                                concurrent.vector <- c(colnames(data)[i],colnames(data)[k],cor,z.stat,p.value,NA)
+                                concurrent.vector <- c(colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],cor,z.stat,p.value,NA)
                                 output.table[internal.loop.counter,] = concurrent.vector
                             }
 
