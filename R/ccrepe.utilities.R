@@ -339,8 +339,6 @@ function(data,N.rand, CA){
 
 
 
-
-
 ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #*************************************************************************************
 #* 	ccrepe function for two datasets                                                 *
@@ -351,13 +349,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	n2 = ncol(data2.norm)
 
 	log.processing.progress(CA,"Two datasets: Initial merge of the matrices")  #Log progress
-	data = merge_two_matrices(data1.norm,data2.norm)	
-	if(nrow(data) < CA$min.subj ) 	#If not enough data, issue messages in files and stop the run 
-			{
-			ErrMsg = paste('Not enough data - found ',nrow(data),' rows of data in the merged matrix - Less than  ',CA$min.subj, ' (=min.subj)  - Run Stopped')  #Error 
-			stop(ErrMsg)
-			}
-	
+	data = merge_two_matrices(data1.norm,data2.norm)
 	data1 <- data[,1:n1]
 	data2 <- data[,(n1+1):(n1+n2)]
 	nsubj = nrow(data)
@@ -1085,6 +1077,53 @@ function(CA)
 
         CA$data1.norm = filtered_data1$X_filtered/rowSums(filtered_data1$X_filtered)
         CA$data2.norm = filtered_data2$X_filtered/rowSums(filtered_data2$X_filtered)
+        remove_from_d1 <- which(
+            rownames(CA$data1.norm) %in% setdiff(rownames(CA$data1.norm),rownames(CA$data2.norm))
+            )
+        remove_from_d2 <- which(
+            rownames(CA$data2.norm) %in% setdiff(rownames(CA$data2.norm),rownames(CA$data1.norm))
+            )
+        if(length(remove_from_d1) > 0 && length(remove_from_d2) > 0){
+            ErrMsg = paste0("Removing subjects ",
+                toString(rownames(CA$data1.norm)[remove_from_d1]),
+                " from dataset x and subjects ",
+                toString(rownames(CA$data2.norm)[remove_from_d2]),
+                " from dataset y because they are not paired between the datasets."
+                )
+            warning(ErrMsg)
+            CA$data1.norm <- CA$data1.norm[-remove_from_d1,]
+            CA$data2.norm <- CA$data2.norm[-remove_from_d2,]
+        } else if( length(remove_from_d1) > 0 ){
+            ErrMsg = paste0(
+                "Removing subjects ",
+                toString(rownames(CA$data1.norm)[remove_from_d1]),
+                " from dataset x because they are not in dataset y."
+                )
+            warning(ErrMsg)
+            CA$data1.norm <- CA$data1.norm[-remove_from_d1,]
+        } else if( length(remove_from_d2) > 0 ){
+            ErrMsg = paste0(
+                "Removing subjects ",
+                toString(rownames(CA$data2.norm)[remove_from_d2]),
+                " from dataset y because they are not in dataset x."
+                )
+            warning(ErrMsg)
+            CA$data2.norm <- CA$data2.norm[-remove_from_d2,]
+        }
+
+        merged_data <- merge_two_matrices(CA$data1.norm,CA$data2.norm)
+        if(nrow(merged_data) < CA$min.subj )
+            {
+                ErrMsg = paste0(
+                    'Not enough data - found ',
+                    nrow(merged_data),
+                    ' rows paired of data - Less than  ',
+                    CA$min.subj,
+                    ' (=min.subj) - Run Stopped'
+                    )
+                stop(ErrMsg)
+            }
+        
         CA$filtered.subset.cols.1 <- NULL
         CA$filtered.subset.cols.2 <- NULL
         if(!is.null(CA$subset.cols.1)){
