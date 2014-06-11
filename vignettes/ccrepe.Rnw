@@ -164,7 +164,7 @@ An example of how to use \Rfunction{ccrepe} with one dataset.
 
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.rowsum <- apply(data,1,sum)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
@@ -191,7 +191,7 @@ An example of how to use \Rfunction{ccrepe} with two datasets.
 
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.rowsum <- apply(data,1,sum)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
@@ -201,7 +201,7 @@ test.input <- data.norm
 data2 <- matrix(rlnorm(105,meanlog=0,sdlog=1),nrow=15,ncol=7)
 aligned.rows <- c(seq(1,4),seq(6,9),11,12)  # The datasets dont need 
                                             # to have subjects line up exactly
-data2[aligned.rows,1] <-  2*data[,3] + rnorm(10,0,1)
+data2[aligned.rows,1] <-  2*data[,3] + rnorm(10,0,0.01)
 data2.rowsum <- apply(data2,1,sum)
 data2.norm <- data2/data2.rowsum
 apply(data2.norm,1,sum)  # The rows sum to 1, so the data are normalized
@@ -226,7 +226,7 @@ An example of how to use \Rfunction{ccrepe} with \Rfunction{nc.score} as the sim
 
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.rowsum <- apply(data,1,sum)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
@@ -250,7 +250,7 @@ An example of how to use \Rfunction{ccrepe} with a user-defined \Rfunction{sim.s
 
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.rowsum <- apply(data,1,sum)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
@@ -391,7 +391,7 @@ An example of using \Rfunction{nc.score} to get a single similarity score or a m
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
 data.rowsum <- apply(data,1,sum)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
 test.input <- data.norm
@@ -417,7 +417,7 @@ An example of using \Rfunction{nc.score} with an aribitrary bin number.
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
 data.rowsum <- apply(data,1,sum)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
 test.input <- data.norm
@@ -441,7 +441,7 @@ An example of using \Rfunction{nc.score} with user-defined bin edges.
 <<>>=
 data <- matrix(rlnorm(40,meanlog=0,sdlog=1),nrow=10,ncol=4)
 data.rowsum <- apply(data,1,sum)
-data[,1] = 2*data[,2] + rnorm(10,0,1)
+data[,1] = 2*data[,2] + rnorm(10,0,0.01)
 data.norm <- data/data.rowsum
 apply(data.norm,1,sum)  # The rows sum to 1, so the data are normalized
 test.input <- data.norm
