@@ -21,7 +21,7 @@ calculate_q_values_vector <- function(p.values.vector,CA){
 	non.missing.p.values <- p.values[which(!is.na(p.values))]
 	m = length(non.missing.p.values)                                #m is the total number of p-values
 	ln_m = log(m)									#log m
-	ln_m_Plus_Gamma = ln_m + CA$Gamma					
+	ln_m_Plus_Gamma = ln_m + CA$Gamma
 	SortedVector = sort(non.missing.p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
 	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
 	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
@@ -560,7 +560,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			
 			if    (!is.na(CA$outdist))						#If user requested to print the distributions
 					{
-					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k])
+					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k] - n1)
 					}
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
                                         #do.call parameter list
@@ -722,11 +722,29 @@ function(CA){
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
+                if(file.exists(CA$outdist)){
+                    ErrMsg = paste0(
+                        "Distribution file ",
+                        CA$outdist,
+                        " already exists--overwriting."
+                        )
+                    warning(ErrMsg)
+                    file.remove(CA$outdist)
+                }
 		CA$outdistFile = file(CA$outdist,open='at')		#Open outdist file
 		}
 
 	if    (!is.na(CA$concurrent.output))							#If the user passed a file - open it
 		{
+                if(file.exists(CA$concurrent.output)){
+                    ErrMsg = paste0(
+                        "Concurrent output file ",
+                        CA$concurrent.output,
+                        " already exists--overwriting."
+                        )
+                    warning(ErrMsg)
+                    file.remove(CA$concurrent.output)
+                }
 		CA$concurrentFile = file(CA$concurrent.output,open='at')		#Open the concurrent output file
 		}
 
