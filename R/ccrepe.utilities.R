@@ -177,7 +177,7 @@ function(data,N.rand, CA){
 	loop.range1 <- which( col.subset %in% 1:n)						#Establish looping range default
 	loop.range2 <- which( col.subset %in% 1:n )						#Establish looping range default
 	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
-    
+
 	if( length(CA$filtered.subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
 		loop.range1 <- which(col.subset %in% CA$filtered.subset.cols.1)		#Use that subset
@@ -322,15 +322,16 @@ function(data,N.rand, CA){
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
         diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
 	CA$cor <- NULL
-	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
- 
-	## if (length(CA$subset.cols.x) > 1)				#If used a subset - present only the subset
-	## 	{
-	## 	CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
-	## 	CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
-	## 	CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
-        ##         CA$z.stat    <- CA$z.stat[col.subset,col.subset]
-	## 	}
+
+	if (length(CA$filtered.subset.cols.1) > 0)				#If used a subset - present only the subset
+		{
+		CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
+		CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
+		CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
+                CA$z.stat    <- CA$z.stat[col.subset,col.subset]
+		}
+        CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+
 		
 
 	return(CA)														# Return the output matrix
@@ -511,7 +512,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$cor <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty correlation matrix
 	
 	loop.range1 <- which(col.subset %in% 1:n1)						#Establish looping range default
-	
+
 	if ( length(CA$filtered.subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
 		loop.range1 <- which(col.subset %in% CA$filtered.subset.cols.1)		#Use the subset of columns
@@ -642,15 +643,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	colnames(CA$z.stat) <- colnames(CA$data2.norm)		#Post the column names
 	CA$sim.score <- CA$cor									#Rename cor to sim.score
 	CA$cor <- NULL
-	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
 	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
 
-	if  (length(CA$filtered.subset.cols.1) > 1) #If User selected a subset
+	if  (length(CA$filtered.subset.cols.1) > 0) #If User selected a subset
 		{ 
 			total.rows.to.display = CA$filtered.subset.cols.1
 		}
-	if  (length(CA$filtered.subset.cols.2) > 1) #If User selected a subset
+	if  (length(CA$filtered.subset.cols.2) > 0) #If User selected a subset
 		{ 
 			total.cols.to.display = CA$filtered.subset.cols.2
 		}
@@ -658,6 +658,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
         CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
+        CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+
 	return(CA)			# Return the output matrix
 }
 
