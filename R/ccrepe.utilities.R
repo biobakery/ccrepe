@@ -5,7 +5,7 @@ calculate_q_values <- function(CA)
 {
 	q.values.calc.matrix <- CA$p.values   #Set the default p.values  for one and two dataset cases
 	if  (CA$OneDataset == TRUE)	
-		{q.values.calc.matrix[lower.tri(q.values.calc.matrix)] <- NA}    #If One dataset,  use only the upper part of the matrix
+		{q.values.calc.matrix[lower.tri(q.values.calc.matrix,diag=TRUE)] <- NA}    #If One dataset,  use only the upper part of the matrix
 
 	QValuesArranged <- calculate_q_values_vector(q.values.calc.matrix,CA)$q.values.arranged
 
