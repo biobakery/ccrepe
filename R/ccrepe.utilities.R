@@ -73,12 +73,12 @@ function(data,N.rand, CA){
 
         # The subset of columns for which to calculate the similarity scores
         col.subset <- 1:n
-        if( length(CA$subset.cols.1) > 0 && CA$compare.within.x )               #If the User entered a subset of columns
+        if( length(CA$filtered.subset.cols.1) > 0 && CA$compare.within.x )               #If the User entered a subset of columns
                     {
-                    col.subset <- CA$subset.cols.1
-                    } else if(length(CA$subset.cols.2) > 0 && !CA$compare.within.x)
+                    col.subset <- CA$filtered.subset.cols.1
+                    } else if(length(CA$filtered.subset.cols.2) > 0 && !CA$compare.within.x)
                     {
-                        col.subset <- unique(c(col.subset,CA$subset.cols.2))
+                        col.subset <- unique(c(col.subset,CA$filtered.subset.cols.2))
                     }
 
         # Remove features with too many zeros from the subsets of interest
@@ -88,7 +88,7 @@ function(data,N.rand, CA){
         if(length(zero_features)>0){
             ErrMsg = paste0(
                 "Feature(s) ",
-                toString(intersect(zero_features,col.subset)),
+                toString(colnames(data)[intersect(zero_features,col.subset)]),
                 " have more zeros than the threshold of ",
                 trunc(CalcThresholdForError),
                 " zeros.  Excluding from output (will still be used in normalizing.)"
@@ -177,23 +177,22 @@ function(data,N.rand, CA){
 	loop.range1 <- which( col.subset %in% 1:n)						#Establish looping range default
 	loop.range2 <- which( col.subset %in% 1:n )						#Establish looping range default
 	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
-	
-	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+    
+	if( length(CA$filtered.subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
-		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use that subset
+		loop.range1 <- which(col.subset %in% CA$filtered.subset.cols.1)		#Use that subset
 		
 
 		if( CA$compare.within.x )               #If comparing only within subset.cols.x
 		    	{
-			loop.range2 <- which(col.subset %in% CA$subset.cols.1)			#Use subset.cols.x for the inner loop as well
+			loop.range2 <- which(col.subset %in% CA$filtered.subset.cols.1)			#Use subset.cols.x for the inner loop as well
 
 			} else if( length(CA$subset.cols.2)>0 ){	   #If comparing between x and y and the user input subset.cols.y
 
-			loop.range2 <- which(col.subset %in% CA$subset.cols.2) #Use subset.cols.y for the inner loop
+			loop.range2 <- which(col.subset %in% CA$filtered.subset.cols.2) #Use subset.cols.y for the inner loop
 
 			} 
 		}
-	
 
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
@@ -234,7 +233,6 @@ function(data,N.rand, CA){
                                 log.processing.progress(CA,print.msg)  #Log progress
                             }
 
-
                         bootstrap.dist = unlist(lapply(boot.cor,'[',i,k))
 
                                         # Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
@@ -243,7 +241,7 @@ function(data,N.rand, CA){
 
                         if    (!is.na(CA$outdist))						#If user requested to print the distributions
                             {
-                                RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
+                                RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[k])
                             }
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
                         cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
@@ -326,13 +324,13 @@ function(data,N.rand, CA){
 	CA$cor <- NULL
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
  
-	if (length(CA$subset.cols.x) > 1)				#If used a subset - present only the subset
-		{
-		CA$p.values <- CA$p.values[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
-		CA$q.values <- CA$q.values[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
-		CA$sim.score <- CA$sim.score[CA$subset.cols.x,CA$subset.cols.x]   #Display only the subset of cols and rows
-                CA$z.stat    <- CA$z.stat[CA$subset.cols.x,CA$subset.cols.x]
-		}
+	## if (length(CA$subset.cols.x) > 1)				#If used a subset - present only the subset
+	## 	{
+	## 	CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
+	## 	CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
+	## 	CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
+        ##         CA$z.stat    <- CA$z.stat[col.subset,col.subset]
+	## 	}
 		
 
 	return(CA)														# Return the output matrix
@@ -369,15 +367,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
         col.subset <- 1:(n1+n2)
         n1.subset <- n1
 	n2.subset <- n2
-	if( length(CA$subset.cols.1) > 0 )		#If the User entered a subset of columns
+	if( length(CA$filtered.subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
-		col.subset <- CA$subset.cols.1
-                n1.subset  <- length(CA$subset.cols.1)
+		col.subset <- CA$filtered.subset.cols.1
+                n1.subset  <- length(CA$filtered.subset.cols.1)
 
                 if(length(CA$subset.cols.2) > 0)
                        {
-                       col.subset <- c(col.subset,n1+CA$subset.cols.2)
-		       n2.subset <- length(CA$subset.cols.2)
+                       col.subset <- c(col.subset,n1+CA$filtered.subset.cols.2)
+		       n2.subset <- length(CA$filtered.subset.cols.2)
                        }
                 }
         
@@ -387,12 +385,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
         zero_features <- which(num.feature.zeros > CalcThresholdForError)
         if(length(zero_features)>0){
             zero_features_data1 <- zero_features[which(zero_features <= n1)]
-            zero_features_data2 <- zero_features[which(zero_features > n1)] - n1
+            zero_features_data2 <- zero_features[which(zero_features > n1)]
             ErrMsg = paste0(
                 "Feature(s) ",
-                toString(intersect(zero_features_data1,col.subset)),
+                toString(colnames(data)[intersect(zero_features_data1,col.subset)]),
                 " in dataset 1 and feature(s) ",
-                toString(intersect(zero_features_data2,col.subset-n1)),
+                toString(colnames(data)[intersect(zero_features_data2,col.subset)]),
                 " in dataset 2 have more zeros than the threshold of ",
                 trunc(CalcThresholdForError),
                 " zeros.  Excluding from output (will still be used in normalizing.)"
@@ -514,16 +512,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	
 	loop.range1 <- which(col.subset %in% 1:n1)						#Establish looping range default
 	
-	if ( length(CA$subset.cols.1)> 0 )		#If the User entered a subset of columns
+	if ( length(CA$filtered.subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
-		loop.range1 <- which(col.subset %in% CA$subset.cols.1)		#Use the subset of columns
+		loop.range1 <- which(col.subset %in% CA$filtered.subset.cols.1)		#Use the subset of columns
 		}
 
 	loop.range2 <- which( col.subset %in% (n1 + 1:n2)) - n1.subset						#Establish looping range default
 	
-	if ( length(CA$subset.cols.2) > 0 )		#If the User entered a subset of columns
+	if ( length(CA$filtered.subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
-		loop.range2 <- which(col.subset %in% (n1 + CA$subset.cols.2)) - n1.subset		#Use the subset of columns
+		loop.range2 <- which(col.subset %in% (n1 + CA$filtered.subset.cols.2)) - n1.subset		#Use the subset of columns
 		}
 
 	max.comparisons <- n1*n2
@@ -569,7 +567,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			
 			if    (!is.na(CA$outdist))						#If user requested to print the distributions
 					{
-					RC <- print.dist(bootstrap.dist,permutation.dist,CA,i,k)
+					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k])
 					}
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
                                         #do.call parameter list
@@ -648,13 +646,13 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
 	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
 
-	if  (length(CA$subset.cols.x) > 1) #If User selected a subset
+	if  (length(CA$filtered.subset.cols.1) > 1) #If User selected a subset
 		{ 
-			total.rows.to.display = CA$subset.cols.x
+			total.rows.to.display = CA$filtered.subset.cols.1
 		}
-	if  (length(CA$subset.cols.y) > 1) #If User selected a subset
+	if  (length(CA$filtered.subset.cols.2) > 1) #If User selected a subset
 		{ 
-			total.cols.to.display = CA$subset.cols.y
+			total.cols.to.display = CA$filtered.subset.cols.2
 		}
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
@@ -726,7 +724,7 @@ function(CA){
 		{
 		CA$subset.cols.2 = NULL					#Set to default
 		}
-	
+
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
@@ -857,6 +855,9 @@ function(data,permute.id.matrix){
 
 filter_dataset <-
 function(X){
+#**********************************************************************
+#	Filter out missing rows and rows/cols that are all zero       *
+#**********************************************************************
     missing_rows <- which(
         apply(
             X,
@@ -871,16 +872,17 @@ function(X){
     } else {
         X_no_missing <- X
     }
-    all_zero_rows <- which(
+    raw_all_zero_rows <- which(
         apply(
-            X_no_missing,
+            X,
             1,
             function(row){
                 sum(row==0)/length(row)
             }
             )==1
         )
-    all_zero_cols <- which(
+    all_zero_rows <- which(rownames(X_no_missing) %in% rownames(X)[raw_all_zero_rows])
+    raw_all_zero_cols <- which(
         apply(
             X_no_missing,
             2,
@@ -889,6 +891,7 @@ function(X){
             }
             )==1
         )
+    all_zero_cols <- which(colnames(X_no_missing) %in% colnames(X)[raw_all_zero_cols])
     if(length(all_zero_rows)>0 && length(all_zero_cols)>0){
         X_filtered <- X_no_missing[-all_zero_rows,-all_zero_cols]
     } else if( length(all_zero_rows) > 0 ){
@@ -902,13 +905,59 @@ function(X){
     return(
         list(
             X_filtered    = X_filtered,
-            all_zero_rows = all_zero_rows,
-            all_zero_cols = all_zero_cols,
+            all_zero_rows = raw_all_zero_rows,
+            all_zero_cols = raw_all_zero_cols,
             missing_rows  = missing_rows
             )
         )
 }
 
+check_data_values <-
+function(CA){
+#**********************************************************************
+#	Check that all data values are valid 				                              *
+#**********************************************************************
+    # Check non-negativity
+    num.neg <- sum(CA$data1[!is.na(CA$data1)] < 0)
+    if( num.neg > 0 ){
+        ErrMsg <- paste(
+            "There are",
+            num.neg,
+            "negative values in x.  CCREPE only uses non-negative values--stopping run.")
+        stop(ErrMsg)
+    }
+    # Check simplex
+    num.gt.1 <- sum(CA$data1[!is.na(CA$data1)] > 1)
+    if( num.gt.1 > 0){
+        ErrMsg <- paste(
+            "x appears to be count data, since there are",
+            num.gt.1,
+            "values greater than 1."
+            )
+        warning(ErrMsg)
+    }
+    
+    if(!CA$OneDataset){
+        # Check non-negativity
+        num.neg2 <- sum(CA$data2[!is.na(CA$data2)] < 0)
+        if( num.neg2 > 0 ){
+            ErrMsg <- paste(
+                "There are",
+                num.neg2,
+                "negative values in y.  CCREPE only uses non-negative values--stopping run.")
+        }
+        # Check simplex
+        num2.gt.1 <- sum(CA$data2[!is.na(CA$data2)] > 1)
+        if( num2.gt.1 > 0){
+            ErrMsg <- paste(
+                "y appears to be count data, since there are",
+                num2.gt.1,
+                "values greater than 1."
+                )
+            warning(ErrMsg)
+        }
+    }
+}
 
 preprocess_data <-
 function(CA)
@@ -916,12 +965,27 @@ function(CA)
 #	Preprocess input data 				                              *
 #**********************************************************************
 {
-    filtered_data1 <- filter_dataset(CA$data1)
+    check_data_values(CA)
+    
+    if(CA$OneDataset){
+        if(is.null(colnames(CA$data1))) colnames(CA$data1) <- seq_len(ncol(CA$data1))
+        if(is.null(rownames(CA$data1))) rownames(CA$data1) <- seq_len(nrow(CA$data1))
+
+        filtered_data1 <- filter_dataset(CA$data1)
+    } else {
+        if(is.null(colnames(CA$data1))) colnames(CA$data1) <- paste0(seq_len(ncol(CA$data1)),".X")
+        if(is.null(rownames(CA$data1))) rownames(CA$data1) <- seq_len(nrow(CA$data1))
+        if(is.null(colnames(CA$data2))) colnames(CA$data2) <- paste0(seq_len(ncol(CA$data2)),".Y")
+        if(is.null(rownames(CA$data2))) rownames(CA$data2) <- seq_len(nrow(CA$data2))
+
+        filtered_data1 <- filter_dataset(CA$data1)
+        filtered_data2 <- filter_dataset(CA$data2)
+    }
 
     if(length(filtered_data1$missing_rows)>0){
         ErrMsg = paste(
-            "Excluding row(s)",
-            toString(filtered_data1$missing_rows),
+            "Excluding subject(s)",
+            toString(rownames(CA$data1)[filtered_data1$missing_rows]),
             "from x because they have missing values."
             )
         warning(ErrMsg)
@@ -929,8 +993,8 @@ function(CA)
 
     if(length(filtered_data1$all_zero_rows)>0){
         ErrMsg = paste(
-            "Excluding row(s)",
-            toString(filtered_data1$all_zero_rows),
+            "Excluding subject(s)",
+            toString(rownames(CA$data1)[filtered_data1$all_zero_rows]),
             "from x because they are entirely zero."
             )
         warning(ErrMsg)
@@ -939,7 +1003,7 @@ function(CA)
     if(length(filtered_data1$all_zero_cols)>0){
         ErrMsg = paste(
             "Excluding feature(s)",
-            toString(filtered_data1$all_zero_cols),
+            toString(colnames(CA$data1)[filtered_data1$all_zero_cols]),
             "from x because they are entirely zero."
             )
         warning(ErrMsg)
@@ -959,20 +1023,41 @@ function(CA)
             }
 
         CA$data1.norm = filtered_data1$X_filtered/rowSums(filtered_data1$X_filtered)
-        if( is.null( colnames(CA$data1.norm) ) ){
-            if( length(filtered_data1$all_zero_cols) > 0 ){
-                colnames(CA$data1.norm) <- seq_len(ncol(CA$data1))[-filtered_data1$all_zero_cols]
-            } else {
-                colnames(CA$data1.norm) <- seq_len(ncol(CA$data1))
+        CA$filtered.subset.cols.1 <- NULL
+        CA$filtered.subset.cols.2 <- NULL
+        if(!is.null(CA$subset.cols.1)){
+            CA$filtered.subset.cols.1 <- which(colnames(CA$data1.norm) %in% colnames(CA$data1)[CA$subset.cols.1])
+            if( length(CA$filtered.subset.cols.1)==0 ){
+                ErrMsg = paste0(
+                    "User requested subset.cols.x=c(",
+                    toString(CA$subset.cols.1),
+                    "), but all are filtered.  Setting subset.cols.x=NULL."
+                    )
+                warning(ErrMsg)
+                CA$subset.cols.1 <- NULL
+                CA$filtered.subset.cols.1 <- NULL
             }
         }
+        if(!is.null(CA$subset.cols.2)){
+            CA$filtered.subset.cols.2 <- which(colnames(CA$data1.norm) %in% colnames(CA$data1)[CA$subset.cols.2])
+            if( length(CA$filtered.subset.cols.2)==0 ){
+                ErrMsg = paste0(
+                    "User requested subset.cols.y=c(",
+                    toString(CA$subset.cols.2),
+                    "), but all are filtered.  Setting subset.cols.y=NULL"
+                    )
+                warning(ErrMsg)
+                CA$subset.cols.2 <- NULL
+                CA$filtered.subset.cols.2 <- NULL
+            }
+        }
+
     } else {
-        filtered_data2 <- filter_dataset(CA$data2)
         
         if(length(filtered_data2$missing_rows)>0){
             ErrMsg = paste(
-                "Excluding row(s)",
-                toString(filtered_data2$missing_rows),
+                "Excluding subject(s)",
+                toString(rownames(CA$data2)[filtered_data2$missing_rows]),
                 "from y because they have missing values."
                 )
             warning(ErrMsg)
@@ -980,38 +1065,54 @@ function(CA)
         
         if(length(filtered_data2$all_zero_rows)>0){
             ErrMsg = paste(
-                "Excluding row(s)",
-                toString(filtered_data2$all_zero_rows),
+                "Excluding subject(s)",
+                toString(rownames(CA$data2)[filtered_data2$all_zero_rows]),
                 "from y because they are entirely zero."
                 )
             warning(ErrMsg)
         }
+        
         if(length(filtered_data2$all_zero_cols)>0){
             ErrMsg = paste(
                 "Excluding feature(s)",
-                toString(filtered_data2$all_zero_cols),
+                toString(colnames(CA$data2)[filtered_data2$all_zero_cols]),
                 "from y because they are entirely zero."
                 )
             warning(ErrMsg)
         }
 
         CA$data1.norm = filtered_data1$X_filtered/rowSums(filtered_data1$X_filtered)
-        if( is.null( colnames(CA$data1.norm) ) ){
-            if( length(filtered_data1$all_zero_cols) > 0 ){
-                colnames(CA$data1.norm) <- paste0(seq_len(ncol(CA$data1))[-filtered_data1$all_zero_cols],".X")
-            } else {
-                colnames(CA$data1.norm) <- paste0(seq_len(ncol(CA$data1)),".X")
-            }
-        }
-        
         CA$data2.norm = filtered_data2$X_filtered/rowSums(filtered_data2$X_filtered)
-        if( is.null( colnames(CA$data2.norm) ) ){
-            if( length(filtered_data2$all_zero_cols) > 0 ){
-                colnames(CA$data2.norm) <- paste0(seq_len(ncol(CA$data2))[-filtered_data2$all_zero_cols],".Y")
-            } else {
-                colnames(CA$data2.norm) <- paste0(seq_len(ncol(CA$data2)),".Y")
+        CA$filtered.subset.cols.1 <- NULL
+        CA$filtered.subset.cols.2 <- NULL
+        if(!is.null(CA$subset.cols.1)){
+            CA$filtered.subset.cols.1 <- which(colnames(CA$data1.norm) %in% colnames(CA$data1)[CA$subset.cols.1])
+            if( length(CA$filtered.subset.cols.1)==0 ){
+                ErrMsg = paste0(
+                    "User requested subset.cols.x=c(",
+                    toString(CA$subset.cols.1),
+                    "), but all are filtered.  Setting subset.cols.x=NULL."
+                    )
+                warning(ErrMsg)
+                CA$subset.cols.1 <- NULL
+                CA$filtered.subset.cols.1 <- NULL
             }
         }
+        if(!is.null(CA$subset.cols.2)){
+            CA$filtered.subset.cols.2 <- which(colnames(CA$data2.norm) %in% colnames(CA$data2)[CA$subset.cols.2])
+            if( length(CA$filtered.subset.cols.2)==0 ){
+                ErrMsg = paste0(
+                    "User requested subset.cols.y=c(",
+                    toString(CA$subset.cols.2),
+                    "), but all are filtered.  Setting subset.cols.y=NULL."
+                    )
+                warning(ErrMsg)
+                CA$subset.cols.2 <- NULL
+                CA$filtered.subset.cols.2 <- NULL
+            }
+        }
+
+
     }
     return(CA)
 
@@ -1030,7 +1131,7 @@ function(bootstrap.dist,permutation.dist,  CA,i, k)	{
 	
 	output.string0 <- paste(bootstrap.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Boot,",colnames(CA$data1)[i],",",colnames(CA$data1)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Boot,",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
 		{output.string <-paste("Boot,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 
@@ -1038,7 +1139,7 @@ function(bootstrap.dist,permutation.dist,  CA,i, k)	{
 	
 	output.string0 <- paste(permutation.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Permutation,",colnames(CA$data1)[i],",",colnames(CA$data1)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Permutation,",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
 		{output.string <-paste("Permutation,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 	cat(output.string,file=CA$outdistFile,append=TRUE)
@@ -1115,6 +1216,8 @@ function(CA){
 	CA$subset.cols.y <-CA$subset.cols.2
 	CA$subset.cols.1 <- NULL
 	CA$subset.cols.2 <- NULL
+        CA$filtered.subset.cols.1 <- NULL
+        CA$filtered.subset.cols.2 <- NULL
 	
 
 	if  ( length(CA$subset.cols.x) == 1 &&  CA$subset.cols.x == c(0))			#If NA - set to default
