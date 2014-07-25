@@ -62,17 +62,17 @@ function(data,N.rand, CA){
 #* 	Function to apply the new method to a dataset                                    *
 #*  As a note, data needs to be a matrix with no missing values                      *
 #*************************************************************************************
-	n = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
+	n.features = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
-	CA$p.values <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty PValues matrix
-	CA$z.stat <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty z.stat matrix
+	CA$p.values <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty PValues matrix
+	CA$z.stat <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty z.stat matrix
 	
-	CA$cor <-matrix(data=NA,nrow=n,ncol=n)	#Build the empty correlation matrix
+	CA$sim.score <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty correlation matrix
 	
 	nsubj = nrow(data)				# Number of subjects
 
         # The subset of columns for which to calculate the similarity scores
-        col.subset <- 1:n
+        col.subset <- 1:n.features
         if( length(CA$filtered.subset.cols.1) > 0 && CA$compare.within.x )               #If the User entered a subset of columns
                     {
                     col.subset <- CA$filtered.subset.cols.1
@@ -131,7 +131,7 @@ function(data,N.rand, CA){
 		# Add the bootstrap matrix to the list                   
 		bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
 
-		perm.matrix = replicate(n,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
+		perm.matrix = replicate(n.features,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
  
 		permutation.matrices [[i]] = perm.matrix		#Populate the permutation matrix
 	}
@@ -143,10 +143,10 @@ function(data,N.rand, CA){
 	boot.data = lapply(bootstrap.matrices,resample,data=data)
 	
 
-	###  Using method.calculation  for the one dataset also
+	###  Using bootstrap.method.calcn  for the one dataset also
 	
 	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
+	boot.cor  = lapply(boot.data,bootstrap.method.calcn,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 
 	log.processing.progress(CA,"Generating permutation data")  #Log progress
 	# Generating the permutation data; permute the data using each permutation matrix
@@ -174,8 +174,8 @@ function(data,N.rand, CA){
 
 	
  
-	loop.range1 <- which( col.subset %in% 1:n)						#Establish looping range default
-	loop.range2 <- which( col.subset %in% 1:n )						#Establish looping range default
+	loop.range1 <- which( col.subset %in% 1:n.features)						#Establish looping range default
+	loop.range2 <- which( col.subset %in% 1:n.features )						#Establish looping range default
 	max.comparisons <- choose(length(col.subset),2)					#The default number of comparisons
 
 	if( length(CA$filtered.subset.cols.1) > 0 )		#If the User entered a subset of columns
@@ -244,7 +244,7 @@ function(data,N.rand, CA){
                                 RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[k])
                             }
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
-                        cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                        sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 
                         ####################################################
                         #  New p.value calculation                         #
@@ -256,13 +256,13 @@ function(data,N.rand, CA){
                         CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix
                         CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix
                         CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix
-                        CA$cor[col.subset[i],col.subset[k]] = cor						#Post it in the cor matrix
-                        CA$cor[col.subset[k],col.subset[i]] = cor						#Post it in the cor matrix
+                        CA$sim.score[col.subset[i],col.subset[k]] = sim.score			#Post it in the cor matrix
+                        CA$sim.score[col.subset[k],col.subset[i]] = sim.score			#Post it in the cor matrix
 
 
                         if( !is.na(CA$concurrent.output) || CA$make.output.table )
                             {
-                                concurrent.vector <- c(colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],cor,z.stat,p.value,NA)
+                                concurrent.vector <- c(colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],sim.score,z.stat,p.value,NA)
                                 output.table[internal.loop.counter,] = concurrent.vector
                             }
 
@@ -313,15 +313,15 @@ function(data,N.rand, CA){
 	rownames(CA$p.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the p.values matrix
 	colnames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the columns in the q.values matrix
 	rownames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the q.values matrix
-	colnames(CA$cor)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
-	rownames(CA$cor)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
+	colnames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
+	rownames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
 	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
 
-	CA$sim.score <- CA$cor											#Rename cor to sim.score
+	CA$sim.score <- CA$sim.score											#Rename cor to sim.score
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
         diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
-	CA$cor <- NULL
+	CA$sim.score <- NULL
 
 	if (length(CA$filtered.subset.cols.1) > 0)				#If used a subset - present only the subset
 		{
@@ -868,7 +868,7 @@ function(data,permute.id.matrix){
 filter_dataset <-
 function(X){
 #**********************************************************************
-#	Filter out missing rows and rows/cols that are all zero       *
+#	Filter out missing rows and rows/cols that are all zero          *
 #**********************************************************************
     missing_rows <- which(
         apply(
@@ -1312,32 +1312,32 @@ function(CA){
 
 
 
-method.calculation <-
-function(b,nsubj,data,CA,col.subset){
+bootstrap.method.calcn <-
+function(subsetted.matrix,nsubj,original.data,CA,col.subset){
 #*************************************************************************************
 #* 	Function to calculate cor  and check that total in cols is not zero              *
 #*************************************************************************************
-	check.col.sums <- colSums(b[,col.subset])==0
-	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeros - try to reboot data 5 times
+	check.col.sums <- colSums(subsetted.matrix[,col.subset])==0
+	if (length(check.col.sums[check.col.sums==TRUE]))  		#If there is a column that is all zeros - try to reboot data CA$retries.max.iterations=-round(log2(CA$errthresh)) times
 		{
 		cnt.tries = 0							#Initialize counter of  tries that we will try to reboot
-		while(cnt.tries < CA$retries.max.iterations  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeded rebooting the data so no cols are zero
+		while(cnt.tries < CA$retries.max.iterations  && length(check.col.sums[check.col.sums==TRUE]))  #Check if we succeeded rebooting the data so no cols are zero
 			{
 			cnt.tries <- cnt.tries+1			#Increase the counter
-			b1 = try.reboot.again (nsubj,data)	#Try to reboot again
+			b1 = try.reboot.again (nsubj,original.data)	#Try to reboot again
 			check.col.sums <- colSums(b1[,col.subset])==0	#Are there columns with all zeros in the new rebooted matrix?
 			if (!length(check.col.sums[check.col.sums==TRUE])) #If there is no column that is all zeros - post the result to continue processing
-				{b <- b1}						#Post the result
+				{subsetted.matrix <- b1}						#Post the result
 			}
 		if (cnt.tries > CA$retries.max.iterations  && length(check.col.sums[check.col.sums==TRUE]))	#If reboot did not work - Stop the run
 			{
-			ErrMsg = paste('Tried to reboot the data', CA$retries.max.iterations, 'times but always get a column that is all zeros')  #Error 
+			ErrMsg = paste('Tried to reboot the original.data', CA$retries.max.iterations, 'times but always get a column that is all zeros')  #Error 
 			warning(ErrMsg)
 
 			}
 		}
 	
-	measure.function.parm.list <- append(list(x=b[,col.subset]), CA$method.args)	#Build the measure function parameter list
+	measure.function.parm.list <- append(list(x=subsetted.matrix[,col.subset]), CA$method.args)	#Build the measure function parameter list
 	boot.cor <-do.call(CA$method,measure.function.parm.list)	#Invoke the measuring function		
 	return(boot.cor)				
 	}
