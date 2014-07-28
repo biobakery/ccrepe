@@ -338,28 +338,27 @@ function(data,N.rand, CA){
 }
 
 
-
 ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 #*************************************************************************************
 #* 	ccrepe function for two datasets                                                 *
 #*************************************************************************************
 {
 	# Get number of bugs, subjects for each dataset
-	n1 = ncol(data1.norm)
-	n2 = ncol(data2.norm)
+	n1.features = ncol(data1.norm)
+	n2.features = ncol(data2.norm)
 
 	log.processing.progress(CA,"Two datasets: Initial merge of the matrices")  #Log progress
 	data = merge_two_matrices(data1.norm,data2.norm)
-	data1 <- data[,1:n1]
-	data2 <- data[,(n1+1):(n1+n2)]
+	data1 <- data[,1:n1.features]
+	data2 <- data[,(n1.features+1):(n1.features+n2.features)]
 	nsubj = nrow(data)
 	nsubj1 = nrow(data1)
 	nsubj2 = nrow(data2)
 
         # Subset of columns for the bootstrapped dataset
-        col.subset <- 1:(n1+n2)
-        n1.subset <- n1
-	n2.subset <- n2
+        col.subset <- 1:(n1.features+n2.features)
+        n1.subset <- n1.features
+	n2.subset <- n2.features
 	if( length(CA$filtered.subset.cols.1) > 0 )		#If the User entered a subset of columns
 	    	{
 		col.subset <- CA$filtered.subset.cols.1
@@ -367,7 +366,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
                 if(length(CA$subset.cols.2) > 0)
                        {
-                       col.subset <- c(col.subset,n1+CA$filtered.subset.cols.2)
+                       col.subset <- c(col.subset,n1.features+CA$filtered.subset.cols.2)
 		       n2.subset <- length(CA$filtered.subset.cols.2)
                        }
                 }
@@ -377,8 +376,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
         CalcThresholdForError = ((CA$errthresh)^(1/nsubj))*nsubj		#If there is not enough data
         zero_features <- which(num.feature.zeros > CalcThresholdForError)
         if(length(zero_features)>0){
-            zero_features_data1 <- zero_features[which(zero_features <= n1)]
-            zero_features_data2 <- zero_features[which(zero_features > n1)]
+            zero_features_data1 <- zero_features[which(zero_features <= n1.features)]
+            zero_features_data2 <- zero_features[which(zero_features > n1.features)]
             ErrMsg = paste0(
                 "Feature(s) ",
                 toString(colnames(data)[intersect(zero_features_data1,col.subset)]),
@@ -390,8 +389,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
                 )
             warning(ErrMsg)
             col.subset <- setdiff(col.subset,zero_features)
-            n1.subset <- sum(col.subset <= n1)
-            n2.subset <- sum(col.subset > n1)
+            n1.subset <- sum(col.subset <= n1.features)
+            n2.subset <- sum(col.subset > n1.features)
         }
         # Subset of columns for the permutation datasets
         
@@ -431,9 +430,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		# Add the bootstrap matrices to the appropriate lists  
 			
 		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
-		perm.matrix1 = replicate(n1,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+		perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
 		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
-		perm.matrix2 = replicate(n2,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+		perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
 		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
 
 	}
@@ -475,7 +474,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		            endrow=n1.subset,
 		            startcol=(n1.subset+1),
 		            endcol=length(col.subset), 				 
-                	    		MoreArgs = list(col.subset = col.subset,
+                	MoreArgs = list(col.subset = col.subset,
 					my.method=CA$method,
 					method.args=CA$method.args,
 					outdist=CA$outdist,
@@ -492,32 +491,32 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#********************************************************************************
 	
 	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,method.calculation,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
+	boot.cor  = lapply(boot.data,bootstrap.method.calcn,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
 	
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
 
 	
 	
-	CA$p.values <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty p.values matrix
-	CA$z.stat  <-matrix(data=NA,nrow=n1,ncol=n2)		#Build the empty z.stat matrix
-	CA$cor <-matrix(data=NA,nrow=n1,ncol=n2)	#Build the empty correlation matrix
+	CA$p.values <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty p.values matrix
+	CA$z.stat  <-matrix(data=NA,nrow=n1.features,ncol=n2.features)		#Build the empty z.stat matrix
+	CA$cor <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
 	
-	loop.range1 <- which(col.subset %in% 1:n1)						#Establish looping range default
+	loop.range1 <- which(col.subset %in% 1:n1.features)						#Establish looping range default
 
 	if ( length(CA$filtered.subset.cols.1)> 0 )		#If the User entered a subset of columns
 		{
 		loop.range1 <- which(col.subset %in% CA$filtered.subset.cols.1)		#Use the subset of columns
 		}
 
-	loop.range2 <- which( col.subset %in% (n1 + 1:n2)) - n1.subset						#Establish looping range default
+	loop.range2 <- which( col.subset %in% (n1.features + 1:n2.features)) - n1.subset						#Establish looping range default
 	
 	if ( length(CA$filtered.subset.cols.2) > 0 )		#If the User entered a subset of columns
 		{
-		loop.range2 <- which(col.subset %in% (n1 + CA$filtered.subset.cols.2)) - n1.subset		#Use the subset of columns
+		loop.range2 <- which(col.subset %in% (n1.features + CA$filtered.subset.cols.2)) - n1.subset		#Use the subset of columns
 		}
 
-	max.comparisons <- n1*n2
+	max.comparisons <- n1.features*n2.features
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
 	    output.table = data.frame(feature1=rep(NA,max.comparisons), 
@@ -545,7 +544,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
 				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iter
-#ations gap - print status
+																		#ations gap - print status
 				{
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
@@ -553,32 +552,32 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 				
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
-#review)
+																	#review)
 			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 			
 			if    (!is.na(CA$outdist))						#If user requested to print the distributions
 					{
-					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k] - n1)
+					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k] - n1.features)
 					}
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
                                         #do.call parameter list
                         cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
                         
-			####################################################
+			            ####################################################
                         #  New p.value calculation                         #
                         ####################################################
                         z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
                         p.value <- 2*pnorm(-abs(z.stat))
 								  
-			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1] = p.value				#Post it in the p.values matrix  
-			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1] = cor					#Post it in the cor matrix  
+			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
+			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
+			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1.features] = cor					#Post it in the cor matrix  
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1],cor,z.stat,p.value,NA)	  
+			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],cor,z.stat,p.value,NA)	  
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -654,9 +653,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 
 	return(CA)			# Return the output matrix
 }
-
-
-
 
 
 
