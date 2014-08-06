@@ -534,10 +534,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	   }	
 
 	internal.loop.counter = 0   # Initialize the counter
-	for(index1 in seq_along(loop.range1))
+ 
+	
+	
+	for(index1 in seq_len(length(loop.range1)))					#Modified seq_along to seq_len: Need to review....
+	############for(index1 in seq_along(loop.range1))			## Before the change
 	{
 		i = loop.range1[index1]
-		for(index2 in seq_along(loop.range2))
+		for(index2 in seq_len(length(loop.range2)))				#Modified seq_along to seq_len: Need to review....
+		#########for(index2 in seq_along(loop.range2))			## Before the change
 		{
 			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
@@ -758,6 +763,8 @@ function(CA){
 	if ( CA$verbose !=  TRUE  & 	CA$verbose !=  FALSE )	#Verbose Flag has to be either true or false, otherwise - we set it to false
 		{
 		CA$verbose =  FALSE									#False - is the default
+		ErrMsg = paste0("Verbose Flag set to False" )
+		warning(ErrMsg)
 		}
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
@@ -768,9 +775,10 @@ function(CA){
 #			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
 #		}
 	CA$sim.score.parameters<-list()							#Initialize the parameter list
-	for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
-		}	
+	CA$sim.score.parameters <- CA$method.args				#Add the entries in method.args to the measuring parameter list
+	##for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
+ 		##CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
+		##}	
 		
 
 	CA$retries.max.iterations =  -round(log2(CA$errthresh)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
