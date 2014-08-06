@@ -352,8 +352,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	data1 <- data[,1:n1.features]
 	data2 <- data[,(n1.features+1):(n1.features+n2.features)]
 	nsubj = nrow(data)
-	nsubj1 = nrow(data1)
-	nsubj2 = nrow(data2)
+	#####nsubj1 = nrow(data1)    #Instead  of nsubj1 we are going to use nsubj
+	#####nsubj2 = nrow(data2)    #Instead  of nsubj1 we are going to use nsubj
 
         # Subset of columns for the bootstrapped dataset
         col.subset <- 1:(n1.features+n2.features)
@@ -430,9 +430,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		# Add the bootstrap matrices to the appropriate lists  
 			
 		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
-		perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+		##########perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+        perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # (Replaced nsubj1 with nsubj) The matrix has each column be a permutation of the row indices
+
 		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
-		perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # The matrix has each column be a permutation of the row indices
+	    #######perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # (Replaced nsubj2 with nsubj)The matrix has each column be a permutation of the row indices
+		perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # The matrix has each column be a permutation of the row indices
 		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
 
 	}
@@ -483,10 +486,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 		
 
 	#******************************************************************************** 
-	# For each matrix, check if there is a column that is all zeros 				*
-	# If such matrix is found,  try to reboot it at most 5 times until such matrix  *
-	# is found that does not contain a column with all zeros                        *
-	# The limit of 5 tries is now hard coded and needs to be re-evaluated           *
+	#  Reboot times = RT =  -round(log2(CA$errthresh))                              *
+	# This is the maximum number of iterations to try to reboot a matrix if in a col*
+	# all values are 0                                                              *
+	#                                                                               *
+	# For each matrix, check if there is a column that is all zeros 		        *
+	# If such matrix is found,  try to reboot it at most RT times until such matrix  *
+	# is found that does not contain a column with all zeros                         *
+	# The limit of RT tries is now hard coded and needs to be re-evaluated           *
 	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
 	#********************************************************************************
 	
@@ -749,23 +756,31 @@ function(CA){
 		CA$concurrentFile = file(CA$concurrent.output,open='at')		#Open the concurrent output file
 		}
 
-	if ( CA$compare.within.x !=  TRUE  & 	CA$compare.within.x !=  FALSE )	#compare.within.x must be either true or false
+ 
+	#########if ( CA$compare.within.x !=  TRUE  & 	CA$compare.within.x !=  FALSE )	#compare.within.x must be either true or false
+	if ( !is.logical(CA$compare.within.x ) )	#(Modify - use is.logical)  compare.within.x must be either true or false
 		{
+		ErrMsg = paste0("Setting compare.within.x to TRUE - it was ",CA$compare.within.x )
+		warning(ErrMsg)
 		CA$compare.within.x =  TRUE									#True - is the default
 		}
-
-	if ( CA$make.output.table !=  TRUE  & 	CA$make.output.table !=  FALSE )	#make.output.table flag must be either true or false
+ 		
+	if ( !is.logical(CA$make.output.table ) )	#(Modify - use is.logical)   
 		{
-		CA$make.output.table =  FALSE									#False - is the defauls
-		}
-
-
-	if ( CA$verbose !=  TRUE  & 	CA$verbose !=  FALSE )	#Verbose Flag has to be either true or false, otherwise - we set it to false
-		{
-		CA$verbose =  FALSE									#False - is the default
-		ErrMsg = paste0("Verbose Flag set to False" )
+		ErrMsg = paste0("Setting CA$make.output.table to FALSE - it was ",CA$make.output.table )
 		warning(ErrMsg)
+		CA$compare.within.x =  FALSE								#True - is the default
+		}	
+ 
+ 
+ 
+	if ( !is.logical(CA$verbose)  )	#Verbose Flag has to be either true or false, otherwise - we set it to false
+		{
+		ErrMsg = paste0("Verbose Flag set to False was:", CA$verbose)
+		warning(ErrMsg)
+		CA$verbose =  FALSE									#False - is the default
 		}
+ 	
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
 		{ CA$iterations.gap = 100}						#If not valid - use 100
 		
