@@ -32,10 +32,10 @@ if(!is.null(y)){
 
 
     CA <- process.input.bins(bins, CA)			#Process bins input request
-    if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
+    if (is.null(CA$bins))					#Check if bins is a number or a vector with entries
         {
-            CA$x.discretized = discretize(CA$x,nbins = CA$bins)[,1]	#Discretize x
-            CA$y.discretized = discretize(CA$y,nbins = CA$bins)[,1]	#Discretize y
+            CA$x.discretized = discretize(CA$x,nbins = CA$n.bins)[,1]	#Discretize x
+            CA$y.discretized = discretize(CA$y,nbins = CA$n.bins)[,1]	#Discretize y
         } else {
             CA$x.discretized  = findInterval(CA$x,CA$bins)	 #Use the bins provided by the User
             CA$y.discretized  = findInterval(CA$y,CA$bins)	 #Use the bins provided by the User
@@ -62,9 +62,9 @@ if(!is.null(y)){
 
     x.discretized <- CA$x.discretized				#Get it from Common Area
 
-    if (length(CA$bins) == 1)					#Check if bins is a number or a vector with entries
+    if (is.null(CA$bins))					#Check if bins is a number or a vector with entries
         {
-            CA$x.discretized = discretize(CA$x,nbins=CA$bins)	#Bins is a number; Discretize it and post the value in the discretized matrix
+            CA$x.discretized = discretize(CA$x,nbins=CA$n.bins)	#Bins is a number; Discretize it and post the value in the discretized matrix
         }
     else
         {

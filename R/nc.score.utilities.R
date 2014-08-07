@@ -67,24 +67,24 @@ function(input.bins, CA)
 		
 	if (class(CA$x) == "numeric") 
 		{
-		bins <- floor(sqrt(length(CA$x)))					#If a vector - take sqrt of the length	
+		n.bins <- floor(sqrt(length(CA$x)))					#If a vector - take sqrt of the length	
 		} else { 
-		bins <- floor(sqrt(nrow(CA$x))) 					#Set the default number of bins 
+		n.bins <- floor(sqrt(nrow(CA$x))) 					#Set the default number of bins 
 		}
 		
 	if (!is.na(input.bins))								#If User entered number of Bins
-		if (suppressWarnings(!is.na(as.numeric(input.bins))))	#check if the User entered a numeric number of bins
-			{	
-			bins = input.bins					#Valid Input from the User - Use it		
-			} else 
-			{
-			warning('Invalid number of bins entered - Using default bins = sqrt(Number of rows) ')
-			}
-
-
-			
-	CA$bins = bins										#Post it to Common Area
-	CA$n.bins = bins									#Claculate the number of bins
+		if (!is.numeric(input.bins)){
+			warning('Number of bins must be numeric - Using default bins = sqrt(Number of rows) ')
+                    } else if (input.bins%%1!=0) {                                       # Check that the number of bins is an integer
+			warning('Number of bins must be an integer - Using default bins = sqrt(Number of rows) ')
+                    } else if (input.bins <=0){
+			warning('Number of bins must be positve - Using default bins = sqrt(Number of rows) ')
+                    } else {
+			bins = input.bins					#Valid Input from the User - Use it
+                    }
+	
+	CA$bins = NULL										#Post it to Common Area
+	CA$n.bins = n.bins									#Claculate the number of bins
 	return(CA)
 }
 qc_filter <-
