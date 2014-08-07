@@ -47,11 +47,9 @@ function(
 	#* Filter                                                *
 	#*********************************************************
 	CA$x <- x												#Post x in the common area
-	CA <-qc_filter(x,CA)										#filter by abundance thresholds
-	x <-na.omit(CA$x)											#remove NAs
-	if (is.null(rownames(x))) {rownames(x)<-seq(1:nrow(x))} #If there are no row names - plug them in
-	CA$x <-  x 												#Post it to common Area
- 	CA$x.discretized <- matrix(nrow=nrow(CA$x),ncol=ncol(CA$x))			#Build x Discretized empty Matrix			
+        CA$x <-na.omit(CA$x)											#remove NAs
+	CA <-qc_filter(CA$x,CA)										#filter by abundance thresholds
+	if (is.null(rownames(CA$x))) {rownames(CA$x)<-seq(1:nrow(CA$x))} #If there are no row names - plug them in
 	#****************************************************************************************
 	#*   Process Bins  passed by the user  or set default                                   *
 	#****************************************************************************************
@@ -131,9 +129,8 @@ function(data,CA) {
 			warning(warning_msg)
 		}
 	}
-  
   colnames(tmp) <- names					#Post the column names
   rownames(tmp) <- rownames(data)			#Post the data row names
-  CA$x <- tmp								#Post in the common area
+  CA$x.filtered <- tmp								#Post in the common area
   return(CA)								#Return the common Area
 }
