@@ -245,13 +245,23 @@ function(data,N.rand, CA){
                             }
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
                         sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+						
+ 
 
                         ####################################################
                         #  New p.value calculation                         #
                         ##################################################
-                        z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-                        p.value <- 2*pnorm(-abs(z.stat))
-
+                        #####   Moved code to function   ----  z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                        #####   Moved code to fucntion   ---- p.value <- 2*pnorm(-abs(z.stat))
+ 
+ 
+						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
+																		#Same calculations - just packed as a function
+						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
+						p.value <- z.stat_and_p.value.list$p.value	    #Retrieve from the list
+						
+ 
+						
                         CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix
                         CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix
                         CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix
@@ -555,8 +565,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
 
 				internal.loop.counter = internal.loop.counter + 1  #Increment the loop counter
-				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iter
-																		#ations gap - print status
+				if (internal.loop.counter %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple 
+																	   #of iterations gap - print status
 				{
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
@@ -580,8 +590,16 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 			            ####################################################
                         #  New p.value calculation                         #
                         ####################################################
-                        z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-                        p.value <- 2*pnorm(-abs(z.stat))
+                        #############  Moved to function ---- z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+                        #############  Moved to function p.value <- 2*pnorm(-abs(z.stat))
+						
+						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
+																		#Same calculations - just packed as a function
+						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
+						p.value <- z.stat_and_p.value.list$p.value	    #Retrieve from the list
+						
+						
+						
 								  
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
@@ -781,9 +799,14 @@ function(CA){
 		CA$verbose =  FALSE									#False - is the default
 		}
  	
+ 
 	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
-		{ CA$iterations.gap = 100}						#If not valid - use 100
-		
+		{ 
+		ErrMsg = paste0("iterations.gap set 10 100 -  was: ", CA$iterations.gap)
+		warning(ErrMsg)
+		CA$iterations.gap = 100 					#If not valid - use 100
+		}
+ 	
 
 #	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
 #		{
@@ -1384,3 +1407,15 @@ function(CA,msg){
 			message(cat(date(),' ==> ',msg))			#Display date and time and progress
 		return (0)
 }
+
+calculate.z.stat.and.p.value <-
+function(bootstrap.dist,permutation.dist ){
+#*************************************************************************************
+#* Function to calculate the z.stat and p.value                                      *
+#*************************************************************************************
+	z.stat_p.value_list = list()		#Define the list
+	z.stat_p.value_list$z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
+	z.stat_p.value_list$p.value <- 2*pnorm(-abs(z.stat_p.value_list$z.stat))
+	return(z.stat_p.value_list)
+}
+
