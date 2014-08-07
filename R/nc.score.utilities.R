@@ -56,12 +56,11 @@ function(input.bins, CA)
 	if (length(input.bins) > 1)					#If the user passed a set of bins,  sort them and use them
 		{
 			CA$bins <- sort(input.bins)
-			CA$n.bins <- length(intersect(which(CA$bins<1),which(CA$bins>0)))
+			CA$n.bins <- length(intersect(which(CA$bins<1),which(CA$bins>0))) + 1
 			if (! 0 %in% CA$bins )				#Check if 0 is in the list of the bins the User passed - not there - add it and sort 
 				{ 
 				 CA$bins<-c(CA$bins,0)			#Add 0
 				 CA$bins <- sort(CA$bins)		#And sort it
-				 CA$n.bins <- length(intersect(which(CA$bins<1),which(CA$bins>0)))  # The number of bins, since 1 and 0 represent the ends
 				}
 			return(CA)
 		}
