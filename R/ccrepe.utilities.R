@@ -57,7 +57,7 @@ function(data){
 
 
 ccrepe_process_one_dataset <-
-function(data,N.rand, CA){
+function(data,n.iter, CA){
 #*************************************************************************************
 #* 	Function to apply the new method to a dataset                                    *
 #*  As a note, data needs to be a matrix with no missing values                      *
@@ -109,11 +109,11 @@ function(data,N.rand, CA){
 	#**************************************************************
 	#*  Pre allocate                                              *
 	#**************************************************************
-	permutation.matrices  = vector("list", N.rand)		#Pre allocate the permutation matrices
-	bootstrap.matrices = vector("list", N.rand)		#Pre allocate
+	permutation.matrices  = vector("list", n.iter)		#Pre allocate the permutation matrices
+	bootstrap.matrices = vector("list", n.iter)		#Pre allocate
 
 	
-	for(i in seq_len(N.rand)){
+	for(i in seq_len(n.iter)){
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
@@ -348,7 +348,7 @@ function(data,N.rand, CA){
 }
 
 
-ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
+ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 #*************************************************************************************
 #* 	ccrepe function for two datasets                                                 *
 #*************************************************************************************
@@ -418,11 +418,11 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,N.rand, CA)
 	#*****************************************************
 	#*  Pre Allocate Matrices                            *
 	#*****************************************************
-	bootstrap.matrices = vector("list", N.rand)		
-	permutation.matrices1 = vector("list", N.rand)	
-	permutation.matrices2 = vector("list", N.rand)	
+	bootstrap.matrices = vector("list", n.iter)		
+	permutation.matrices1 = vector("list", n.iter)	
+	permutation.matrices2 = vector("list", n.iter)	
 
-	for(i in seq_len(N.rand)){
+	for(i in seq_len(n.iter)){
 
 		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
 			{
