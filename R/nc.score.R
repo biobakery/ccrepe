@@ -57,18 +57,16 @@ if(!is.null(y)){
         min.abundance,							#Minimum Abundance
         min.samples)							#Minimum Samples
 
-    x <- CA$x										#Get the filtered x from common area
     CA$verbose <- verbose							#Post the verbose flag
 
-    x.discretized <- CA$x.discretized				#Get it from Common Area
 
     if (is.null(CA$bins))					#Check if bins is a number or a vector with entries
         {
-            CA$x.discretized = discretize(CA$x,nbins=CA$n.bins)	#Bins is a number; Discretize it and post the value in the discretized matrix
+            CA$x.discretized = discretize(CA$x.filtered,nbins=CA$n.bins)	#Bins is a number; Discretize it and post the value in the discretized matrix
         }
     else
         {
-            CA$x.discretized = apply(CA$x,2,findInterval,vec=CA$bins)	 #Use the bins provided by the User
+            CA$x.discretized = apply(CA$x.filtered,2,findInterval,vec=CA$bins)	 #Use the bins provided by the User
         }
 
 
@@ -119,8 +117,11 @@ if(!is.null(y)){
 
 #    CA$x.discretized <- NULL		#Not needed anymore
 #    CA$x <- NULL					#Not Needed anymore
+    CA$x.filtered <- NULL
     CA$input.total.cols <- NULL		#Not needed anymore
-#    CA$columns.not.passing.qc <- NULL  #Not needed anymore
+    if(length(CA$columns.not.passing.qc) == 0){
+        CA$columns.not.passing.qc <- NULL  #Not needed anymore
+    }
     CA$original.column.names <- NULL  #Not needed anymore
     CA$names.of.cols.failing.qc <- NULL  # Not needed anymore
 
