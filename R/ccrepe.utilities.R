@@ -585,7 +585,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 					}
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
                                         #do.call parameter list
-                        cor <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                        sim.score.value <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function  <-  Was cor
                         
 			            ####################################################
                         #  New p.value calculation                         #
@@ -603,7 +603,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 								  
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1.features] = cor					#Post it in the cor matrix  
+			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
@@ -616,9 +616,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 		   	   cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
 			   cat("\n",file=CA$concurrentFile,append=TRUE)
 			   }	
-
-			
-
 		}
 	}
 	
@@ -736,15 +733,38 @@ function(CA){
 
  
  
-	if  ( length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1)))				#If NULL- set to default
-		{
-		CA$subset.cols.1 = NULL					#Set to default
+    if  (!class(CA$subset.cols.1) == "numeric")     #Modified the check for subset.cols
+		{                                           #If class is not "numeric" - set up to NULL                             
+		ErrMsg = paste0(                            #This replaces the old checks  -   length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1))
+	     	    "Subset columns1 is not numeric - was : "  ,
+				CA$subset.cols.1,
+			    " - Set to NULL"
+		    )
+	     warning(ErrMsg)
+	    CA$subset.cols.1 = NULL					#Set to default
 		}
-	if  ( length(CA$subset.cols.2) == 0 && (is.null(CA$subset.cols.2)))				#If NULL - set to default
-		{
-		CA$subset.cols.2 = NULL					#Set to default
+	if  (!class(CA$subset.cols.2) == "numeric")     #Modified the check for subset.cols
+		{                                           #If class is not "numeric" - set up to NULL                             
+		ErrMsg = paste0(                            #This replaces the old checks  -   length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1))
+	     	    "Subset columns2 is not numeric - was : "  ,
+				CA$subset.cols.2,
+			    " - Set to NULL"
+		    )
+	     warning(ErrMsg)
+	    CA$subset.cols.2 = NULL					#Set to default
 		}
+ 
+	#### ---  Replaced by text above   if  ( length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1)))				#If NULL- set to default
+		#####{
+		#####CA$subset.cols.1 = NULL					#Set to default
+		#####}
+	####  Replaced   if  ( length(CA$subset.cols.2) == 0 && (is.null(CA$subset.cols.2)))				#If NULL - set to default
+		####{
+		###CA$subset.cols.2 = NULL					#Set to default
+		####}
 
+		
+ 
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
 		{
