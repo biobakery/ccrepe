@@ -247,14 +247,6 @@ function(data,n.iter, CA){
                         sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
 						
  
-
-                        ####################################################
-                        #  New p.value calculation                         #
-                        ##################################################
-                        #####   Moved code to function   ----  z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-                        #####   Moved code to fucntion   ---- p.value <- 2*pnorm(-abs(z.stat))
- 
- 
 						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
 																		#Same calculations - just packed as a function
 						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
@@ -298,12 +290,7 @@ function(data,n.iter, CA){
  
 	CA$q.values[lower.tri(CA$q.values)] = t(CA$q.values)[lower.tri(t(CA$q.values))]  #Making the q.values matrix symmetrical for the one dataset case
 	
-#	for (indx in 1:nrow(data.cor))						#post the q-values
-#		{
-#			i = data.cor[indx,1]
-#			k = data.cor[indx,2]
-#			data.cor[indx,5] = CA$q.values[i,k]
-#		}
+
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
 	    CA$output.table <- output.table[1:internal.loop.counter,]		#Post it in the common Area
@@ -362,8 +349,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	data1 <- data[,1:n1.features]
 	data2 <- data[,(n1.features+1):(n1.features+n2.features)]
 	nsubj = nrow(data)
-	#####nsubj1 = nrow(data1)    #Instead  of nsubj1 we are going to use nsubj
-	#####nsubj2 = nrow(data2)    #Instead  of nsubj1 we are going to use nsubj
+
 
         # Subset of columns for the bootstrapped dataset
         col.subset <- 1:(n1.features+n2.features)
@@ -440,11 +426,10 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 		# Add the bootstrap matrices to the appropriate lists  
 			
 		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
-		##########perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj1),nsubj1,replace=FALSE)) # The matrix has each column be a permutation of the row indices
         perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # (Replaced nsubj1 with nsubj) The matrix has each column be a permutation of the row indices
 
 		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
-	    #######perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj2),nsubj2,replace=FALSE)) # (Replaced nsubj2 with nsubj)The matrix has each column be a permutation of the row indices
+
 		perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # The matrix has each column be a permutation of the row indices
 		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
 
@@ -504,7 +489,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	# If such matrix is found,  try to reboot it at most RT times until such matrix  *
 	# is found that does not contain a column with all zeros                         *
 	# The limit of RT tries is now hard coded and needs to be re-evaluated           *
-	# If after 5 times there is no success - we stop the run (Need to verify!!!!    *
+	# If after RT times there is no success - we stop the run                       *
 	#********************************************************************************
 	
 	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
@@ -555,11 +540,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	
 	
 	for(index1 in seq_len(length(loop.range1)))					#Modified seq_along to seq_len: Need to review....
-	############for(index1 in seq_along(loop.range1))			## Before the change
 	{
 		i = loop.range1[index1]
 		for(index2 in seq_len(length(loop.range2)))				#Modified seq_along to seq_len: Need to review....
-		#########for(index2 in seq_along(loop.range2))			## Before the change
 		{
 			k = loop.range2[index2]
 			# Get a vector of the (i,k)th element of each correlation matrix in the list of bootstrapped data; this is the bootstrap distribution
@@ -586,13 +569,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
                                         #do.call parameter list
                         sim.score.value <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function  <-  Was cor
-                        
-			            ####################################################
-                        #  New p.value calculation                         #
-                        ####################################################
-                        #############  Moved to function ---- z.stat <- (mean(bootstrap.dist) - mean(permutation.dist))/sqrt(0.5*(var(permutation.dist)+var(bootstrap.dist)))
-                        #############  Moved to function p.value <- 2*pnorm(-abs(z.stat))
-						
+					
 						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
 																		#Same calculations - just packed as a function
 						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
@@ -632,13 +609,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	    output.table$q.value <- table.q.values
 	    }
 
-	
-#	for (indx in 1:nrow(CA$data.cor))						#post the q-values
-#		{
-#			i = CA$data.cor[indx,1]
-#			k = CA$data.cor[indx,2]
-#			CA$data.cor[indx,5] = CA$q.values[i,k]
-#		}
 
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
@@ -733,7 +703,7 @@ function(CA){
 
  
  
-    if  (!class(CA$subset.cols.1) == "numeric")     #Modified the check for subset.cols
+    if  (!class(CA$subset.cols.1   ) == "numeric"  && !(is.null(CA$subset.cols.1)))     #Modified the check for subset.cols
 		{                                           #If class is not "numeric" - set up to NULL                             
 		ErrMsg = paste0(                            #This replaces the old checks  -   length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1))
 	     	    "Subset columns1 is not numeric - was : "  ,
@@ -743,7 +713,7 @@ function(CA){
 	     warning(ErrMsg)
 	    CA$subset.cols.1 = NULL					#Set to default
 		}
-	if  (!class(CA$subset.cols.2) == "numeric")     #Modified the check for subset.cols
+	if  (!class(CA$subset.cols.2  ) == "numeric"  && !(is.null(CA$subset.cols.2)))     #Modified the check for subset.cols
 		{                                           #If class is not "numeric" - set up to NULL                             
 		ErrMsg = paste0(                            #This replaces the old checks  -   length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1))
 	     	    "Subset columns2 is not numeric - was : "  ,
@@ -753,17 +723,7 @@ function(CA){
 	     warning(ErrMsg)
 	    CA$subset.cols.2 = NULL					#Set to default
 		}
- 
-	#### ---  Replaced by text above   if  ( length(CA$subset.cols.1) == 0 && (is.null(CA$subset.cols.1)))				#If NULL- set to default
-		#####{
-		#####CA$subset.cols.1 = NULL					#Set to default
-		#####}
-	####  Replaced   if  ( length(CA$subset.cols.2) == 0 && (is.null(CA$subset.cols.2)))				#If NULL - set to default
-		####{
-		###CA$subset.cols.2 = NULL					#Set to default
-		####}
-
-		
+  
  
   
 	if    (!is.na(CA$outdist))							#If the user passed a file - open it
@@ -795,7 +755,6 @@ function(CA){
 		}
 
  
-	#########if ( CA$compare.within.x !=  TRUE  & 	CA$compare.within.x !=  FALSE )	#compare.within.x must be either true or false
 	if ( !is.logical(CA$compare.within.x ) )	#(Modify - use is.logical)  compare.within.x must be either true or false
 		{
 		ErrMsg = paste0("Setting compare.within.x to TRUE - it was ",CA$compare.within.x )
@@ -820,24 +779,19 @@ function(CA){
 		}
  	
  
-	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))) 	#Check the iterations gap (Number of iterations after which to print status if verbose
+	if  ( is.na(suppressWarnings(as.integer(CA$iterations.gap)))   || !(CA$iterations.gap%%1==0) ) 	#Check the iterations gap (Number of iterations after which to print 
+																									#if status  verbose - Cannot be fractional
 		{ 
-		ErrMsg = paste0("iterations.gap set 10 100 -  was: ", CA$iterations.gap)
+		ErrMsg = paste0("iterations.gap set to 100 -  was: ", CA$iterations.gap)
 		warning(ErrMsg)
 		CA$iterations.gap = 100 					#If not valid - use 100
 		}
  	
 
-#	if  (identical(cor,CA$method) && length(CA$method.args) == 0)	#If the method is cor and the User did not pass any parms
-#		{
-#			CA$method.args = list(method='spearman',use='complete.obs')		#Set the default for cor
-#		}
+ 
 	CA$sim.score.parameters<-list()							#Initialize the parameter list
 	CA$sim.score.parameters <- CA$method.args				#Add the entries in method.args to the measuring parameter list
-	##for (name in names(CA$method.args)) {					#Add the entries in method.args to the measuring parameter list			
- 		##CA$sim.score.parameters[[name]]<-CA$method.args[[name]]
-		##}	
-		
+ 
 
 	CA$retries.max.iterations =  -round(log2(CA$errthresh)) #This is the maximum number of iterations to try to reboot a matrix if in a col all values are 0
 		
