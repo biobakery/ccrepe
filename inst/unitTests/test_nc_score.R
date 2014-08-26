@@ -195,12 +195,15 @@ test.nc.score <- function()
 
 		# Should give a warning about replacing value
 		checkException(nc.score(data,min.samples=c(0.1,0.2)))
-		options(warn=0)   #Reset  warning level to 0
-		
-		
-		
 
+		
+		# Should give a warning about replacing value
+		checkException(nc.score(data,min.abundance="0.1"))
 
+		# Should give a warning about replacing value
+		checkException(nc.score(data,min.abundance=c(0.0001,0.0002)))
 	
+	
+		options(warn=0)   #Reset  warning level to 0
   }
  

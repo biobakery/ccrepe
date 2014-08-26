@@ -97,12 +97,15 @@ function(data,n.iter, CA){
             col.subset <- setdiff(col.subset,zero_features)
         }
 
-	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
+	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row) 
+	#  of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
 
 	#Generating the bootstrap and permutation matrices
-	bootstrap.matrices = list()    # The list of matrices of possible bootstrap rows (each matrix multiplies by the data to give a resampled dataset)
-	permutation.matrices = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
+	bootstrap.matrices = list()    # The list of matrices of possible bootstrap rows 
+								   #(each matrix multiplies by the data to give a resampled dataset)
+	permutation.matrices = list()  # The list of permutation matrices; each matrix will be
+								   # have columns which are permutations of the row indices
 	
 	
 
@@ -114,14 +117,16 @@ function(data,n.iter, CA){
 
 	
 	for(i in seq_len(n.iter)){
-		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations is multiple of iterations gap - print status
+		if (i %% CA$iterations.gap == 0)   #If output is verbose and the number of iterations 
+											#is multiple of iterations gap - print status
 			{
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
 	
    
-		# Get the rows of the possible.rows matrix; these correspond to the rows which will be included in the resampled dataset
+		# Get the rows of the possible.rows matrix; these correspond to the rows
+		# which will be included in the resampled dataset
 
 		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
 
@@ -315,7 +320,6 @@ function(data,n.iter, CA){
 	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
 
-	CA$sim.score <- CA$sim.score											#Rename cor to sim.score
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
         diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
 	CA$sim.score <- NULL
@@ -1043,7 +1047,7 @@ function(CA)
                 ErrMsg = paste0(
                     'Not enough data - found ',
                     nrow(filtered_data1$X_filtered),
-                    ' rows of data - Less than  ',
+                    ' rows of non-missing data - Less than  ',
                     CA$min.subj,
                     ' (=min.subj) - Run Stopped'
                     )
@@ -1151,7 +1155,7 @@ function(CA)
                 ErrMsg = paste0(
                     'Not enough data - found ',
                     nrow(merged_data),
-                    ' rows paired of data - Less than  ',
+                    ' rows paired of non-missing data - Less than  ',
                     CA$min.subj,
                     ' (=min.subj) - Run Stopped'
                     )
