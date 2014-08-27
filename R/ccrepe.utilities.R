@@ -506,7 +506,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	
 	CA$p.values <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty p.values matrix
 	CA$z.stat  <-matrix(data=NA,nrow=n1.features,ncol=n2.features)		#Build the empty z.stat matrix
-	CA$cor <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
+ 
+	CA$sim.score <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
 	
 	loop.range1 <- which(col.subset %in% 1:n1.features)						#Establish looping range default
 
@@ -584,7 +585,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 								  
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
-			CA$cor[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
+ 
+			CA$sim.score[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
@@ -627,14 +629,14 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	#********************************************************************
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
-	rownames(CA$cor) <- colnames(CA$data1.norm)		#Post the column names
-	colnames(CA$cor) <- colnames(CA$data2.norm)		#Post the column names
+ 
+	rownames(CA$sim.score) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$sim.score) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$z.stat) <- colnames(CA$data2.norm)		#Post the column names
-	CA$sim.score <- CA$cor									#Rename cor to sim.score
-	CA$cor <- NULL
+ 
 	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
 	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
 
@@ -649,8 +651,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
-        CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
-        CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+	CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
+	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 
 	return(CA)			# Return the output matrix
 }
