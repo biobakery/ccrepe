@@ -14,6 +14,7 @@ function(
 #*************************************************************************************
 #*  	NC_Score                                                                     *
 #*************************************************************************************
+ 
 CA <- list()									#Set the common area
 if(is.data.frame(x)) x <- as.matrix(x)
 if (!is.matrix(x) && is.null(y)){
@@ -24,7 +25,7 @@ if (!(is.numeric(x) || is.logical(x))){
 }
 if(!is.null(y)){
     if(is.matrix(x)) stop("supply matrix-like 'x' only if 'y' not supplied")
-    if(length(x) != length(y)) stop('incompatible dimentions')
+    if(length(x) != length(y)) stop('incompatible dimensions')
     nonmissing.subjects <- intersect(which(!is.na(x)),which(!is.na(y)))      #Find subjects which are present in both x and y
     CA$x <- x[nonmissing.subjects]					#Post x without missing subjects to common area
     CA$y <- y[nonmissing.subjects]					#Post y without missing subjects to common area
@@ -32,6 +33,19 @@ if(!is.null(y)){
 
 
     CA <- process.input.bins(bins, CA)			#Process bins input request
+ 
+	CA <- process_min_abundance_min_samples( CA,                  #Process minimum abundance and min samples
+			min.abundance,
+			min.samples)
+	
+	
+	
+	CA$xy <- data.frame(CA$x, CA$y)             #Merge the two columns into a data frame for filtering
+	
+	
+	CA <- qc_filter(CA$xy ,CA)
+  
+	
     if (is.null(CA$bins))					#Check if bins is a number or a vector with entries
         {
             CA$x.discretized = discretize(CA$x,nbins = CA$n.bins)[,1]	#Discretize x
@@ -40,6 +54,9 @@ if(!is.null(y)){
             CA$x.discretized  = findInterval(CA$x,CA$bins)	 #Use the bins provided by the User
             CA$y.discretized  = findInterval(CA$y,CA$bins)	 #Use the bins provided by the User
         }
+ 
+	
+	
     CA$nc.score.result <- cor(CA$x.discretized,CA$y.discretized,method="kendall")
     if (CA$verbose == TRUE)
         {return(CA)}
