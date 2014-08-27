@@ -8,41 +8,12 @@ function(
 			input.min.abundance,
 			input.min.samples)
 {
+	CA <-list()		
+	CA <- process_min_abundance_min_samples( CA,                  #Process minimum abundance and min samples
+			input.min.abundance,
+			input.min.samples)								 
 
-	CA <-list()												#Common area definition 	 
-  	if (!is.numeric(input.min.abundance))	#check if the User entered a valid threshold1
-		{
-		warning('\nMinimum abundance must be numeric - using default=0.0001\n')
-		CA$min.abundance = 0.0001
-		 }				#If it is not valid - force default
-        else if(length(input.min.abundance) > 1)
-            {
-                warning("More than one minimum abundance value given - using first one")
-                CA$min.abundance = input.min.abundance[1]
-            }
-	else
-		{CA$min.abundance = input.min.abundance}	#Else - use it
-
-	if (!is.numeric(input.min.samples))	#check if the User entered a valid threshold1
-		{
-		warning('\nMinimum samples must be numeric - using default=0.1\n')
-		CA$min.samples = 0.1 				#If it is not valid - force default
-		}
-	else if (input.min.samples <= 0 || input.min.samples >= 1)	#check if the User entered a valid threshold1
-		{
-		warning('\nMinimum samples must be between 0 and 1 inclusive - using default=0.1\n')
-		CA$min.samples = 0.1 				#If it is not valid - force default
-		}
-        else if (length(input.min.samples) > 1)
-            {
-                warning("More than one min.samples value given - using first value")
-                CA$min.samples <- input.min.samples[1]
-            }
-	else
-		{CA$min.samples = input.min.samples}	#Else - use it
  
- 
-
 	#*********************************************************
 	#* Filter                                                *
 	#*********************************************************
@@ -105,6 +76,7 @@ function(data,CA) {
 #********************************************************************************************
 #*  	quality control: select species with >= 1E-4 relative abundance in >= 10% of samples*
 #********************************************************************************************
+
 	tmp <- {}
 	names <- {}
 	CA$names.of.cols.failing.qc <- {} 			#Names of the cols failing QC
@@ -132,5 +104,53 @@ function(data,CA) {
   colnames(tmp) <- names					#Post the column names
   rownames(tmp) <- rownames(data)			#Post the data row names
   CA$x.filtered <- tmp								#Post in the common area
+
   return(CA)								#Return the common Area
 }
+
+
+
+
+
+process_min_abundance_min_samples <-function(   CA,
+			input.min.abundance,
+			input.min.samples)
+#********************************************************************************************
+#*  	Process minimum abundance and input samples                                         *
+#********************************************************************************************
+{
+ 	if (!is.numeric(input.min.abundance))	#check if the User entered a valid threshold1
+		{
+		warning('\nMinimum abundance must be numeric - using default=0.0001\n')
+		CA$min.abundance = 0.0001
+		 }				#If it is not valid - force default
+        else if(length(input.min.abundance) > 1)
+            {
+                warning("More than one minimum abundance value given - using first one")
+                CA$min.abundance = input.min.abundance[1]
+            }
+	else
+		{CA$min.abundance = input.min.abundance}	#Else - use it
+
+	if (!is.numeric(input.min.samples))	#check if the User entered a valid threshold1
+		{
+		warning('\nMinimum samples must be numeric - using default=0.1\n')
+		CA$min.samples = 0.1 				#If it is not valid - force default
+		}
+	else if (input.min.samples <= 0 || input.min.samples >= 1)	#check if the User entered a valid threshold1
+		{
+		warning('\nMinimum samples must be between 0 and 1 inclusive - using default=0.1\n')
+		CA$min.samples = 0.1 				#If it is not valid - force default
+		}
+        else if (length(input.min.samples) > 1)
+            {
+                warning("More than one min.samples value given - using first value")
+                CA$min.samples <- input.min.samples[1]
+            }
+	else
+		{CA$min.samples = input.min.samples}	#Else - use it
+
+	return(CA)								#Return the common Area
+}
+
+
