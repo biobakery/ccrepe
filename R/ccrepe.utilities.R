@@ -282,7 +282,6 @@ function(data,n.iter, CA){
             }
 	
 
-	
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 	if( CA$make.output.table )
 	    {
@@ -304,7 +303,6 @@ function(data,n.iter, CA){
 	    CA$output.table <- NULL
 	    }
 
-	
 
 		
 	#********************************************************************
@@ -332,6 +330,7 @@ function(data,n.iter, CA){
                 CA$z.stat    <- CA$z.stat[col.subset,col.subset]
 		}
         CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
+        
 
 		
 
@@ -543,7 +542,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	internal.loop.counter = 0   # Initialize the counter
  
 	
-	
 	for(index1 in seq_len(length(loop.range1)))					#Modified seq_along to seq_len: Need to review....
 	{
 		i = loop.range1[index1]
@@ -563,7 +561,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
 			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
 																	#review)
-			
 			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
 			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
 			
@@ -590,7 +587,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],cor,z.stat,p.value,NA)	  
+			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],sim.score.value,z.stat,p.value,NA)
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -598,7 +595,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 			   {
 		   	   cat(concurrent.vector,sep="\t",file=CA$concurrentFile,append=TRUE)
 			   cat("\n",file=CA$concurrentFile,append=TRUE)
-			   }	
+			   }
 		}
 	}
 	
