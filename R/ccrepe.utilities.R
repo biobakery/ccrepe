@@ -317,17 +317,16 @@ function(data,n.iter, CA){
 	rownames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
 	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
-
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
-        diag(CA$z.stat)   <- NA                                                                                 #Set diagonal of z.stat
-	CA$sim.score <- NULL
+	diag(CA$z.stat)   <- NA                                          	#Set diagonal of z.stat
+	######################CA$sim.score <- NULL                        #Not needed to be NUll
 
 	if (length(CA$filtered.subset.cols.1) > 0)				#If used a subset - present only the subset
 		{
 		CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
-                CA$z.stat    <- CA$z.stat[col.subset,col.subset]
+		CA$z.stat    <- CA$z.stat[col.subset,col.subset]
 		}
         CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
         
