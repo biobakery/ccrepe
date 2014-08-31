@@ -19,8 +19,8 @@
   
   }
 \usage{
-nc.score(x = NA,
- y = NA, 
+nc.score(x = NULL,
+ y = NULL, 
  bins = NA, 
  verbose = FALSE,			 
  min.abundance = 1e-04,
