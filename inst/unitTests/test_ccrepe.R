@@ -45,34 +45,33 @@ dimnames(testdata) = list(
 context("CCREPE")
 ccrepe.results <-  ccrepe  (x=testdata,   min.subj=10)
 tol = 0.20
-p.values.results <- matrix(c(NA, 0.90522544, 0.5846931, 0.12392810,
-							0.9052254,         NA, 0.4900243, 0.08656847,
-							0.5846931, 0.49002431 ,       NA, 0.93236893,
-							0.1239281, 0.08656847, 0.9323689,         NA),
+p.values.results <- matrix(c(NA, 0.6337192, 0.4547206, 0.06927885,
+							0.63371917,        NA, 0.2432229, 0.19897879,
+							0.45472060, 0.2432229,        NA, 0.77606014,
+							0.06927885, 0.1989788, 0.7760601 ,        NA),
                              nrow=4,ncol=4,byrow = TRUE)
      
-q.values.results <- matrix(c( NA, 2.573348, 2.077685, 0.8807478,
-				2.5733479 ,      NA ,2.321711 ,1.2304713,
-				2.0776852, 2.321711 ,      NA ,2.2087588,
-				0.8807478, 1.230471 ,2.208759 ,       NA),
+q.values.results <- matrix(c(  NA, 1.801518, 1.615833, 0.9847193,
+				1.8015179  ,     NA ,1.152378, 1.4141274,
+				1.6158327, 1.152378,       NA ,1.8384672,
+				0.9847193 ,1.414127, 1.838467,        NA),
                              nrow=4,ncol=4,byrow = TRUE)
 
-
-sim.score.results <- matrix(c( NA, -0.3454545, -0.1636364, -0.7818182,
-				-0.3454545,         NA, -0.4424242,  0.2727273,
-				-0.1636364, -0.4424242,         NA, -0.2727273,
-				-0.7818182,  0.2727273, -0.2727273,         NA),
+sim.score.results <- matrix(c(   NA, -0.20691521 ,-0.1639831, -0.77208214,
+				-0.2069152  ,        NA, -0.6739868 , 0.06805391,
+				-0.1639831 ,-0.67398679  ,       NA ,-0.22701786,
+				-0.7720821  ,0.06805391 ,-0.2270179  ,        NA),
                             nrow=4,ncol=4,byrow = TRUE)
-
-z.stat.results <-matrix(c(  NA,  0.1190630,  0.54654243, -1.53849307,
-				0.1190630 ,        NA ,-0.69027017,  1.71378363,
-				0.5465424 ,-0.6902702    ,      NA , 0.08486473,
-				-1.5384931 , 1.7137836 , 0.08486473 ,         NA),
+							
+z.stat.results <-matrix(c( NA,  0.4352228,  0.7337243, -1.8029587,
+				0.4352228 ,        NA ,-1.1905054,  1.2389936,
+				 0.7337243, -1.1905054,         NA , 0.2843813,
+				-1.8029587 , 1.2389936,  0.2843813 ,        NA ),
                         nrow=4,ncol=4,byrow = TRUE)
    
 
 
-
+ 
 
 expect_that(p.values.results,is_approximately(ccrepe.results$p.values, tol))
 expect_that(q.values.results,is_approximately(ccrepe.results$q.values,tol))
@@ -80,20 +79,6 @@ expect_that(sim.score.results,is_approximately(ccrepe.results$sim.score, tol))
 expect_that(z.stat.results,is_approximately(ccrepe.results$z.stat, tol))
 
 
-	#***********************************************************
-	#* nc.score tests                                          *
-	#***********************************************************
-context("NC-score")
-expect_that(nc.score( x=c(3, 1, 1, 3 ,2 ,3, 3 ,1 ,2, 1),  y= c(1 ,2,3 ,3, 1 ,1, 3 ,3, 1, 2)), is_approximately(-0.3809524,tol=0.00001))
-
-nc.score.results <-nc.score( x=testdata)
-nc.score.predicted.results <-matrix(c(NA, -0.3809524, -0.3333333, -0.8354978,
-                                      -0.3809524 , NA ,-0.3333333,  0.3593074,
-                                      -0.3333333, -0.3333333, NA, -0.3333333,
-                                      -0.8354978,  0.3593074, -0.3333333,  NA),
-                                    nrow=4,ncol=4,byrow = TRUE)
-
-expect_that(nc.score.predicted.results,is_approximately(nc.score.results, tol))
 
 context("Permutation p-values")
 
