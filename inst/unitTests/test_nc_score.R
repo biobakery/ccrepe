@@ -136,7 +136,46 @@ test.nc.score <- function()
 	  ) < 0.2
 	)
 
+	    #####################################################################  Here is the change
+	    z <- nc.score(data,bins=mybins,min.samples=0.2,verbose=TRUE)
+	# Correct columns filtered?
+	checkEqualsNumeric(z$columns.not.passing.qc,  filter_cols)
+
 	
+	# columns.not.passing.qc not present if all columns pass
+	checkEquals(TRUE,
+			!("columns.not.passing.qc" %in% names(nc.score(data,bins=mybins,verbose=TRUE))))
+
+	# Are the numeric values equal?
+	checkEqualsNumeric(0,
+		sum(z$nc.score.matrix!=cor(x.disc,method="kendall",use="complete"),na.rm=TRUE))
+	
+	# Are the missing values correct?
+		checkEqualsNumeric(0,
+		sum(
+		  which(is.na(z$nc.score.matrix))
+		  !=sort(
+			Reduce(
+			union,
+			list(
+				intersect(
+				which(upper.tri(z$nc.score.matrix,diag=TRUE)),
+				which(lower.tri(z$nc.score.matrix,diag=TRUE))
+				),
+				sapply(nrow(z$nc.score.matrix)*(z$columns.not.passing.qc-1),'+',(1:nrow(z$nc.score.matrix))),
+				sapply(z$columns.not.passing.qc,seq,to=ncol(z$nc.score.matrix)*nrow(z$nc.score.matrix),by=nrow(z$nc.score.matrix))
+			)
+			)
+		  )
+		))
+		
+	
+	
+	
+	
+	
+	
+	    ######################################################################
 	
 			
 			
@@ -168,6 +207,11 @@ test.nc.score <- function()
 			  )
 			)
 			)
+			
+			
+			
+			
+			
 		# Should give an error
 		checkException(nc.score(data,y))
 
