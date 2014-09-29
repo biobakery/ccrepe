@@ -1,32 +1,109 @@
+Bin <- function(u,nbins,bin.cutoffs) {
+    if(!is.null(nbins)){
+        if (length(u) == 0L)
+            u
+        else if (is.matrix(u)) {
+            if (nrow(u) > 1L)
+                as.matrix(discretize(u,nbins=nbins))
+            else as.matrix(discretize(u,nbins=nbins))
+        }
+        else discretize(u,nbins=nbins)[,1]
+    } else if (!is.null(bin.cutoffs)){
+        if (length(u) == 0L)
+            u
+        else if (is.matrix(u)){
+            if(nrow(u) > 1L)
+                apply(u,2,findInterval,vec=bin.cutoffs)
+            else matrix( apply(u,2,findInterval,vec=bin.cutoffs),nrow=1 )
+        }
+        else findInterval(u,vec=bin.cutoffs)
+    }
+}
+
 preprocess_nc_score_input <-
 function(
 #********************************************************************************************
 #*  	Pre process input and build the common area                                         *
 #********************************************************************************************
-			x, 										#First Input
-			input.bins,
-			input.min.abundance,
-			input.min.samples)
+    x,
+    y,
+    na.method,
+    nbins,
+    bin.cutoffs
+    )
 {
-	CA <-list()		
-	CA <- process_min_abundance_min_samples( CA,                  #Process minimum abundance and min samples
-			input.min.abundance,
-			input.min.samples)								 
+      if (is.na(na.method))
+          stop("invalid 'use' argument")
+      if (is.data.frame(y))
+          y <- as.matrix(y)
+      if (is.data.frame(x))
+          x <- as.matrix(x)
+      if (!is.matrix(x) && is.null(y))
+          stop("supply both 'x' and 'y' or a matrix-like 'x'")
+      if (!(is.numeric(x) || is.logical(x)))
+          stop("'x' must be numeric")
+      stopifnot(is.atomic(x))
+      if (!is.null(y)) {
+          if (!(is.numeric(y) || is.logical(y)))
+              stop("'y' must be numeric")
+          stopifnot(is.atomic(y))
+      }
+      if(!is.null(nbins) && !is.null(bin.cutoffs)){
+          stop("supply only one of 'nbins' or 'bin.cutoffs'")
+      }
+      if(!is.null(nbins) && !is.numeric(nbins)){
+          stop("supply a numeric bin number")
+      }
+      if(!is.null(nbins) && length(nbins) > 1L){
+          warning("nbins has length > 1 and only the first element will be used")
+          nbins <- nbins[1]
+      }
+      if(!is.null(nbins) && nbins <= 0){
+          stop("supply a positive bin number")
+      }
+      if(!is.null(nbins) && (nbins %% 1 != 0)){
+          stop("supply an integer bin number")
+      }
+      if(!is.null(bin.cutoffs) && !is.numeric(bin.cutoffs)){
+          stop("invalid bin cutoff values")
+      }
+      if(!is.null(bin.cutoffs) && sum(sort(bin.cutoffs)!=bin.cutoffs)>0){
+          warning("bin.cutoffs not monotonically ordered - using sorted values")
+          bin.cutoffs <- sort(bin.cutoffs)
+      }
+      if(is.null(nbins) && is.null(bin.cutoffs)){
+          if(is.matrix(x)){
+              nbins <- floor(sqrt(nrow(x)))
+          } else {
+              nbins <- floor(sqrt(length(x)))
+          }
+      }
+      return(list(
+          x=x,
+          y=y,
+          nbins=nbins,
+          bin.cutoffs=bin.cutoffs
+          ))
+
+        ## CA <-list()		
+	## CA <- process_min_abundance_min_samples( CA,                  #Process minimum abundance and min samples
+	## 		input.min.abundance,
+	## 		input.min.samples)								 
 
  
-	#*********************************************************
-	#* Filter                                                *
-	#*********************************************************
-	CA$x <- x												#Post x in the common area
-        CA$x <-na.omit(CA$x)											#remove NAs
-	CA <-qc_filter(CA$x,CA)										#filter by abundance thresholds
-	if (is.null(rownames(CA$x))) {rownames(CA$x)<-seq(1:nrow(CA$x))} #If there are no row names - plug them in
-	#****************************************************************************************
-	#*   Process Bins  passed by the user  or set default                                   *
-	#****************************************************************************************
-	CA <- process.input.bins(input.bins, CA)			#Process Input number of bins or set default
+	## #*********************************************************
+	## #* Filter                                                *
+	## #*********************************************************
+	## CA$x <- x												#Post x in the common area
+        ## CA$x <-na.omit(CA$x)											#remove NAs
+	## CA <-qc_filter(CA$x,CA)										#filter by abundance thresholds
+	## if (is.null(rownames(CA$x))) {rownames(CA$x)<-seq(1:nrow(CA$x))} #If there are no row names - plug them in
+	## #****************************************************************************************
+	## #*   Process Bins  passed by the user  or set default                                   *
+	## #****************************************************************************************
+	## CA <- process.input.bins(input.bins, CA)			#Process Input number of bins or set default
 	
-	return(CA)
+	## return(CA)
 }
 
 
