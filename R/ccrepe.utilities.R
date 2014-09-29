@@ -201,7 +201,9 @@ function(data,n.iter, CA){
 
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
-	    output.table = data.frame(feature1=rep(NA,max.comparisons), 
+	    output.table = data.frame(i=rep(NA,max.comparisons),
+                                      k=rep(NA,max.comparisons),
+                                      feature1=rep(NA,max.comparisons), 
 	    		   	      feature2=rep(NA,max.comparisons), 
 				      sim.score=rep(NA,max.comparisons), 
 				      z.stat=rep(NA,max.comparisons),
@@ -216,7 +218,14 @@ function(data,n.iter, CA){
 	   {
 	   cat(colnames(output.table),sep="\t",file=CA$concurrentFile,append=TRUE)
 	   cat("\n",file=CA$concurrentFile,append=TRUE)
-	   }	
+	   }
+        if    (!is.na(CA$outdist))                                              #If user requested to print the distributions
+            {
+                output.string0 <- paste0("iter_",seq_len(length(boot.cor)),collapse=",")
+                output.string  <- paste0("dist_type,i,k,feature1,feature2,",output.string0,'\n', sep='',collapse=",")
+                
+                cat(output.string,file=CA$outdistFile,append=TRUE)
+            }
 
 	internal.loop.counter = 0		#Initialize the loop counter
 	outer.loop.indices.completed = c()	#Initialize the list to keep track of already completed outer indices
@@ -269,7 +278,7 @@ function(data,n.iter, CA){
 
                         if( !is.na(CA$concurrent.output) || CA$make.output.table )
                             {
-                                concurrent.vector <- c(colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],sim.score,z.stat,p.value,NA)
+                                concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],sim.score,z.stat,p.value,NA)
                                 output.table[internal.loop.counter,] = concurrent.vector
                             }
 
@@ -524,7 +533,9 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	max.comparisons <- n1.features*n2.features
 	if( !is.na(CA$concurrent.output) || CA$make.output.table )
 	    {
-	    output.table = data.frame(feature1=rep(NA,max.comparisons), 
+	    output.table = data.frame(i=rep(NA,max.comparisons),
+                                      k=rep(NA,max.comparisons),
+                                      feature1=rep(NA,max.comparisons), 
 		       		      feature2=rep(NA,max.comparisons), 
 				      sim.score=rep(NA,max.comparisons), 
 				      z.stat=rep(NA,max.comparisons),
@@ -536,7 +547,15 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	   {
 	   cat(colnames(output.table),sep="\t",file=CA$concurrentFile,append=TRUE)
 	   cat("\n",file=CA$concurrentFile,append=TRUE)
-	   }	
+	   }
+        if    (!is.na(CA$outdist))                                              #If user requested to print the distributions
+            {
+                output.string0 <- paste0("iter_",seq_len(length(boot.cor)),collapse=",")
+                output.string  <- paste0("dist_type,i,k,feature1,feature2,",output.string0,'\n', sep='',collapse=",")
+
+                cat(output.string,file=CA$outdistFile,append=TRUE)
+            }
+
 
 	internal.loop.counter = 0   # Initialize the counter
  
@@ -586,7 +605,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],sim.score.value,z.stat,p.value,NA)
+			    concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],sim.score.value,z.stat,p.value,NA)
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -1208,17 +1227,17 @@ function(bootstrap.dist,permutation.dist,  CA,i, k)	{
 	
 	output.string0 <- paste(bootstrap.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Boot,",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Boot,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
-		{output.string <-paste("Boot,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Boot,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 
 	cat(output.string,file=CA$outdistFile,append=TRUE)
 	
 	output.string0 <- paste(permutation.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Permutation,",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Permutation,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
-		{output.string <-paste("Permutation,",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Permutation,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 	cat(output.string,file=CA$outdistFile,append=TRUE)
 
 
