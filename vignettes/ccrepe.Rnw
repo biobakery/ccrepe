@@ -424,7 +424,7 @@ test.input <- data.norm
 
 dimnames(test.input) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
 
-test.output <- nc.score(x=test.input,bins=2)
+test.output <- nc.score(x=test.input)
 @
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.  In this case, the smaller bin number yields a smaller NC-score because of the coarser partitioning of the data.", fig.height=3, fig.pos="H">>=
 par(mfrow=c(1, 2))
@@ -448,7 +448,7 @@ test.input <- data.norm
 
 dimnames(test.input) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
 
-test.output <- nc.score(x=test.input,bins = c(0.001,0.1,0.25,0.6))
+test.output <- nc.score(x=test.input)
 @
 <<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2 of the second example.  Again, we expect to observe a positive association between feature 1 and feature 2.  In terms of generalized checkerboard scores, we would expect to see more co-variation patterns than co-exclusion patterns.  This is shown by the positive and relatively high value in the [1,2] element of test.output.  The bin edges specified here represent almost absent ([  0,0.001)), low abundance ([0.001,0.1)), medium abundance ([0.1,0.25)), and high abundance ([0.6,1)).", fig.height=3, fig.pos="H">>=
 par(mfrow=c(1, 2))

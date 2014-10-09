@@ -34,253 +34,300 @@ test.nc.score <- function()
 	
 	
 	nc.score.results <-nc.score( x=testdata)
-	nc.score.predicted.results <-matrix(c(NA ,-0.25000, -0.21875, -0.65625,
-                                       -0.25000 ,      NA, -0.21875 , 0.34375,
-                                     -0.21875, -0.21875 ,      NA, -0.21875,
-                                     -0.65625,  0.34375, -0.21875,       NA),
+	nc.score.predicted.results <-matrix(c(1 ,-0.25000, -0.21875, -0.65625,
+                                       -0.25000 ,      1, -0.21875 , 0.34375,
+                                     -0.21875, -0.21875 ,      1, -0.21875,
+                                     -0.65625,  0.34375, -0.21875,       1),
                                     nrow=4,ncol=4,byrow = TRUE)
 	checkEqualsNumeric(nc.score.predicted.results, nc.score.results, tolerance = tol) 
 
-
-
-
-
-
-	
-	# Checking two vector version
-	mybins <- c(0,0.0001,0.1,0.25)
-	x <- data[,1]
-	y <- data[,2]
-	x.disc <- findInterval(x,mybins)
-	y.disc <- findInterval(y,mybins)
-	x.disc2 <- discretize(x[which(!is.na(x))])[,1]
-	y.disc2 <- discretize(y[which(!is.na(y))])[,1]
-	
-	
-	# Are the values numerically equivalent to Kendall's tau on discretized data?
-	checkEqualsNumeric( nc.score(data[,1],data[,2],mybins),cor(x.disc,y.disc,method="kendall",use="complete"), tolerance = tol)
-	checkEqualsNumeric( nc.score(data[,1],data[,2]), cor(x.disc2,y.disc2,method="kendall",use="complete"), tolerance = tol)
-	
-	
-	
-	# is nc.score.result in the output?
-	checkIdentical ( "nc.score.result" %in% names(nc.score(data[,1],data[,2],mybins,verbose=TRUE)),TRUE)
-	checkIdentical( "nc.score.result" %in% names(nc.score(data[,1],data[,2],verbose=TRUE)), TRUE)
-	
-	# Is the number of bins 4?
-	checkIdentical( nc.score(data[,1],data[,2],mybins,verbose=TRUE)$n.bins,  4)
-	
-	# Is the number of bins correctly specified?   
-	checkIdentical(nc.score(data[,1],data[,2],verbose=TRUE)$n.bins, floor(sqrt(sum(!is.na(x)))) )
-	
-	
-	# Checking matrix version w/o filtered columns
-	####  What is the check here? 
-	mybins <- c(0,0.0001,0.1,0.25)
-	x <- data
-	x.nomiss <- na.omit(data)
-	x.disc <- apply(x.nomiss,2,findInterval,vec=mybins)
-	x.disc2 <- discretize(x.nomiss)
-	nc.score(data[,c(1,2)],bins=mybins,min.samples=0.01,verbose=TRUE)
-
-	# Are the numeric values equal?
-	checkEqualsNumeric(0,sum(nc.score(data,bins=mybins,min.samples=0.01)!=cor(x.disc,method="kendall",use="complete"),na.rm=TRUE))
-	
-	# Is only the diagonal missing?
-	checkEqualsNumeric(0,sum(
-	  which(
-		is.na(nc.score(data,bins=mybins,min.samples=0.01))
-	  )
-	  !=intersect(
-		which(
-		upper.tri(
-			nc.score(data,bins=mybins,min.samples=0.01),
-			diag=TRUE
-		)
-		),
-		which(
-		lower.tri(
-			nc.score(data,bins=mybins,min.samples=0.01),
-			diag=TRUE
-		)
-		)
-	  )
-	))  
-
-	# Are numeric values equal?
-	checkEqualsNumeric(0,
-	sum(
-	  nc.score(data,min.samples=0.01) != cor(x.disc2,method="kendall",use="complete"),
-	  na.rm=TRUE
-	))
-	
-	# Is only the diagonal missing?
-	checkEqualsNumeric(0,
-		sum(
-		  which(is.na(nc.score(data,min.samples=0.01)))
-		  !=intersect(
-			which(upper.tri(nc.score(data,min.samples=0.01),diag=TRUE)),
-			which(lower.tri(nc.score(data,min.samples=0.01),diag=TRUE))
-		  )
-		))
-	
-	
-	## Checking matrix version w/ filtered columns
-	filter_cols <- which(
-	  apply(
-		data,
-		2,
-		function(col){
-		length(which(col > 0.0001))/sum(!is.na(col))
-		}
-	  ) < 0.2
-	)
-
-	    #####################################################################  Here is the change
-	    z <- nc.score(data,bins=mybins,min.samples=0.2,verbose=TRUE)
-	# Correct columns filtered?
-	checkEqualsNumeric(z$columns.not.passing.qc,  filter_cols)
-
-	
-	# columns.not.passing.qc not present if all columns pass
-	checkEquals(TRUE,
-			!("columns.not.passing.qc" %in% names(nc.score(data,bins=mybins,verbose=TRUE))))
-
-	# Are the numeric values equal?
-	checkEqualsNumeric(0,
-		sum(z$nc.score.matrix!=cor(x.disc,method="kendall",use="complete"),na.rm=TRUE))
-	
-	# Are the missing values correct?
-		checkEqualsNumeric(0,
-		sum(
-		  which(is.na(z$nc.score.matrix))
-		  !=sort(
-			Reduce(
-			union,
-			list(
-				intersect(
-				which(upper.tri(z$nc.score.matrix,diag=TRUE)),
-				which(lower.tri(z$nc.score.matrix,diag=TRUE))
-				),
-				sapply(nrow(z$nc.score.matrix)*(z$columns.not.passing.qc-1),'+',(1:nrow(z$nc.score.matrix))),
-				sapply(z$columns.not.passing.qc,seq,to=ncol(z$nc.score.matrix)*nrow(z$nc.score.matrix),by=nrow(z$nc.score.matrix))
-			)
-			)
-		  )
-		))
-		
 	
 	
 	
 	
 	
 	
-	    ######################################################################
 	
-			
-			
-		# Are numeric values equal?
-		z <- nc.score(data,verbose=TRUE,min.samples=0.2)
-		checkEqualsNumeric(0,
-			sum(
-			  z$nc.score.matrix!=cor(x.disc2,method="kendall",use="complete"),
-			  na.rm=TRUE
-			)
-		)
-		
-		# Are the missing values correct?
-		checkEqualsNumeric(0,
-			sum(
-			  which(is.na(z$nc.score.matrix))
-			  !=sort(
-				Reduce(
-				union,
-				list(
-					intersect(
-					which(upper.tri(z$nc.score.matrix,diag=TRUE)),
-					which(lower.tri(z$nc.score.matrix,diag=TRUE))
-					),
-					sapply(nrow(z$nc.score.matrix)*(z$columns.not.passing.qc-1),'+',(1:nrow(z$nc.score.matrix))),
-					sapply(z$columns.not.passing.qc,seq,to=ncol(z$nc.score.matrix)*nrow(z$nc.score.matrix),by=nrow(z$nc.score.matrix))
-				)
-				)
-			  )
-			)
-			)
-			
-			
-			
-			
-			
-		# Should give an error
-		checkException(nc.score(data,y))
+	mymat2 <- matrix(
+c(0.866073691523164, NA, 3.17467368259671, 0.359999900537411,
+4.06522199311953, 0.531358433914907, 1.3553210433223,
+0.70098991617494, NA, NA, 0.540666092673393, 0.449612399543197,
+8.54571287906867, NA, 1.49025535173577, 0.989290609659256,
+1.95255982150214, 0.727336361735765, 11.6147325678762, NA, NA,
+0.33536474977386, 4.77792057692177, NA, 0.401697528610903,
+0.307221503080535, 0.549849376034578, 1.04271392334705,
+0.447789224691567, 2.06032279848217, 4.29836541780129,
+0.541133352798413, 6.35178592023848, 0.55703492105826, NA,
+0.45089052046624, 1.06131526363404, 5.23848765291558,
+0.412230411756493, 6.11520270707892, 0.105560690896892,
+0.333003141844819, NA, 1.54596666241829, 0.785548947825768,
+0.571874628503047, 2.57875882990629, 0.93386278959432, NA,
+0.145584626621529),
+ncol=5
+)
+colnames(mymat2) <- paste0("Feature",seq(1,5))
 
-		
-		
+tol <- 0.000001
 
-		# Should give an error
-		checkException(nc.score(data[,1],data[1:20,2]))
+x <- mymat2[,1]
+y <- mymat2[,2]
 
-		# Should give an error
-		checkException(nc.score(bins=mybins))
+check_mat_vec <- function(mymat,y,nbins=NULL,bin.cutoffs=NULL,ok=NULL){
+  tau.check <- apply(mymat,2,function(x){
+      if(!is.null(ok)){
+        x <- x[ok]
+        y <- y[ok]
+      }
+      nc.score(x,
+               y,
+               use=ifelse(!is.null(ok),"everything","pairwise.complete.obs"),
+               nbins,
+               bin.cutoffs
+               )
+    }
+  )
+  return(tau.check)
+}
 
-		# Should give an error
-		checkException(nc.score(y))
-		
-		
-		
+check_vec_mat <- function(x,mymat,nbins=NULL,bin.cutoffs=NULL,ok=NULL){
+  tau.check <- apply(mymat,2,function(y){
+      if(!is.null(ok)){
+        x <- x[ok]
+        y <- y[ok]
+      }
+      nc.score(x,
+               y,
+               use=ifelse(!is.null(ok),"everything","pairwise.complete.obs"),
+               nbins,
+               bin.cutoffs
+               )
+    }
+  )
+  return(tau.check)
+}
 
-		# Should give a warning about replacing value - This is just a warning 
-		options(warn=2)               #Set warning level to 2 so warnings become errors
-		checkException(nc.score(data[,1],data[,2],bins=-1))
+## Using two vectors with bin numbers
+nc.score(x,y,use="pairwise.complete.obs",nbins=5)==nc.score(x,y,use="complete.obs",nbins=5)
+is.na(nc.score(x,y,use="everything",nbins=5))
 
-		# Should give a warning about replacing value - This is just a warning 
-		checkException(nc.score(data[,1],data[,2],bins="4"))
 
-		# Should give a warning about replacing value - This is just a warning 
-		checkException(nc.score(data[,1],data[,2],bins=pi))
 
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.samples=1.5))
+## Using two vectors with bin cutoffs
+nc.score(x,y,use="pairwise.complete.obs",NULL,bin.cutoffs=c(-1,0,1))==nc.score(x,y,use="complete.obs",NULL,bin.cutoffs=c(-1,0,1))
+is.na(nc.score(x,y,use="everything",NULL,bin.cutoffs=c(-1,0,1)))
 
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.samples=-2))
+## Using matrix and vector with bin numbers
+tau <- nc.score(mymat2,y,use="pairwise.complete.obs",nbins=5)
+tau.check <- check_mat_vec(mymat2,y,nbins=5)
+sum(abs(tau-tau.check)>tol)==0
 
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.samples="0.1"))
+tau2 <- nc.score(mymat2,y,use="everything",nbins=5)
+sum(!is.na(tau2))==0
 
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.samples=c(0.1,0.2)))
+tau3 <- nc.score(mymat2,y,use="complete.obs",nbins=5)
+ok   <- which(!is.na(apply(mymat2,1,sum)))
+tau3.check <- check_mat_vec(mymat2,y,nbins=5,ok=ok)
+sum(abs(tau3-tau3.check)>tol)==0
 
-		
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.abundance="0.1"))
 
-		# Should give a warning about replacing value
-		checkException(nc.score(data,min.abundance=c(0.0001,0.0002)))
+
+## Using matrix and vector with bin cutoffs
+tau.2 <-
+nc.score(mymat2,y,use="pairwise.complete.obs",NULL,bin.cutoffs=c(-1,0,1))
+tau.2.check <- check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1))
+sum(abs(tau.2-tau.2.check)>tol)==0
+
+tau2.2 <- nc.score(mymat2,y,use="everything",NULL,bin.cutoffs=c(-1,0,1))
+sum(!is.na(tau2.2))==0
+
+tau3.2 <-
+nc.score(mymat2,y,use="complete.obs",NULL,bin.cutoffs=c(-1,0,1))
+ok <- which(!is.na(apply(mymat2,1,sum)))
+tau3.2.check <- check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1),ok=ok)
+sum(abs(tau3.2-tau3.2.check)>tol)==0
+
+## Using vector and matrix with bin numbers
+tau.3 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=5)
+tau.3.check <- check_vec_mat(y,mymat2,nbins=5)
+sum(abs(tau-t(tau.3))>tol)==0
+sum(abs(t(tau.3)-tau.check)>tol)==0
+sum(abs(tau.3-tau.3.check)>tol)==0
+sum(abs(tau.3.check-tau.check)>tol)==0
+
+tau2.3 <- nc.score(y,mymat2,use="everything",nbins=5)
+sum(!is.na(tau2.3))==0
+
+tau3.3 <- nc.score(y,mymat2,use="complete.obs",nbins=5)
+ok <- which(!is.na(apply(mymat2,1,sum)))
+tau3.3.check <- check_vec_mat(y,mymat2,nbins=5,ok=ok)
+sum(abs(tau3-t(tau3.3))>tol)==0
+sum(abs(t(tau3.3)-tau3.check)>tol)==0
+sum(abs(tau3.3-tau3.3.check)>tol)==0
+sum(abs(tau3.3.check-tau3.check)>tol)==0
+
+## Using vector and matrix with bin cutoffs
+tau.4 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=NULL,bin.cutoffs=c(-1,0,1))
+tau.4.check <- check_vec_mat(y,mymat2,bin.cutoffs=c(-1,0,1))
+sum(abs(tau.2-t(tau.4))>tol)==0
+sum(abs(t(tau.4)-tau.2.check)>tol)==0
+sum(abs(tau.4-tau.4.check)>tol)==0
+sum(abs(tau.4.check-tau.2.check)>tol)==0
+
+tau2.4 <- nc.score(y,mymat2,use="everything",bin.cutoffs=c(-1,0,1))
+sum(!is.na(tau2.4))==0
+
+tau3.4 <- nc.score(y,mymat2,use="complete.obs",bin.cutoffs=c(-1,0,1))
+ok <- which(!is.na(apply(mymat2,1,sum)))
+tau3.4.check <- check_vec_mat(y,mymat2,bin.cutoffs=c(-1,0,1),ok=ok)
+sum(abs(tau3.2-t(tau3.4))>tol)==0
+sum(abs(t(tau3.4)-tau3.2.check)>tol)==0
+sum(abs(tau3.4-tau3.4.check)>tol)==0
+sum(abs(tau3.4.check-tau3.2.check)>tol)==0	
+
+	
+## Using matrix with bin numbers
+tau.5 <- nc.score(mymat2,use="pairwise.complete.obs",nbins=5)
+tau.5.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,nbins=5))
+tau.5.check.2 <- apply(mymat2,2,function(x)
+check_vec_mat(x,mymat2,nbins=5))
+sum(abs(tau.5[,2]-tau)>tol)==0
+sum(abs(tau.5[,2]-tau.3)>tol)==0
+sum(abs(tau.5-tau.5.check)>tol)==0
+sum(abs(tau.5-tau.5.check.2)>tol)==0
+
+tau2.5 <- nc.score(mymat2,use="everything",nbins=5)
+sum(diag(tau2.5 != 1))==0
+sum(!is.na(tau2.5)) == ncol(mymat2)
+
+tau3.5 <- nc.score(mymat2,use="complete.obs",nbins=5)
+ok <- which(!is.na(apply(mymat2,1,sum)))
+tau3.5.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,nbins=5,ok=ok))
+tau3.5.check.2 <- apply(mymat2,2,function(x)
+check_vec_mat(x,mymat2,nbins=5,ok=ok))
+sum(abs(tau3.5[,2]-tau3)>tol)==0
+sum(abs(tau3.5[,2]-tau3.3)>tol)==0
+sum(abs(tau3.5-tau3.5.check)>tol)==0
+sum(abs(tau3.5-tau3.5.check.2)>tol)==0
 	
 	
-		# Should give a warning about replacing value
-		#** No warning, value returned
-		checkException(nc.score(data[,1],data[,2],min.samples=1.5))
+	
+## Using matrix with bin cutoffs
+tau.6 <- nc.score(mymat2,use="pairwise.complete.obs",bin.cutoffs=c(-1,0,1))
+tau.6.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1)))
+tau.6.check.2 <- apply(mymat2,2,function(x)
+check_vec_mat(x,mymat2,bin.cutoffs=c(-1,0,1)))
+sum(abs(tau.6[,2]-tau.2)>tol)==0
+sum(abs(tau.6[,2]-tau.4)>tol)==0
+sum(abs(tau.6-tau.6.check)>tol)==0
+sum(abs(tau.6-tau.6.check.2)>tol)==0
 
-		# Should give a warning about replacing value
-		#** No warning, value returned
-		checkException(nc.score(data[,1],data[,2],min.samples=-2))
+tau2.6 <- nc.score(mymat2,use="everything",bin.cutoffs=c(-1,0,1))
+sum(diag(tau2.6 != 1))==0
+sum(!is.na(tau2.6)) == ncol(mymat2)
 
-		# Should give a warning about replacing value
-		#** No warning, value returned
-		checkException(nc.score(data[,1],data[,2],min.samples="0.1"))
+tau3.6 <- nc.score(mymat2,use="complete.obs",bin.cutoffs=c(-1,0,1))
+ok <- which(!is.na(apply(mymat2,1,sum)))
+tau3.6.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1),ok=ok))
+tau3.6.check.2 <- apply(mymat2,2,function(x)
+check_vec_mat(x,mymat2,bin.cutoffs=c(-1,0,1),ok=ok))
+sum(abs(tau3.6[,2]-tau3.2)>tol)==0
+sum(abs(tau3.6[,2]-tau3.4)>tol)==0
+sum(abs(tau3.6-tau3.6.check)>tol)==0
+sum(abs(tau3.6-tau3.6.check.2)>tol)==0
 
-		# Should give a warning about replacing value
-		#** No warning, value returned
-		checkException(nc.score(data[,1],data[,2],min.samples=c(0.1,0.2)))
+## Using two matrices with bin numbers
+tau.7 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
+tau.7.check <- tau.5.check[c(1,2),c(3,4)]
+sum(abs(tau.7-tau.7.check)>tol)==0
 
-		# Should give a warning about replacing value
-		#** No warning, value returned
-		checkException(nc.score(data[,1],data[,2],min.abundance=c(0.0001,0.0002)))
+tau2.7 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",nbins=5)
+sum(!is.na(tau2.7))==0
+
+tau3.7 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",nbins=5)
+ok <- which(!is.na(apply(mymat2,1,function(row) sum(row[c(1,2,3,4)]))))
+tau3.7.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
+sum(abs(tau3.7-tau3.7.check)>tol)==0	
+	
+	
+## Using two matrices with bin cutoffs
+tau.8 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
+tau.8.check <- tau.6.check[c(1,2),c(3,4)]
+sum(abs(tau.8-tau.8.check)>tol)==0
+
+tau2.8 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",nbins=5)
+sum(!is.na(tau2.8))==0
+
+tau3.8 <-
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",nbins=5)
+ok <- which(!is.na(apply(mymat2,1,function(row) sum(row[c(1,2,3,4)]))))
+tau3.8.check <- apply(mymat2,2,function(y)
+check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
+sum(abs(tau3.8-tau3.8.check)>tol)==0
+	
+	
+
+## Checking warning cases
+expect_warning(nc.score(x,y,nbins=c(5,3),use="pairwise.complete.obs"))
+expect_warning(nc.score(x,y,nbins=NULL,bin.cutoffs=c(1,-1,0),use="pairwise.complete.obs"))
+	
+
+
+
+## incorrect use argument - should give an error
+expect_error(nc.score(x,y,use="something"))
+
+## only one vector - should give an error
+expect_error(nc.score(x,NULL))
+
+## Check string input x - should give an error
+expect_error(nc.score(c('1','2'),y[c(1,2)]))
+
+## Check string input y - should give an error
+expect_error(nc.score(x[c(1,2)],c('1','2')))
+
+## Supplying both nbins and bin cutoffs - should give an error
+expect_error(nc.score(x,y,nbins=2,bin.cutoffs=c(0,0.5,1,2)))
+
+## Supplying invalid nbins values - should give errors
+expect_error(nc.score(x,y,nbins="2"))
+expect_error(nc.score(x,y,nbins=-1))
+expect_error(nc.score(x,y,nbins=pi))
+
+## Supplying invalid bin.cutoffs values - should give an error
+expect_error(nc.score(x,y,nbins=NULL,bin.cutoffs=c(0,'1')))
 
 	
-		options(warn=0)   #Reset  warning level to 0
-  }
- 
+
+## Miscellaneous testing
+A <- c(1,2.5,2.5,4.5,4.5,6.5,6.5,8,9.5,9.5)
+B <- c(1,2,4.5,4.5,4.5,4.5,8,8,8,10)
+n <- length(A)
+cor_1 <- cor(A,B,method="kendall")
+concord_vec <- apply(t(combn(seq(1,length(A)),2)),1,function(row) (rank(A)[row[1]] - rank(A)[row[2]])*(rank(B)[row[1]] - rank(B)[row[2]]))
+S <- (sum(concord_vec>0) - sum(concord_vec<0))
+t_vals <- unique(A[which(sapply(A,function(e) sum(A==e))>1)])
+u_vals <- unique(B[which(sapply(B,function(e) sum(B==e))>1)])
+T_val  <- 0.5*sum(sapply(t_vals,function(e) sum(A==e)*(sum(A==e)-1)))
+U_val  <- 0.5*sum(sapply(u_vals,function(e) sum(B==e)*(sum(B==e)-1)))
+D_sq   <- (0.5*n*(n-1) - T_val)*(0.5*n*(n-1) - U_val)
+cor_2 <- (sum(concord_vec>0) - sum(concord_vec<0))/(0.5*length(A)*(length(A)-1))
+cor_3 <- S/sqrt(D_sq)
+
+cor_1==cor_3	
+	
+	
+	
+	
+	}
+
+
