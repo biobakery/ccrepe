@@ -19,12 +19,12 @@
   
   }
 \usage{
-nc.score(x = NULL,
+nc.score(x,
  y = NULL, 
- bins = NA, 
- verbose = FALSE,			 
- min.abundance = 1e-04,
- min.samples = 0.1)
+ use = "everything",
+ nbins = NULL, 
+ bin.cutoffs = NULL
+)
 }
 \arguments{
   \item{x}{
@@ -33,21 +33,15 @@ nc.score(x = NULL,
   \item{y}{
    Numeric vector.  If selected, x must be a numeric vector as well.   
 }
-  \item{bins}{
- Either a single integer specifying the number of bins to use or a numeric vector specifying the cutoffs.
- If a single number is given, this is used as the number of bins in the discretize function of the package infotheo.
- If a vector is specified, the function findInterval is used to discretize the data according to the cutoffs given.
- The default behavior is to use the defaults for the discretize function.
-}
-\item{verbose}{
- Logical flag to request verbose output
-}
-  \item{min.abundance}{
-  A numeric value specifying the minimum abundance threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples.
-}
-  \item{min.samples}{
-  An fraction specifying the minimum samples threshold: Assures selection of species with abundance >= min.abundance in more than min.samples percent of samples. Default=0.1
-}
+	\item{use}{
+   use = "everything"
+	}
+	\item{nbins}{
+   The number of bins
+	}
+	\item{bin.cutoffs}{
+   bin.cuttofs 
+	}
 }
 \value{ 
 	Matrix or vector of normalized scores.
@@ -72,8 +66,8 @@ testdata <- data.norm
 dimnames(testdata) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
 
 nc.score.results <- nc.score( x=testdata )
-nc.score.results.bins <- nc.score( x=testdata, bins=5 )
-nc.score.results.bin.cutoffs <- nc.score( x=testdata, bins = c(.001,.25,.5) )
+nc.score.results.bins <- nc.score( x=testdata  )
+nc.score.results.bin.cutoffs <- nc.score( x=testdata  )
 nc.score.results
 nc.score.results.bins
 nc.score.results.bin.cutoffs
