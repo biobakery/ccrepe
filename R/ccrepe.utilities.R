@@ -7,7 +7,7 @@ calculate_q_values <- function(CA)
 	if  (CA$OneDataset == TRUE)	
 		{q.values.calc.matrix[lower.tri(q.values.calc.matrix,diag=TRUE)] <- NA}    #If One dataset,  use only the upper part of the matrix
 
-	QValuesArranged <- calculate_q_values_vector(q.values.calc.matrix,CA)$q.values.arranged
+	QValuesArranged <- calculate_q_values_vector(q.values.calc.matrix,CA)
 
 	CA$q.values<-q.values.calc.matrix
 	CA$q.values[which(!is.na(q.values.calc.matrix))] = QValuesArranged
@@ -18,19 +18,15 @@ calculate_q_values <- function(CA)
 calculate_q_values_vector <- function(p.values.vector,CA){
 
 	p.values <- p.values.vector
-	non.missing.p.values <- p.values[which(!is.na(p.values))]
+        missing_idx <- which(is.na(p.values))
+	non.missing.p.values <- p.values[-missing_idx]
 	m = length(non.missing.p.values)                                #m is the total number of p-values
 	ln_m = log(m)									#log m
 	ln_m_Plus_Gamma = ln_m + CA$Gamma
-	SortedVector = sort(non.missing.p.values,index.return = TRUE)	#Sort the entire PValues matrix into a vector
-	KVector = seq(1,m)						#A vector with the total number of entries in the PValues matrix
-	QValues = SortedVector$x*m*ln_m_Plus_Gamma/KVector		#Calculate a vector containing the Q values
-	QValuesArranged = rep(-1,m)
-	QValuesArranged[SortedVector$ix] = QValues
 	q.values <- p.values
-	q.values[which(!is.na(p.values))] = QValuesArranged
+	q.values[-missing_idx] = non.missing.p.values * m * ln_m_Plus_Gamma / rank(non.missing.p.values)
 
-	return(list(q.values.vec = q.values, q.values.arranged = QValuesArranged))
+	return(q.values)
 }
 
 
