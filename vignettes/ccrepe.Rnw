@@ -9,6 +9,7 @@
 
 \usepackage{float}
 \usepackage[nonamebreak,square]{natbib}
+\usepackage{amsmath}
 
 <<style, eval=TRUE, echo=FALSE, results="asis">>=
 BiocStyle::latex(width=78, use.unsrturl=FALSE)
@@ -304,44 +305,25 @@ The \Rfunction{nc.score} similarity measure is an N-dimensional extension of the
 
 \subsection{General Functionality}
 
-The NC-score is an extension to Diamond's checkerboard score (see \citet{cody1975ecology}) to ordinal data.  The generalization of the checkerboard score is through defining general co-variation and co-exclusion patterns in ordinal data.  With ordinal data, the checkerboard considers the $2\times 2$ submatrices which are of the form: 
+The NC-score is an extension to Diamond's checkerboard score (see \citet{cody1975ecology}) to ordinal data, and simplifies to a calculation of Kendall's $\tau$ on binned data instead of ranked data.  Let two features in a dataset with $n$ subjects be denoted by
+\[
+\left[ \begin{array}{cccc}
+    x_1 & x_2 & \dots & x_n\\
+    y_1 & y_2 & \dots & y_n\\
+    \end{array} \right].
+\]
+The binning function maps from the original data to $b$ numbered bins in $\{1,...,b\}$.  Let the binning function be denoted by $B(\cdot)$. The co-variation and co-exclusion patterns are the same as concordant and discordant pairs in Kendall's $\tau$.  Considering a $2 \times 2$ submatrix of the form
 \[
 \left[ \begin{array}{cc}
-    a & b\\
-    c & d\\
-    \end{array} \right]
+    B(x_i) & B(x_j)\\
+    B(y_i) & B(y_j)\\
+    \end{array} \right],
 \]
-In the cases that $a < b$ and $c < d$ (or $a > b$ and $c > d$), the submatrix is considered a co-variation pattern; conversely, if $a > b$ and $c < d$ (or $a < b$ and $c > d$) then the submatrix is considered a co-exclusion pattern. The number of co-exclusion patterns for $n$ bins is adjusted based on the expected ratio of co-variaion to co-exclusion patterns in any given sample.  The adjustment factor is given by:
+a co-variation pattern is counted when $(B(x_i) - B(x_j))(B(y_i) - B(y_j)) > 0$ and a co-exclusion pattern, conversely, when $(B(x_i) - B(x_j))(B(y_i) - B(y_j)) < 0$.  The NC-score statistic for features $x$ and $y$ is then defined as 
 \[
-1.5 \ast \frac{n(n-1)}{n^2 - n + 1},
+(\text{number of co-variation patterns}) - (\text{number of co-exclusion patterns}),
 \]
-with the complete derivation being left to \citet{bielski2013thesis}.
-
-\noindent
-The function as implemented here first performs basic quality control filtering of input relative abundance data.  It then transforms relative abundances to ordinal values based on user-provided or default bin thresholds.  It then computes a raw NC-score:
-
-\[
-C_{ij} - 1.5 \ast \frac{n(n-1)}{n^2 - n + 1} \ast D_{ij}
-\]
-where $C_{ij}$ and $D_{ij}$ are the total number of co-variation and co-exclusion patterns, respectively, between species $i$ and $j$ and where $n$ is the number of bins.
-
-\noindent
-The raw NC-score is then normalized to between -1 and 1 for $n$ bins and $s$ samples by dividing by the maximum possible NC-score, which is based on the maximum number of co-variation patterns possible. The normalized NC-score is then analogous to Pearsons $\rho$, where positive values indicate more co-variation than co-exclusion patterns and the magnitude of the score indicates the strength of the association between the species. The derivation of this normalization factor can be found in \citet{bielski2013thesis}. The normalization factor is given by:
-\[
-\left(\begin{array}{c} 
-  s\\ 
-  2\\ 
-\end{array} \right) - \left[ s \bmod n \ast 
-\left(\begin{array}{c} 
-  \left \lfloor{\frac{s}{n}} \right \rfloor + 1 \\ 
-  2 \\
-\end{array} \right) + \big(n - s \bmod n \big) \ast \left( \begin{array}{c} 
-  \left \lfloor{\frac{s}{n}} \right \rfloor \\ 
-  2 \\
-\end{array} \right)\right].
-\]
-
-
+normalized by the Kendall's $\tau$ normalization factor accounting for ties described in \citet{kendall1970}.
 
 \subsection{Arguments}
 
