@@ -9,8 +9,10 @@ calculate_q_values <- function(CA)
 
 	QValuesArranged <- calculate_q_values_vector(q.values.calc.matrix,CA)
 
-	CA$q.values<-q.values.calc.matrix
-	CA$q.values[which(!is.na(q.values.calc.matrix))] = QValuesArranged
+	CA$q.values<-QValuesArranged
+        if (CA$OneDataset){
+          CA$q.values[lower.tri(CA$q.values)] <- t(CA$q.values)[lower.tri(CA$q.values)]
+        }
 
 	return(CA)
 }
@@ -19,12 +21,19 @@ calculate_q_values_vector <- function(p.values.vector,CA){
 
 	p.values <- p.values.vector
         missing_idx <- which(is.na(p.values))
-	non.missing.p.values <- p.values[-missing_idx]
-	m = length(non.missing.p.values)                                #m is the total number of p-values
-	ln_m = log(m)									#log m
-	ln_m_Plus_Gamma = ln_m + CA$Gamma
-	q.values <- p.values
-	q.values[-missing_idx] = non.missing.p.values * m * ln_m_Plus_Gamma / rank(non.missing.p.values)
+        if (length(missing_idx)>0){ 
+          non.missing.p.values <- p.values[-missing_idx]
+          m = length(non.missing.p.values)                                #m is the total number of p-values
+	  ln_m = log(m)									#log m
+	  ln_m_Plus_Gamma = ln_m + CA$Gamma
+	  q.values <- p.values
+	  q.values[-missing_idx] = non.missing.p.values * m * ln_m_Plus_Gamma / rank(non.missing.p.values)
+        } else {
+	  m = length(p.values)          
+          ln_m = log(m)
+          ln_m_Plus_Gamma = ln_m + CA$Gamma
+          q.values <- p.values * m * ln_m_Plus_Gamma / rank(p.values)
+        }
 
 	return(q.values)
 }
