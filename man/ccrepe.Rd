@@ -63,19 +63,17 @@
 	sim.score.args = list(method='spearman',use='complete.obs'	).\cr	
 }
   \item{min.subj}{
-  Minimum number of subjects that must be measured in a bug/feature/column in order to apply the similarity measure
+  Minimum number of samples that must be non-missing in a bug/feature/column in order to apply the similarity measure
   to that bug/feature/column.  This is to ensure that there are sufficient subjects to perform a bootstrap (default: 20).
 }
   \item{iterations}{
   The number of iterations of bootstrap and permutation (default: 1000).
 }
   \item{subset.cols.x}{
-  Subset of columns from x to work on.  (Default: NULL - meaning: Use all columns of x. 
-  All the columns of x are used for normalization but calculations are performed only with the requested subset (by default, all columns). 
+  A vector of column indices from x to indicate which features to compare
 }
  \item{subset.cols.y}{
-  Subset of columns from y to work on.  (Default: NULL - meaning: Use all columns of y.  
-  If applicable (y present), all the columns of y are used for normalization, but calculations are performed only with the requested subset (by default, all columns).  
+  A vector of column indices from y to indicate which features to compare  
 }
   \item{errthresh}{
 	A numeric value representing the probability of getting all 0's in a given bootstrapped column for the first dataset
