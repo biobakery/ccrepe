@@ -14,9 +14,7 @@
   
   It is an extension to Diamond's checkerboard score (See references below) to ordinal data and implements a
   framework for robust detection of species-level association patterns in metagenomic data.
-  It performs quality control and transforms relative abundances to ordinal values and computes an association measure,
-  the NC-score (n-dimensional checkerboard score), for each species pair.
-  
+     
   }
 \usage{
 nc.score(x,
