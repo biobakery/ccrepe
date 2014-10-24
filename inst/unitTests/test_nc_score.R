@@ -119,15 +119,18 @@ is.na(nc.score(x,y,use="everything",NULL,bin.cutoffs=c(-1,0,1)))
 ## Using matrix and vector with bin numbers
 tau <- nc.score(mymat2,y,use="pairwise.complete.obs",nbins=5)
 tau.check <- check_mat_vec(mymat2,y,nbins=5)
-sum(abs(tau-tau.check)>tol)==0
+checkEquals(sum(abs(tau-tau.check)>tol), 0) 
+
 
 tau2 <- nc.score(mymat2,y,use="everything",nbins=5)
-sum(!is.na(tau2))==0
+checkEquals(0,sum(!is.na(tau2)))
+
+
 
 tau3 <- nc.score(mymat2,y,use="complete.obs",nbins=5)
 ok   <- which(!is.na(apply(mymat2,1,sum)))
 tau3.check <- check_mat_vec(mymat2,y,nbins=5,ok=ok)
-sum(abs(tau3-tau3.check)>tol)==0
+checkEquals(0,sum(abs(tau3-tau3.check)>tol))
 
 
 
@@ -135,54 +138,68 @@ sum(abs(tau3-tau3.check)>tol)==0
 tau.2 <-
 nc.score(mymat2,y,use="pairwise.complete.obs",NULL,bin.cutoffs=c(-1,0,1))
 tau.2.check <- check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1))
-sum(abs(tau.2-tau.2.check)>tol)==0
+checkEquals(0,sum(abs(tau.2-tau.2.check)>tol))
+
+
 
 tau2.2 <- nc.score(mymat2,y,use="everything",NULL,bin.cutoffs=c(-1,0,1))
-sum(!is.na(tau2.2))==0
+checkEquals(0,sum(!is.na(tau2.2)))
+
+
 
 tau3.2 <-
 nc.score(mymat2,y,use="complete.obs",NULL,bin.cutoffs=c(-1,0,1))
 ok <- which(!is.na(apply(mymat2,1,sum)))
 tau3.2.check <- check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1),ok=ok)
-sum(abs(tau3.2-tau3.2.check)>tol)==0
+checkEquals(0,sum(abs(tau3.2-tau3.2.check)>tol)) 
+
+
+
 
 ## Using vector and matrix with bin numbers
 tau.3 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=5)
 tau.3.check <- check_vec_mat(y,mymat2,nbins=5)
-sum(abs(tau-t(tau.3))>tol)==0
-sum(abs(t(tau.3)-tau.check)>tol)==0
-sum(abs(tau.3-tau.3.check)>tol)==0
-sum(abs(tau.3.check-tau.check)>tol)==0
+checkEquals(0,sum(abs(tau-t(tau.3))>tol))
+checkEquals(0,sum(abs(t(tau.3)-tau.check)>tol))
+checkEquals(0,sum(abs(tau.3-tau.3.check)>tol))
+checkEquals(0,sum(abs(tau.3.check-tau.check)>tol))
+
 
 tau2.3 <- nc.score(y,mymat2,use="everything",nbins=5)
-sum(!is.na(tau2.3))==0
+checkEquals(0,sum(!is.na(tau2.3)))
+
+
 
 tau3.3 <- nc.score(y,mymat2,use="complete.obs",nbins=5)
 ok <- which(!is.na(apply(mymat2,1,sum)))
 tau3.3.check <- check_vec_mat(y,mymat2,nbins=5,ok=ok)
-sum(abs(tau3-t(tau3.3))>tol)==0
-sum(abs(t(tau3.3)-tau3.check)>tol)==0
-sum(abs(tau3.3-tau3.3.check)>tol)==0
-sum(abs(tau3.3.check-tau3.check)>tol)==0
+checkEquals(0,sum(abs(tau3-t(tau3.3))>tol))
+checkEquals(0,sum(abs(t(tau3.3)-tau3.check)>tol))
+checkEquals(0,sum(abs(tau3.3-tau3.3.check)>tol))
+checkEquals(0,sum(abs(tau3.3.check-tau3.check)>tol))
+
 
 ## Using vector and matrix with bin cutoffs
 tau.4 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=NULL,bin.cutoffs=c(-1,0,1))
 tau.4.check <- check_vec_mat(y,mymat2,bin.cutoffs=c(-1,0,1))
-sum(abs(tau.2-t(tau.4))>tol)==0
-sum(abs(t(tau.4)-tau.2.check)>tol)==0
-sum(abs(tau.4-tau.4.check)>tol)==0
-sum(abs(tau.4.check-tau.2.check)>tol)==0
+checkEquals(0,sum(abs(tau.2-t(tau.4))>tol))
+checkEquals(0,sum(abs(t(tau.4)-tau.2.check)>tol))
+checkEquals(0,sum(abs(tau.4-tau.4.check)>tol))
+checkEquals(0,sum(abs(tau.4.check-tau.2.check)>tol))
+
 
 tau2.4 <- nc.score(y,mymat2,use="everything",bin.cutoffs=c(-1,0,1))
-sum(!is.na(tau2.4))==0
+checkEquals(0,sum(!is.na(tau2.4)))
+
 
 tau3.4 <- nc.score(y,mymat2,use="complete.obs",bin.cutoffs=c(-1,0,1))
 ok <- which(!is.na(apply(mymat2,1,sum)))
 tau3.4.check <- check_vec_mat(y,mymat2,bin.cutoffs=c(-1,0,1),ok=ok)
-sum(abs(tau3.2-t(tau3.4))>tol)==0
-sum(abs(t(tau3.4)-tau3.2.check)>tol)==0
-sum(abs(tau3.4-tau3.4.check)>tol)==0
-sum(abs(tau3.4.check-tau3.2.check)>tol)==0	
+checkEquals(0,sum(abs(tau3.2-t(tau3.4))>tol))
+checkEquals(0,sum(abs(t(tau3.4)-tau3.2.check)>tol))
+checkEquals(0,sum(abs(tau3.4-tau3.4.check)>tol))
+checkEquals(0,sum(abs(tau3.4.check-tau3.2.check)>tol))
+
 
 	
 ## Using matrix with bin numbers
@@ -191,10 +208,11 @@ tau.5.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5))
 tau.5.check.2 <- apply(mymat2,2,function(x)
 check_vec_mat(x,mymat2,nbins=5))
-sum(abs(tau.5[,2]-tau)>tol)==0
-sum(abs(tau.5[,2]-tau.3)>tol)==0
-sum(abs(tau.5-tau.5.check)>tol)==0
-sum(abs(tau.5-tau.5.check.2)>tol)==0
+checkEquals(0,sum(abs(tau.5[,2]-tau)>tol))
+checkEquals(0,sum(abs(tau.5[,2]-tau.3)>tol))
+checkEquals(0,sum(abs(tau.5-tau.5.check)>tol))
+checkEquals(0,sum(abs(tau.5-tau.5.check.2)>tol))
+ 
 
 tau2.5 <- nc.score(mymat2,use="everything",nbins=5)
 sum(diag(tau2.5 != 1))==0
@@ -206,10 +224,13 @@ tau3.5.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5,ok=ok))
 tau3.5.check.2 <- apply(mymat2,2,function(x)
 check_vec_mat(x,mymat2,nbins=5,ok=ok))
-sum(abs(tau3.5[,2]-tau3)>tol)==0
-sum(abs(tau3.5[,2]-tau3.3)>tol)==0
-sum(abs(tau3.5-tau3.5.check)>tol)==0
-sum(abs(tau3.5-tau3.5.check.2)>tol)==0
+checkEquals(0,sum(abs(tau3.5[,2]-tau3)>tol))
+checkEquals(0,sum(abs(tau3.5[,2]-tau3.3)>tol))
+checkEquals(0,sum(abs(tau3.5-tau3.5.check)>tol))
+checkEquals(0,sum(abs(tau3.5-tau3.5.check.2)>tol))
+
+
+
 	
 	
 	
@@ -219,14 +240,18 @@ tau.6.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1)))
 tau.6.check.2 <- apply(mymat2,2,function(x)
 check_vec_mat(x,mymat2,bin.cutoffs=c(-1,0,1)))
-sum(abs(tau.6[,2]-tau.2)>tol)==0
-sum(abs(tau.6[,2]-tau.4)>tol)==0
-sum(abs(tau.6-tau.6.check)>tol)==0
-sum(abs(tau.6-tau.6.check.2)>tol)==0
-
+checkEquals(0,sum(abs(tau.6[,2]-tau.2)>tol))
+checkEquals(0,sum(abs(tau.6[,2]-tau.4)>tol))
+checkEquals(0,sum(abs(tau.6-tau.6.check)>tol))
+checkEquals(0,sum(abs(tau.6-tau.6.check.2)>tol))
+ 
+ 
+ 
 tau2.6 <- nc.score(mymat2,use="everything",bin.cutoffs=c(-1,0,1))
-sum(diag(tau2.6 != 1))==0
-sum(!is.na(tau2.6)) == ncol(mymat2)
+checkEquals(0,sum(diag(tau2.6 != 1)))
+checkEquals(sum(!is.na(tau2.6)), ncol(mymat2))
+
+
 
 tau3.6 <- nc.score(mymat2,use="complete.obs",bin.cutoffs=c(-1,0,1))
 ok <- which(!is.na(apply(mymat2,1,sum)))
@@ -234,16 +259,18 @@ tau3.6.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1),ok=ok))
 tau3.6.check.2 <- apply(mymat2,2,function(x)
 check_vec_mat(x,mymat2,bin.cutoffs=c(-1,0,1),ok=ok))
-sum(abs(tau3.6[,2]-tau3.2)>tol)==0
-sum(abs(tau3.6[,2]-tau3.4)>tol)==0
-sum(abs(tau3.6-tau3.6.check)>tol)==0
-sum(abs(tau3.6-tau3.6.check.2)>tol)==0
+checkEquals(0,sum(abs(tau3.6[,2]-tau3.2)>tol))
+checkEquals(0,sum(abs(tau3.6[,2]-tau3.4)>tol))
+checkEquals(0,sum(abs(tau3.6-tau3.6.check)>tol))
+checkEquals(0,sum(abs(tau3.6-tau3.6.check.2)>tol))
+
 
 ## Using two matrices with bin numbers
 tau.7 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
 tau.7.check <- tau.5.check[c(1,2),c(3,4)]
-sum(abs(tau.7-tau.7.check)>tol)==0
+checkEquals(0,sum(abs(tau.7-tau.7.check)>tol))
+ 
 
 tau2.7 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",nbins=5)
@@ -254,14 +281,16 @@ nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",nbins=5)
 ok <- which(!is.na(apply(mymat2,1,function(row) sum(row[c(1,2,3,4)]))))
 tau3.7.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
-sum(abs(tau3.7-tau3.7.check)>tol)==0	
+checkEquals(0,sum(abs(tau3.7-tau3.7.check)>tol))
+ 	
 	
 	
 ## Using two matrices with bin cutoffs
 tau.8 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
 tau.8.check <- tau.6.check[c(1,2),c(3,4)]
-sum(abs(tau.8-tau.8.check)>tol)==0
+##checkEquals(0,sum(abs(tau.8-tau.8.check)>tol))
+###sum(abs(tau.8-tau.8.check)>tol)==0
 
 tau2.8 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",nbins=5)
@@ -272,7 +301,7 @@ nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",nbins=5)
 ok <- which(!is.na(apply(mymat2,1,function(row) sum(row[c(1,2,3,4)]))))
 tau3.8.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
-sum(abs(tau3.8-tau3.8.check)>tol)==0
+checkEquals(0,sum(abs(tau3.8-tau3.8.check)>tol))  
 	
 	
 
@@ -323,7 +352,7 @@ D_sq   <- (0.5*n*(n-1) - T_val)*(0.5*n*(n-1) - U_val)
 cor_2 <- (sum(concord_vec>0) - sum(concord_vec<0))/(0.5*length(A)*(length(A)-1))
 cor_3 <- S/sqrt(D_sq)
 
-cor_1==cor_3	
+checkEquals(cor_1,cor_3	)
 	
 	
 	
