@@ -70,7 +70,7 @@ function(data,n.iter, CA){
 	n.features = ncol(data)					# Number of columns, starting at 1; this is also the number of bugs
 	
 	CA$p.values <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty PValues matrix
-	CA$z.stat <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty z.stat matrix
+	CA$null.sim.score <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty null.sim.score matrix
 	
 	CA$sim.score <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty correlation matrix
 	
@@ -106,19 +106,11 @@ function(data,n.iter, CA){
 	#  of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj)) 
 
-	#Generating the bootstrap and permutation matrices
-	bootstrap.matrices = list()    # The list of matrices of possible bootstrap rows 
-								   #(each matrix multiplies by the data to give a resampled dataset)
-	permutation.matrices = list()  # The list of permutation matrices; each matrix will be
-								   # have columns which are permutations of the row indices
-	
-	
-
 	#**************************************************************
 	#*  Pre allocate                                              *
 	#**************************************************************
-	permutation.matrices  = vector("list", n.iter)		#Pre allocate the permutation matrices
-	bootstrap.matrices = vector("list", n.iter)		#Pre allocate
+	permutation.data  = vector("list", n.iter)		#Pre allocate the permutation matrices
+	bootstrap.data = vector("list", n.iter)		#Pre allocate
 
 	
 	for(i in seq_len(n.iter)){
@@ -133,39 +125,9 @@ function(data,n.iter, CA){
 		# Get the rows of the possible.rows matrix; these correspond to the rows
 		# which will be included in the resampled dataset
 
-		boot.rowids = sample(seq(1,nsubj),nsubj,replace=TRUE)
-
-		# Generate the bootstrap matrix by getting the appropriate rows from the possible bootstrap rows
-		boot.matrix = possible.rows[boot.rowids,] 
-
-		# Add the bootstrap matrix to the list                   
-		bootstrap.matrices [[ i ]] = boot.matrix   #Add bootstrap matrix 
-
-		perm.matrix = replicate(n.features,sample(seq(1,nsubj),nsubj,replace=FALSE))  # The matrix has each column be a permutation of the row indices
- 
-		permutation.matrices [[i]] = perm.matrix		#Populate the permutation matrix
+		bootstrap.data[[ i ]] = data[sample(seq(1,nsubj),nsubj,replace=TRUE),]
+                permutation.data[[ i ]] = apply(data,2,sample)
 	}
-
-	# The bootstrapped data; resample the data using each bootstrap matrix
-
-	
- 	log.processing.progress(CA,"Building boot data")  #Log progress
-	boot.data = lapply(bootstrap.matrices,resample,data=data)
-	
-
-	###  Using bootstrap.method.calcn  for the one dataset also
-	
-	log.processing.progress(CA,paste("Getting similarity score for bootstrap data: col.subset =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,bootstrap.method.calcn,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
-
-	log.processing.progress(CA,"Generating permutation data")  #Log progress
-	# Generating the permutation data; permute the data using each permutation matrix
-	permutation.data = lapply(permutation.matrices,permute,data=data)
-	# The correlation matrices for the bootstrapped data; calculate the correlation for each resampled dataset
-
-	# The normalized permutation data; the permutation data needs to be renormalized, but not the bootstrap data
-	permutation.norm.raw = lapply(permutation.data,ccrepe_norm)
-        permutation.norm     = lapply(permutation.norm.raw,function(mat) mat[,col.subset])
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
 	
@@ -176,9 +138,6 @@ function(data,n.iter, CA){
 			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
 		}
 	
-	log.processing.progress(CA,paste("Calculating permutation similarity score: col.subset =",toString(col.subset)))  #Log progress
-	permutation.cor <- do.call(lapply,c(list(permutation.norm,CA$method), CA$method.args))  #Invoke the measuring function
-	 
 	# Now, actually calculating the correlation p-values within the dataset
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
 
@@ -211,7 +170,7 @@ function(data,n.iter, CA){
                                       feature1=rep(NA,max.comparisons), 
 	    		   	      feature2=rep(NA,max.comparisons), 
 				      sim.score=rep(NA,max.comparisons), 
-				      z.stat=rep(NA,max.comparisons),
+				      null.sim.score=rep(NA,max.comparisons),
 				      p.value=rep(NA,max.comparisons), 
 				      q.value=rep(NA,max.comparisons))
 
@@ -226,7 +185,7 @@ function(data,n.iter, CA){
 	   }
         if    (!is.na(CA$outdist))                                              #If user requested to print the distributions
             {
-                output.string0 <- paste0("iter_",seq_len(length(boot.cor)),collapse=",")
+                output.string0 <- paste0("iter_",seq_len(length(bootstrap.data)),collapse=",")
                 output.string  <- paste0("dist_type,i,k,feature1,feature2,",output.string0,'\n', sep='',collapse=",")
                 
                 cat(output.string,file=CA$outdistFile,append=TRUE)
@@ -251,39 +210,67 @@ function(data,n.iter, CA){
                                 print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
                                 log.processing.progress(CA,print.msg)  #Log progress
                             }
-
-                        bootstrap.dist = unlist(lapply(boot.cor,'[',i,k))
-
-                                        # Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
-                        permutation.dist = unlist(lapply(permutation.cor,'[',i,k))	#sets
+                        comparison.data.norm <- mapply(
+                            function(permute.mat,boot.mat){
+                                idx1 <- col.subset[i]
+                                idx2 <- col.subset[k]
+                                new_elt <- boot.mat
+                                new_elt[,c(idx1,idx2)] <- permute.mat[,c(idx1,idx2)]
+                                new_elt[,c(idx1,idx2)] <- apply(new_elt,1,function(row){
+                                    if(sum(row[c(idx1,idx2)])==0){
+                                        return(row[c(idx1,idx2)])
+                                    } else {
+                                        return(
+                                            row[c(idx1,idx2)]*sum(row[-c(idx1,idx2)])/sum(row[c(idx1,idx2)])
+                                            )
+                                    }
+                                }
+                                    )
+                                return(new_elt)
+                            },
+                            permutation.data,
+                            bootstrap.data,
+                            SIMPLIFY = FALSE
+                            )
+                        comparison.dist <- unlist(lapply(
+                            comparison.data.norm,
+                            function(elt){
+                                measure.param.list <- CA$sim.score.parameters
+                                measure.param.list$x <- elt[,col.subset[i]]
+                                measure.param.list$y <- elt[,col.subset[k]]
+                                sim.score <- do.call(CA$method,measure.param.list)
+                                return(sim.score)
+                            }
+                            ))
 
 
                         if    (!is.na(CA$outdist))						#If user requested to print the distributions
                             {
-                                RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[k])
+                                RC <- print.dist(comparison.dist,CA,col.subset[i],col.subset[k])
                             }
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[k]]), CA$sim.score.parameters)  #build the method do.call parameter list
-                        sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
-						
+                        obs.sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                        null.sim.score <- mean(comparison.dist)
+
+                        greater_sum <- sum(comparison.dist-null.sim.score > abs(obs.sim.score - null.sim.score))
+                        less_sum <- sum(comparison.dist-null.sim.score < -abs(obs.sim.score - null.sim.score))
+
+
+
+                        p.value <- (less_sum + greater_sum)/length(comparison.dist)						
  
-						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
-																		#Same calculations - just packed as a function
-						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
-						p.value <- z.stat_and_p.value.list$p.value	    #Retrieve from the list
 						
- 
-						
-                        CA$z.stat[col.subset[i],col.subset[k]] = z.stat					#Post z.stat in output matrix
-                        CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix
+                        CA$null.sim.score[col.subset[i],col.subset[k]] = null.sim.score					#Post null.sim.score in output matrix
+                        CA$null.sim.score[col.subset[k],col.subset[i]] = null.sim.score					#Post null.sim.score in output matrix
                         CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix
                         CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix
-                        CA$sim.score[col.subset[i],col.subset[k]] = sim.score			#Post it in the cor matrix
-                        CA$sim.score[col.subset[k],col.subset[i]] = sim.score			#Post it in the cor matrix
+                        CA$sim.score[col.subset[i],col.subset[k]] = obs.sim.score			#Post it in the cor matrix
+                        CA$sim.score[col.subset[k],col.subset[i]] = obs.sim.score			#Post it in the cor matrix
 
 
                         if( !is.na(CA$concurrent.output) || CA$make.output.table )
                             {
-                                concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],sim.score,z.stat,p.value,NA)
+                                concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data)[col.subset[i]],colnames(data)[col.subset[k]],obs.sim.score,null.sim.score,p.value,NA)
                                 output.table[internal.loop.counter,] = concurrent.vector
                             }
 
@@ -300,7 +287,7 @@ function(data,n.iter, CA){
 	if( CA$make.output.table )
 	    {
 	    output.table$sim.score <- as.numeric(output.table$sim.score)
-	    output.table$z.stat    <- as.numeric(output.table$z.stat)
+	    output.table$null.sim.score    <- as.numeric(output.table$null.sim.score)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
 	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
 	    output.table$q.value <- table.q.values
@@ -329,10 +316,9 @@ function(data,n.iter, CA){
 	rownames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the q.values matrix
 	colnames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
 	rownames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
-	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
-	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
+	colnames(CA$null.sim.score) <- colnames(CA$data1.norm)						#Set the names of the cols in the null.sim.score matrix
+	rownames(CA$null.sim.score) <- colnames(CA$data1.norm)						#Set the names of the rows in the null.sim.score matrix
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
-	diag(CA$z.stat)   <- NA                                          	#Set diagonal of z.stat
 	######################CA$sim.score <- NULL                        #Not needed to be NUll
 
 	if (length(CA$filtered.subset.cols.1) > 0)				#If used a subset - present only the subset
@@ -340,7 +326,7 @@ function(data,n.iter, CA){
 		CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
-		CA$z.stat    <- CA$z.stat[col.subset,col.subset]
+		CA$null.sim.score    <- CA$null.sim.score[col.subset,col.subset]
 		}
         CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
         
@@ -411,18 +397,12 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row); of the form with all 0s except for one 1 in each row
 	possible.rows = diag(rep(1,nsubj))
 
-	#Generating the bootstrap and permutation matrices
-	bootstrap.matrices   = list()  # The list of matrices of possible bootstrap rows (each matrix multiplies by the data to give a resampled dataset)
-	permutation.matrices1 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
-	permutation.matrices2 = list()  # The list of permutation matrices; each matrix will be have columns which are permutations of the row indices
-
-
 	#*****************************************************
 	#*  Pre Allocate Matrices                            *
 	#*****************************************************
-	bootstrap.matrices = vector("list", n.iter)		
-	permutation.matrices1 = vector("list", n.iter)	
-	permutation.matrices2 = vector("list", n.iter)	
+	bootstrap.data = vector("list", n.iter)		
+	permutation.data1 = vector("list", n.iter)	
+	permutation.data2 = vector("list", n.iter)	
 
 	for(i in seq_len(n.iter)){
 
@@ -431,93 +411,19 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 			print.msg = paste('Sampled ',i,' permutation and bootstrap datasets')
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
-		
- 
-		# Get the rows of the two possible.rows matrices; these correspond to the rows which will be included in the resampled datasets
-		boot.rowids        = sample(seq(1,nsubj),nsubj,replace=TRUE)
-
-		# Generate the bootstrap matrices by getting the appropriate rows from the possible bootstrap rows
-		boot.matrix        = possible.rows[boot.rowids,]
-
-		# Add the bootstrap matrices to the appropriate lists  
-			
-		bootstrap.matrices[[ i ]] = boot.matrix # Add the bootstrap matrix to the list
-        perm.matrix1 = replicate(n1.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # (Replaced nsubj1 with nsubj) The matrix has each column be a permutation of the row indices
-
-		permutation.matrices1 [[ i ]] = perm.matrix1      # Add the new matrix to the list
-
-		perm.matrix2 = replicate(n2.features,sample(seq(1,nsubj),nsubj,replace=FALSE)) # The matrix has each column be a permutation of the row indices
-		permutation.matrices2 [[ i ]] = perm.matrix2     # Add the new matrix to the list
-
+                bootstrap.data[[ i ]] <- data[sample(seq(1,nsubj),nsubj,replace=TRUE),]
+                permutation.data1[[ i ]] <- apply(data1,2,sample)
+                permutation.data2[[ i ]] <- apply(data2,2,sample)
+		 
 	}
 
-	# The bootstrapped data; resample the data using each bootstrap matrix
-	
-	log.processing.progress(CA,"Generating boot data")  #Log progress
-	boot.data = lapply(bootstrap.matrices,resample,data=data)
- 
-
-
-	log.processing.progress(CA,"Generating permutation data")  #Log progress
-	# Generating the permutation data; permute the data using each permutation matrix
-	permutation.data1 = lapply(permutation.matrices1,permute,data=data1)
-	permutation.data2 = lapply(permutation.matrices2,permute,data=data2)
-
-	# The normalized permutation data; the permutation data needs to be renormalized, but not the bootstrap data
-	permutation.norm1 = lapply(permutation.data1,ccrepe_norm)
-	permutation.norm2 = lapply(permutation.data2,ccrepe_norm)
-
-
-	# The correlation matrices of the permuted and bootstrapped data; see extractCor function for more details
-	# mapply is a function that applies over two lists, applying extractCor to the first element of each, then the
-	# second element of each, etc.
- 
- 
-	log.processing.progress(CA,paste("Calculating permutation similarity scores: col.subset =",toString(col.subset)))  #Log progress
-	CA$verbose.requested = FALSE			#If the User requested verbose output - turn it off temporarily
-	if (CA$verbose == TRUE)
-		{
-			CA$verbose.requested <- TRUE		#Turn of the verbose flag save variable
-			CA$verbose <- FALSE					#But pass non verbose to the CA$method (Could be nc.score or anything else)	
-		}
-
-	permutation.cor = mapply(extractCor,
-		            mat1=permutation.norm1,
-		            mat2=permutation.norm2,
-		            startrow=1,
-		            endrow=n1.subset,
-		            startcol=(n1.subset+1),
-		            endcol=length(col.subset), 				 
-                	MoreArgs = list(col.subset = col.subset,
-					my.method=CA$method,
-					method.args=CA$method.args,
-					outdist=CA$outdist,
-					outdistFile=CA$outdistFile),
-		            SIMPLIFY=FALSE)
-		
-
-	#******************************************************************************** 
-	#  Reboot times = RT =  -round(log2(CA$errthresh))                              *
-	# This is the maximum number of iterations to try to reboot a matrix if in a col*
-	# all values are 0                                                              *
-	#                                                                               *
-	# For each matrix, check if there is a column that is all zeros 		        *
-	# If such matrix is found,  try to reboot it at most RT times until such matrix  *
-	# is found that does not contain a column with all zeros                         *
-	# The limit of RT tries is now hard coded and needs to be re-evaluated           *
-	# If after RT times there is no success - we stop the run                       *
-	#********************************************************************************
-	
-	log.processing.progress(CA,paste("Calculating boot similarity scores: col.subset  =",toString(col.subset)))  #Log progress
-	boot.cor  = lapply(boot.data,bootstrap.method.calcn,nsubj,data,CA,col.subset )		 ###Function to check is all cols are zeros and apply cor
-	
 	# Now calculating the correlations and p-values between the two datasets
 	log.processing.progress(CA,"Calculating p-values")  #Log progress
 
 	
 	
 	CA$p.values <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty p.values matrix
-	CA$z.stat  <-matrix(data=NA,nrow=n1.features,ncol=n2.features)		#Build the empty z.stat matrix
+	CA$null.sim.score  <-matrix(data=NA,nrow=n1.features,ncol=n2.features)		#Build the empty null.sim.score matrix
  
 	CA$sim.score <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
 	
@@ -543,7 +449,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
                                       feature1=rep(NA,max.comparisons), 
 		       		      feature2=rep(NA,max.comparisons), 
 				      sim.score=rep(NA,max.comparisons), 
-				      z.stat=rep(NA,max.comparisons),
+				      null.sim.score=rep(NA,max.comparisons),
 				      p.value=rep(NA,max.comparisons), 
 				      q.value=rep(NA,max.comparisons))
 	    }
@@ -580,37 +486,55 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
-				
-			bootstrap.dist = unlist(lapply(boot.cor,'[',i,n1.subset+k))
-			bootstrap.dist[is.na(bootstrap.dist)] <- 0				#If there is an NA in bootstrap.dist - replace with 0 (Needs 
-																	#review)
-			# Get a vector the (i,k)th element of each correlation matrix in the list of permuted data; this is the permuted distribution
-			permutation.dist = unlist(lapply(permutation.cor,'[',i,k))
-			
-			if    (!is.na(CA$outdist))						#If user requested to print the distributions
-					{
-					RC <- print.dist(bootstrap.dist,permutation.dist,CA,col.subset[i],col.subset[n1.subset+k] - n1.features)
-					}
+                        comparison.data.norm <- mapply(
+                            function(permute.mat1,permute.mat2,boot.mat){
+                                new_elt <- boot.mat
+                                new_elt[,c(i,n1.subset+k)] <- cbind(permute.mat1[,i],permute.mat2[,k])
+                                new_elt[,c(i,k)] <- apply(
+                                    new_elt,1,
+                                    function(row){
+                                        c(
+                                            sum(row[-c(i,n1.subset+1:n2.subset)]),
+                                            sum(row[-c(k,1:n1.subset)])
+                                        )
+                                    }
+                                    )
+                                return(new_elt)
+                            },
+                            permutation.data1,
+                            permutation.data2,
+                            bootstrap.data
+                            )
+                        comparison.dist <- lapply(
+                            comparison.data.norm,
+                            function(elt){
+                                measure.param.list <- CA$sim.score.parameters
+                                measure.param.list$x <- elt[,i]
+                                measure.param.list$y <- elt[,n1.subset+k]
+                                do.call(CA$method,measure.param.list)
+                            }
+                            )
                         measure.parameter.list <- append(list(x=data[,col.subset[i]],y=data[,col.subset[n1.subset+k]]), CA$sim.score.parameters)  #build the method
-                                        #do.call parameter list
-                        sim.score.value <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function  <-  Was cor
-					
-						z.stat_and_p.value.list  <- calculate.z.stat.and.p.value(bootstrap.dist,permutation.dist )  #Invoke new function to calculate it 
-																		#Same calculations - just packed as a function
-						z.stat <- z.stat_and_p.value.list$z.stat		#Retrieve value form the list
-						p.value <- z.stat_and_p.value.list$p.value	    #Retrieve from the list
-						
-						
-						
+                            
+                        obs.sim.score <- do.call(CA$method,measure.parameter.list)	#Invoke the measuring function
+                        null.sim.score <- meean(comparison.dist)
+
+                        less_sum <- sum(comparison.dist-null.sim.score < -abs(obs.sim.score - null.sim.score))
+                        greater_sum <- sum(comparison.dist-null.sim.score > abs(obs.sim.score - null.sim.score))
+
+
+                        p.value <- (less_sum + greater_sum)/length(comparison.dist)						
+
+				
 								  
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
-			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
+			CA$null.sim.score[col.subset[i],col.subset[n1.subset+k]-n1.features] = null.sim.score					#Post it in the null.sim.score matrix 
  
 			CA$sim.score[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
-			    concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],sim.score.value,z.stat,p.value,NA)
+			    concurrent.vector <- c(col.subset[i],col.subset[k],colnames(data1)[col.subset[i]],colnames(data2)[col.subset[n1.subset+k]-n1.features],sim.score.value,null.sim.score,p.value,NA)
 			    output.table[internal.loop.counter,] = concurrent.vector
 			    }
 
@@ -629,7 +553,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	if( CA$make.output.table )
 	    {
 	    output.table$sim.score <- as.numeric(output.table$sim.score)
-	    output.table$z.stat    <- as.numeric(output.table$z.stat)
+	    output.table$null.sim.score    <- as.numeric(output.table$null.sim.score)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
 	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
 	    output.table$q.value <- table.q.values
@@ -654,8 +578,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	colnames(CA$sim.score) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
-	rownames(CA$z.stat) <- colnames(CA$data1.norm)		#Post the column names
-	colnames(CA$z.stat) <- colnames(CA$data2.norm)		#Post the column names
+	rownames(CA$null.sim.score) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$null.sim.score) <- colnames(CA$data2.norm)		#Post the column names
  
 	total.rows.to.display = 1:nrow(CA$p.values)				#Number of rows to display
 	total.cols.to.display = 1:ncol(CA$p.values)				#Number of cols to display
@@ -671,7 +595,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
-	CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
+	CA$null.sim.score    <- CA$null.sim.score[total.rows.to.display,total.cols.to.display]
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 
 	return(CA)			# Return the output matrix
@@ -1224,25 +1148,17 @@ function(CA)
 
 	
 print.dist <-
-function(bootstrap.dist,permutation.dist,  CA,i, k)	{
+function(null.dist,  CA,i, k)	{
 #*************************************************************************************
 #*  Function to print the distribution                                               *
 #*************************************************************************************
 	outdistFile = CA$outdistFile 						#Output file
 	
-	output.string0 <- paste(bootstrap.dist,sep="",collapse=',')		#Build the output string 
+	output.string0 <- paste(null.dist,sep="",collapse=',')		#Build the output string 
 	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Boot,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Null,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 		else
-		{output.string <-paste("Boot,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
-
-	cat(output.string,file=CA$outdistFile,append=TRUE)
-	
-	output.string0 <- paste(permutation.dist,sep="",collapse=',')		#Build the output string 
-	if (CA$OneDataset == TRUE)							#The structure of the output is different for one dataset and two datasets
-		{output.string <-paste("Permutation,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data1.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
-		else
-		{output.string <-paste("Permutation,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
+		{output.string <-paste("Null,",i,",",k,",",colnames(CA$data1.norm)[i],",",colnames(CA$data2.norm)[k],",",output.string0,'\n', sep='',collapse=",")}
 	cat(output.string,file=CA$outdistFile,append=TRUE)
 
 
