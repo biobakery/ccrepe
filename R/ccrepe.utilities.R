@@ -102,14 +102,9 @@ function(data,n.iter, CA){
             col.subset <- setdiff(col.subset,zero_features)
         }
 
-	# The matrix of possible bootstrap rows (which when multiplied by data give a specific row) 
-	#  of the form with all 0s except for one 1 in each row
-	possible.rows = diag(rep(1,nsubj)) 
-
 	#**************************************************************
 	#*  Pre allocate                                              *
 	#**************************************************************
-	permutation.data  = vector("list", n.iter)		#Pre allocate the permutation matrices
 	bootstrap.data = vector("list", n.iter)		#Pre allocate
 
 	
@@ -126,7 +121,6 @@ function(data,n.iter, CA){
 		# which will be included in the resampled dataset
 
 		bootstrap.data[[ i ]] = data[sample(seq(1,nsubj),nsubj,replace=TRUE),]
-                permutation.data[[ i ]] = apply(data,2,sample)
 	}
 
 	# The correlation matrices of the permuted data; calculate the correlation for each permuted dataset
@@ -210,27 +204,24 @@ function(data,n.iter, CA){
                                 print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
                                 log.processing.progress(CA,print.msg)  #Log progress
                             }
-                        comparison.data.norm <- mapply(
-                            function(permute.mat,boot.mat){
+                        comparison.data.norm <- lapply(
+                            bootstrap.data,
+                            function(boot.mat){
                                 idx1 <- col.subset[i]
                                 idx2 <- col.subset[k]
-                                new_elt <- boot.mat
-                                new_elt[,c(idx1,idx2)] <- permute.mat[,c(idx1,idx2)]
-                                new_elt[,c(idx1,idx2)] <- apply(new_elt,1,function(row){
-                                    if(sum(row[c(idx1,idx2)])==0){
-                                        return(row[c(idx1,idx2)])
-                                    } else {
-                                        return(
-                                            row[c(idx1,idx2)]*sum(row[-c(idx1,idx2)])/sum(row[c(idx1,idx2)])
-                                            )
-                                    }
-                                }
-                                    )
-                                return(new_elt)
-                            },
-                            permutation.data,
-                            bootstrap.data,
-                            SIMPLIFY = FALSE
+                                perm.mat <- boot.mat
+                                perm.mat[,c(idx1,idx2)] <- apply(perm.mat[,c(idx1,idx2)],2,sample)
+                                perm.norm.mat <- perm.mat/rowSums(perm.mat)
+                                ## perm.norm.mat <- apply(perm.norm.mat,1,function(row){
+                                ##     if(sum(row[c(idx1,idx2)])==0){
+                                ##         return(row[c(idx1,idx2)])
+                                ##     } else {
+                                ##         return(
+                                ##             row[c(idx1,idx2)]*sum(row[-c(idx1,idx2)])/sum(row[c(idx1,idx2)])
+                                ##             )
+                                ##     }
+                                ## })
+                            }
                             )
                         comparison.dist <- unlist(lapply(
                             comparison.data.norm,
@@ -401,8 +392,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	#*  Pre Allocate Matrices                            *
 	#*****************************************************
 	bootstrap.data = vector("list", n.iter)		
-	permutation.data1 = vector("list", n.iter)	
-	permutation.data2 = vector("list", n.iter)	
 
 	for(i in seq_len(n.iter)){
 
@@ -412,8 +401,6 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 			log.processing.progress(CA,print.msg)  #Log progress
 			}
                 bootstrap.data[[ i ]] <- data[sample(seq(1,nsubj),nsubj,replace=TRUE),]
-                permutation.data1[[ i ]] <- apply(data1,2,sample)
-                permutation.data2[[ i ]] <- apply(data2,2,sample)
 		 
 	}
 
@@ -486,31 +473,30 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 					print.msg = paste('Completed ', internal.loop.counter, ' comparisons')
 					log.processing.progress(CA,print.msg)  #Log progress
 				}
-                        comparison.data.norm <- mapply(
-                            function(permute.mat1,permute.mat2,boot.mat){
-                                new_elt <- boot.mat
-                                new_elt[,c(i,n1.subset+k)] <- cbind(permute.mat1[,i],permute.mat2[,k])
-                                new_elt[,c(i,k)] <- apply(
-                                    new_elt,1,
-                                    function(row){
-                                        c(
-                                            sum(row[-c(i,n1.subset+1:n2.subset)]),
-                                            sum(row[-c(k,1:n1.subset)])
-                                        )
-                                    }
-                                    )
-                                return(new_elt)
-                            },
-                            permutation.data1,
-                            permutation.data2,
-                            bootstrap.data
+                        comparison.data.norm <- lapply(
+                            bootstrap.data,
+                            function(boot.mat){
+                                idx1 <- col.subset[i]
+                                idx2 <- col.subset[k+n1.subset]
+                                perm.mat <- boot.mat
+                                perm.mat[,c(idx1,idx2)] <- apply(perm.mat[,c(idx1,idx2)],2,sample)
+                                perm.norm.mat <- cbind(perm.mat[,1:n1.subset]/rowSums(perm.mat[,1:n1.subset]),
+                                                       perm.mat[,n1.subset+(1:n2.subset)]/rowSums(perm.mat[,n1.subset+(1:n2.subset)]))
+                                ## perm.norm.mat <- apply(perm.norm.mat,1,function(row){
+                                ##     c(
+                                ##         sum(row[-c(i,n1.subset+1:n2.subset)]),
+                                ##         sum(row[-c(k,1:n1.subset)])
+                                ##         )
+                                ## })
+                            }
                             )
+
                         comparison.dist <- lapply(
                             comparison.data.norm,
                             function(elt){
                                 measure.param.list <- CA$sim.score.parameters
-                                measure.param.list$x <- elt[,i]
-                                measure.param.list$y <- elt[,n1.subset+k]
+                                measure.param.list$x <- elt[,col.subset[i]]
+                                measure.param.list$y <- elt[,col.subset[n1.subset+k]]
                                 do.call(CA$method,measure.param.list)
                             }
                             )
