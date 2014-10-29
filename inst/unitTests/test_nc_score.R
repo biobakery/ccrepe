@@ -287,17 +287,17 @@ checkEquals(0,sum(abs(tau3.7-tau3.7.check)>tol))
 	
 ## Using two matrices with bin cutoffs
 tau.8 <-
-nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",bin.cutoffs=c(-1,0,1))
 tau.8.check <- tau.6.check[c(1,2),c(3,4)]
 ##checkEquals(0,sum(abs(tau.8-tau.8.check)>tol))
 ###sum(abs(tau.8-tau.8.check)>tol)==0
 
 tau2.8 <-
-nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",nbins=5)
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="everything",bin.cutoffs=c(-1,0,1))
 sum(!is.na(tau2.8))==0
 
 tau3.8 <-
-nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",nbins=5)
+nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="complete.obs",bin.cutoffs=c(-1,0,1))
 ok <- which(!is.na(apply(mymat2,1,function(row) sum(row[c(1,2,3,4)]))))
 tau3.8.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
@@ -308,9 +308,6 @@ checkEquals(0,sum(abs(tau3.8-tau3.8.check)>tol))
 ## Checking warning cases
 expect_warning(nc.score(x,y,nbins=c(5,3),use="pairwise.complete.obs"))
 expect_warning(nc.score(x,y,nbins=NULL,bin.cutoffs=c(1,-1,0),use="pairwise.complete.obs"))
-	
-
-
 
 ## incorrect use argument - should give an error
 expect_error(nc.score(x,y,use="something"))
