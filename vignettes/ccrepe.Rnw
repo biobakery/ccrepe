@@ -124,14 +124,14 @@ Optional output file for detailed log (if given) of all intermediate permutation
 \begin{description}
 \setlength{\itemsep}{1em}
 
-\item[\Rcode{sim.score}]
-\Rclass{matrix} of simliarity scores for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the similarity score of column \Rcode{i} (or the \Rcode{i}th column of \Rcode{subset.cols.1}) and column \Rcode{j} (or the \Rcode{j}th column of \Rcode{subset.cols.1}) in one dataset, or to the similarity score of column \Rcode{i} (or the \Rcode{i}th column of \Rcode{subset.cols.1}) in dataset \Rcode{x} and column \Rcode{j} (or the \Rcode{j}th column of \Rcode{subset.cols.2}) in dataset \Rcode{y} in the case of two datasets.
+\item[\Rcode{obs.sim.score}]
+\Rclass{matrix} of the observed simliarity scores for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the similarity score of column \Rcode{i} (or the \Rcode{i}th column of \Rcode{subset.cols.1}) and column \Rcode{j} (or the \Rcode{j}th column of \Rcode{subset.cols.1}) in one dataset, or to the similarity score of column \Rcode{i} (or the \Rcode{i}th column of \Rcode{subset.cols.1}) in dataset \Rcode{x} and column \Rcode{j} (or the \Rcode{j}th column of \Rcode{subset.cols.2}) in dataset \Rcode{y} in the case of two datasets.
 
 \item[\Rcode{p.values}]
-\Rclass{matrix} of the corrected p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+\Rclass{matrix} of the compositionality corrected p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{obs.sim.score}.
 
 \item[\Rcode{q.values}]
-\Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{sim.score}.
+\Rclass{matrix} of the Benjamini-Hochberg-Yekutieli corrected p-values.  The (\Rcode{i},\Rcode{j})th element corresponds to the p-value of the (\Rcode{i},\Rcode{j})th element of \Rcode{obs.sim.score}.
 
 \item[\Rcode{z.stat}]
   \Rclass{matrix} of the z-statistics used in generating the p-values for all requested comparisons.  The (\Rcode{i},\Rcode{j})th element corresponds to the z-statistic generating the (\Rcode{i},\Rcode{j})th element of \Rcode{p.values}.
@@ -178,7 +178,7 @@ dimnames(test.input) <- list(c(
 
 test.output <- ccrepe(x=test.input, iterations=20, min.subj=10)
 @
-<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5,fig.pos="H">>=
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$obs.sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5,fig.pos="H">>=
 par(mfrow=c(1,2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
 plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
@@ -215,7 +215,7 @@ test.output.two.datasets <- ccrepe(x=test.input, y=test.input.2, iterations=20, 
 @
 Please note that we receive a warning because the subjects don't match - only paired observations.
  
-<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5, fig.pos="H">>=
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$obs.sim.score and the small q-value in the [1,2] element of test.output\\$q.values.", fig.width=7, fig.height=3.5, fig.pos="H">>=
 par(mfrow=c(1,2))
 plot(data2[aligned.rows,1],data[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",main="Non-normalized")
 plot(data2.norm[aligned.rows,1],data.norm[,3],xlab="dataset 2: Feature 1",ylab="dataset 1: Feature 3",
@@ -239,7 +239,7 @@ dimnames(test.input) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4))
 
 test.output.nc.score     <- ccrepe(x=test.input, sim.score=nc.score, iterations=20, min.subj=10)
 @
-<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$sim.score and the small q-value in the [1,2] element of test.output\\$q.values. In this case, however, the sim.score represents the NC-Score between two features rather than the Spearman correlation.", fig.width=7, fig.height=3.5, fig.pos="H">>=
+<<fig.cap="Non-normalized and normalized associations between feature 1 and feature 2.  In this case we would expect feature 1 and feature 2 to be associated. In the output we see this by the positive sim.score value in the [1,2] element of test.output\\$obs.sim.score and the small q-value in the [1,2] element of test.output\\$q.values. In this case, however, the sim.score represents the NC-Score between two features rather than the Spearman correlation.", fig.width=7, fig.height=3.5, fig.pos="H">>=
 par(mfrow=c(1,2))
 plot(data[,1],data[,2],xlab="Feature 1",ylab="Feature 2",main="Non-normalized")
 plot(data.norm[,1],data.norm[,2],xlab="Feature 1",ylab="Feature 2",
