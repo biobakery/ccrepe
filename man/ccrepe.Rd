@@ -76,7 +76,9 @@
   A vector of column indices from y to indicate which features to compare  
 }
   \item{errthresh}{
-        If feature has number of zeros > (n(errthresh)^(1/n)), that feature is excluded (default= 0.0001)  
+        A probability bound on the probability of resampling all zeros.
+	That is, if a feature has number of zeros > n *
+	errthresh^(1/n)  , that feature is excluded (default= 0.0001)  
 }
   
   \item{verbose}{
