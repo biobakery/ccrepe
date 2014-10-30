@@ -76,10 +76,7 @@
   A vector of column indices from y to indicate which features to compare  
 }
   \item{errthresh}{
-	A numeric value representing the probability of getting all 0's in a given bootstrapped column for the first dataset
-	If a bug/feature/column has a number of zeros that makes the probability of obtaining all zeros when sampling
-        with replacement > errthresh, that bug/feature/column will be excluded from the subsequent analysis.  This is 
-        to ensure that the standard deviation of the bootstrap sample is non-zero. (default= 0.0001)
+        If feature has number of zeros > (n(errthresh)^(1/n)), that feature is excluded (default= 0.0001)  
 }
   
   \item{verbose}{
