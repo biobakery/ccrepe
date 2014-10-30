@@ -95,7 +95,7 @@ A vector of column indices from x to indicate which features to compare
 A vector of column indices from y to indicate which features to compare
 
 \item[\Rcode{errthresh}]
-Maximum allowable probability of getting all zeros in a given bootstrapped column for the first dataset \Rcode{x}.  If a feature has a number of zeros that makes the probability of obtaining all zeros when sampling with replacement greater than this value, that feature will be excluded from the subsequent analysis.  This is to ensure that the standard deviation of the bootstrap sample is non-zero. (default: 0.0001).
+If feature has number of zeros greater than   $\ errthresh^{1/n} $  , that feature is excluded     
 
 \item[\Rcode{verbose}]
 If \Rcode{TRUE}, print periodic progress of the algorithm through the dataset(s), as well as including more detailed debugging output.  (default: \Rcode{FALSE}).
@@ -363,8 +363,7 @@ nc.score(
  y = NULL, 
  use = "everything",
  nbins = NULL, 
- bin.cutoffs=NULL,
- min.samples = 0.1)
+ bin.cutoffs=NULL)
 @
 
 \subsection{Example 1}
