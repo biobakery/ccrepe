@@ -95,7 +95,7 @@ A vector of column indices from x to indicate which features to compare
 A vector of column indices from y to indicate which features to compare
 
 \item[\Rcode{errthresh}]
-If feature has number of zeros greater than   $\ errthresh^{1/n} $  , that feature is excluded     
+A probability bound on the probability of resampling all zeros.  That is, if a feature has number of zeros greater than $n \ast \text{errthresh}^{1/n} $  , that feature is excluded
 
 \item[\Rcode{verbose}]
 If \Rcode{TRUE}, print periodic progress of the algorithm through the dataset(s), as well as including more detailed debugging output.  (default: \Rcode{FALSE}).
@@ -261,11 +261,8 @@ test.input <- data.norm
 
 dimnames(test.input) <- list(paste("Sample",seq(1,10)),paste("Feature",seq(1,4)))
 
-my.test.sim.score <- function(x,y=NA,constant=0.5){
-       if(is.vector(x) && is.vector(y)) return(constant)
-          if(is.matrix(x) && is.na(y)) return(matrix(rep(constant,ncol(x)^2),ncol=ncol(x)))
-          if(is.data.frame(x) && is.na(y)) return(matrix(rep(constant,ncol(x)^2),ncol=ncol(x)))
-          else stop('ERROR')
+my.test.sim.score <- function(x,y=NULL,constant=0.5){
+    return(constant + cor(x,y))
    }
 
 test.output.sim.score    <- ccrepe(x=test.input, sim.score=my.test.sim.score, iterations=20, min.subj=10, sim.score.args = list(constant = 0.6))
