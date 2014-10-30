@@ -107,16 +107,23 @@ check_vec_mat <- function(x,mymat,nbins=NULL,bin.cutoffs=NULL,ok=NULL){
 }
 
 ## Using two vectors with bin numbers
+
+	context("Using two vectors with bin numbers")
+
 nc.score(x,y,use="pairwise.complete.obs",nbins=5)==nc.score(x,y,use="complete.obs",nbins=5)
 is.na(nc.score(x,y,use="everything",nbins=5))
 
 
 
 ## Using two vectors with bin cutoffs
+	context("Using two vectors with bin cutoffs")
 nc.score(x,y,use="pairwise.complete.obs",NULL,bin.cutoffs=c(-1,0,1))==nc.score(x,y,use="complete.obs",NULL,bin.cutoffs=c(-1,0,1))
 is.na(nc.score(x,y,use="everything",NULL,bin.cutoffs=c(-1,0,1)))
 
+
+
 ## Using matrix and vector with bin numbers
+	context("Using matrix and vector with bin numbers")
 tau <- nc.score(mymat2,y,use="pairwise.complete.obs",nbins=5)
 tau.check <- check_mat_vec(mymat2,y,nbins=5)
 checkEquals(sum(abs(tau-tau.check)>tol), 0) 
@@ -135,6 +142,7 @@ checkEquals(0,sum(abs(tau3-tau3.check)>tol))
 
 
 ## Using matrix and vector with bin cutoffs
+	context("Using matrix and vector with bin cutoffs")
 tau.2 <-
 nc.score(mymat2,y,use="pairwise.complete.obs",NULL,bin.cutoffs=c(-1,0,1))
 tau.2.check <- check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1))
@@ -157,6 +165,7 @@ checkEquals(0,sum(abs(tau3.2-tau3.2.check)>tol))
 
 
 ## Using vector and matrix with bin numbers
+	context("Using vector and matrix with bin numbers")
 tau.3 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=5)
 tau.3.check <- check_vec_mat(y,mymat2,nbins=5)
 checkEquals(0,sum(abs(tau-t(tau.3))>tol))
@@ -180,6 +189,8 @@ checkEquals(0,sum(abs(tau3.3.check-tau3.check)>tol))
 
 
 ## Using vector and matrix with bin cutoffs
+	context("Using vector and matrix with bin cutoffs")
+
 tau.4 <- nc.score(y,mymat2,use="pairwise.complete.obs",nbins=NULL,bin.cutoffs=c(-1,0,1))
 tau.4.check <- check_vec_mat(y,mymat2,bin.cutoffs=c(-1,0,1))
 checkEquals(0,sum(abs(tau.2-t(tau.4))>tol))
@@ -203,6 +214,7 @@ checkEquals(0,sum(abs(tau3.4.check-tau3.2.check)>tol))
 
 	
 ## Using matrix with bin numbers
+	context("Using matrix with bin numbers")
 tau.5 <- nc.score(mymat2,use="pairwise.complete.obs",nbins=5)
 tau.5.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,nbins=5))
@@ -235,6 +247,7 @@ checkEquals(0,sum(abs(tau3.5-tau3.5.check.2)>tol))
 	
 	
 ## Using matrix with bin cutoffs
+	context("Using matrix with bin cutoffs")
 tau.6 <- nc.score(mymat2,use="pairwise.complete.obs",bin.cutoffs=c(-1,0,1))
 tau.6.check <- apply(mymat2,2,function(y)
 check_mat_vec(mymat2,y,bin.cutoffs=c(-1,0,1)))
@@ -266,6 +279,7 @@ checkEquals(0,sum(abs(tau3.6-tau3.6.check.2)>tol))
 
 
 ## Using two matrices with bin numbers
+	context("Using two matrices with bin numbers")
 tau.7 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",nbins=5)
 tau.7.check <- tau.5.check[c(1,2),c(3,4)]
@@ -284,8 +298,9 @@ check_mat_vec(mymat2,y,nbins=5,ok=ok))[c(1,2),c(3,4)]
 checkEquals(0,sum(abs(tau3.7-tau3.7.check)>tol))
  	
 	
-	
+	context("Using two matrices with bin cutoffs")	
 ## Using two matrices with bin cutoffs
+
 tau.8 <-
 nc.score(mymat2[,c(1,2)],mymat2[,c(3,4)],use="pairwise.complete.obs",bin.cutoffs=c(-1,0,1))
 tau.8.check <- tau.6.check[c(1,2),c(3,4)]
@@ -310,6 +325,7 @@ checkEquals(0,sum(!is.na(tau2.8)))
 	
 
 ## Checking warning cases
+	context("Checking warning cases")
 expect_warning(nc.score(x,y,nbins=c(5,3),use="pairwise.complete.obs"))
 expect_warning(nc.score(x,y,nbins=NULL,bin.cutoffs=c(1,-1,0),use="pairwise.complete.obs"))
 
@@ -339,6 +355,7 @@ expect_error(nc.score(x,y,nbins=NULL,bin.cutoffs=c(0,'1')))
 	
 
 ## Miscellaneous testing
+	context("Miscellaneous testing")
 A <- c(1,2.5,2.5,4.5,4.5,6.5,6.5,8,9.5,9.5)
 B <- c(1,2,4.5,4.5,4.5,4.5,8,8,8,10)
 n <- length(A)
