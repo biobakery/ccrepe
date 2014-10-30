@@ -112,22 +112,22 @@
 	Default parameters shown:\cr
         \item{min.subj}{Description above}
 	\item{errThresh}{Description same as errthresh above}
-	\item{sim.score}{A matrix of the simliarity scores for all the requested comparisons.  The (i,j)th
-        element of sim.score correponds to the similarity score of column i (or the ith column of subset.cols.1) 
+	\item{obs.sim.score}{A matrix of the observed simliarity scores for all the requested comparisons.  The (i,j)th
+        element of obs.sim.score correponds to the similarity score of column i (or the ith column of subset.cols.1) 
         and column j (or the jth column of subset.cols.1) in one dataset, or
         to the similarity score of column i (or the ith column of subset.cols.1) in dataset x 
         and column j (or the jth column of subset.cols.2)in dataset y in the case of two datasets.}
 	\item{p.values}{A  matrix of the p-values for all the requested comparisons.  The (i,j)th element of p.values
-        corresponds to the p-value of the (i,j)th element of sim.score.}
+        corresponds to the p-value of the (i,j)th element of obs.sim.score.}
 	\item{q.values}{A matrix of the Benjamini-Hochberg-Yekutieli FDR corrected p-values.  The (i,j)th element
-        of q.values corresponds to the q-value fo the (i,j)th element of
-	sim.score.}
+        of q.values corresponds to the q-value of the (i,j)th element of
+	obs.sim.score.}
         \item{z.stat}{A matrix of the z-statistics for all the
 	  requested comparisons.  The (i,j)th element corresponds	
 	  to the z-statistic which gave rise to the (i,j)th p-value.}
         \item{output.table}{(Only if make.output.table=TRUE) A table
 	where each row is one comparision.  Each row contains the
-	features being compared with their similarity scores,
+	features being compared with their observed similarity scores,
 	z-statistics, p-values and q-values}
         Additional parameters if verbose=TRUE:
 	\item{iterations}{Description Above}

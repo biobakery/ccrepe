@@ -72,7 +72,7 @@ function(data,n.iter, CA){
 	CA$p.values <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty PValues matrix
 	CA$z.stat <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty z.stat matrix
 	
-	CA$sim.score <-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty correlation matrix
+	CA$obs.sim.score<-matrix(data=NA,nrow=n.features,ncol=n.features)	#Build the empty correlation matrix
 	
 	nsubj = nrow(data)				# Number of subjects
 
@@ -210,7 +210,7 @@ function(data,n.iter, CA){
                                       k=rep(NA,max.comparisons),
                                       feature1=rep(NA,max.comparisons), 
 	    		   	      feature2=rep(NA,max.comparisons), 
-				      sim.score=rep(NA,max.comparisons), 
+				      obs.sim.score=rep(NA,max.comparisons), 
 				      z.stat=rep(NA,max.comparisons),
 				      p.value=rep(NA,max.comparisons), 
 				      q.value=rep(NA,max.comparisons))
@@ -277,8 +277,8 @@ function(data,n.iter, CA){
                         CA$z.stat[col.subset[k],col.subset[i]] = z.stat					#Post z.stat in output matrix
                         CA$p.values[col.subset[i],col.subset[k]] = p.value				#Post it in the p-values matrix
                         CA$p.values[col.subset[k],col.subset[i]] = p.value				#Post it in the p-values matrix
-                        CA$sim.score[col.subset[i],col.subset[k]] = sim.score			#Post it in the cor matrix
-                        CA$sim.score[col.subset[k],col.subset[i]] = sim.score			#Post it in the cor matrix
+                        CA$obs.sim.score[col.subset[i],col.subset[k]] = sim.score			#Post it in the cor matrix
+                        CA$obs.sim.score[col.subset[k],col.subset[i]] = sim.score			#Post it in the cor matrix
 
 
                         if( !is.na(CA$concurrent.output) || CA$make.output.table )
@@ -299,7 +299,7 @@ function(data,n.iter, CA){
 	CA <- calculate_q_values(CA)						#Calculate the QValues
 	if( CA$make.output.table )
 	    {
-	    output.table$sim.score <- as.numeric(output.table$sim.score)
+	    output.table$obs.sim.score <- as.numeric(output.table$obs.sim.score)
 	    output.table$z.stat    <- as.numeric(output.table$z.stat)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
 	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
@@ -327,19 +327,19 @@ function(data,n.iter, CA){
 	rownames(CA$p.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the p.values matrix
 	colnames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the columns in the q.values matrix
 	rownames(CA$q.values)<-colnames(CA$data1.norm)						#Set the names of the rows in the q.values matrix
-	colnames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
-	rownames(CA$sim.score)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
+	colnames(CA$obs.sim.score)<-colnames(CA$data1.norm)							#Set the names of the columns in the q.values matrix
+	rownames(CA$obs.sim.score)<-colnames(CA$data1.norm)							#Set the names of the rows in the q.values matrix
 	colnames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the cols in the z.stat matrix
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)						#Set the names of the rows in the z.stat matrix
 	diag(CA$p.values) <- NA											#Set diagonal of p.values to NA
 	diag(CA$z.stat)   <- NA                                          	#Set diagonal of z.stat
-	######################CA$sim.score <- NULL                        #Not needed to be NUll
+	######################CA$obs.sim.score <- NULL                        #Not needed to be NUll
 
 	if (length(CA$filtered.subset.cols.1) > 0)				#If used a subset - present only the subset
 		{
 		CA$p.values <- CA$p.values[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$q.values <- CA$q.values[col.subset,col.subset]   #Display only the subset of cols and rows
-		CA$sim.score <- CA$sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
+		CA$obs.sim.score <- CA$obs.sim.score[col.subset,col.subset]   #Display only the subset of cols and rows
 		CA$z.stat    <- CA$z.stat[col.subset,col.subset]
 		}
         CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
@@ -519,7 +519,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	CA$p.values <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty p.values matrix
 	CA$z.stat  <-matrix(data=NA,nrow=n1.features,ncol=n2.features)		#Build the empty z.stat matrix
  
-	CA$sim.score <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
+	CA$obs.sim.score <-matrix(data=NA,nrow=n1.features,ncol=n2.features)	#Build the empty correlation matrix
 	
 	loop.range1 <- which(col.subset %in% 1:n1.features)						#Establish looping range default
 
@@ -542,7 +542,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
                                       k=rep(NA,max.comparisons),
                                       feature1=rep(NA,max.comparisons), 
 		       		      feature2=rep(NA,max.comparisons), 
-				      sim.score=rep(NA,max.comparisons), 
+				      obs.sim.score=rep(NA,max.comparisons), 
 				      z.stat=rep(NA,max.comparisons),
 				      p.value=rep(NA,max.comparisons), 
 				      q.value=rep(NA,max.comparisons))
@@ -606,7 +606,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 			CA$p.values[col.subset[i],col.subset[n1.subset+k]-n1.features] = p.value				#Post it in the p.values matrix  
 			CA$z.stat[col.subset[i],col.subset[n1.subset+k]-n1.features] = z.stat					#Post it in the z.stat matrix 
  
-			CA$sim.score[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
+			CA$obs.sim.score[col.subset[i],col.subset[n1.subset+k]-n1.features] = sim.score.value			    #Post it in the cor matrix   <--Was cor
 
 			if( !is.na(CA$concurrent.output) || CA$make.output.table )
 			    {
@@ -628,7 +628,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 
 	if( CA$make.output.table )
 	    {
-	    output.table$sim.score <- as.numeric(output.table$sim.score)
+	    output.table$obs.sim.score <- as.numeric(output.table$obs.sim.score)
 	    output.table$z.stat    <- as.numeric(output.table$z.stat)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
 	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
@@ -650,8 +650,8 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	rownames(CA$p.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$p.values) <- colnames(CA$data2.norm)		#Post the column names
  
-	rownames(CA$sim.score) <- colnames(CA$data1.norm)		#Post the column names
-	colnames(CA$sim.score) <- colnames(CA$data2.norm)		#Post the column names
+	rownames(CA$obs.sim.score) <- colnames(CA$data1.norm)		#Post the column names
+	colnames(CA$obs.sim.score) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$q.values) <- colnames(CA$data1.norm)		#Post the column names
 	colnames(CA$q.values) <- colnames(CA$data2.norm)		#Post the column names
 	rownames(CA$z.stat) <- colnames(CA$data1.norm)		#Post the column names
@@ -670,7 +670,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 		}
 	CA$p.values <- CA$p.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$q.values <- CA$q.values[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
-	CA$sim.score <- CA$sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
+	CA$obs.sim.score <- CA$obs.sim.score[total.rows.to.display,total.cols.to.display]   #Display only the subset of cols and rows
 	CA$z.stat    <- CA$z.stat[total.rows.to.display,total.cols.to.display]
 	CA <- clean_common_area_after_processing(CA)	#Clean the Common Area before returning to the User
 
