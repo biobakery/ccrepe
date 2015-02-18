@@ -302,7 +302,7 @@ function(data,n.iter, CA){
 	    output.table$obs.sim.score <- as.numeric(output.table$obs.sim.score)
 	    output.table$z.stat    <- as.numeric(output.table$z.stat)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
-	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
+	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)
 	    output.table$q.value <- table.q.values
 	    }
  
@@ -631,7 +631,7 @@ ccrepe_process_two_datasets <- function(data1.norm,data2.norm,n.iter, CA)
 	    output.table$obs.sim.score <- as.numeric(output.table$obs.sim.score)
 	    output.table$z.stat    <- as.numeric(output.table$z.stat)
 	    output.table$p.value   <- as.numeric(output.table$p.value)
-	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)$q.values.vec
+	    table.q.values <- calculate_q_values_vector(output.table$p.value,CA)
 	    output.table$q.value <- table.q.values
 	    }
 
