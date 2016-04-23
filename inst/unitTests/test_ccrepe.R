@@ -17,6 +17,7 @@ is_approximately <- function(expected,tol=10e-7,label=NULL)
             same <- all.equal.numeric(as.vector(actual),as.vector(expected),tol=tol)
 
             expectation(
+                "success",
                 identical(same,TRUE),
                 paste0("not equal to ", label, " within tolerance ",tol,"\n", same)
                 )
